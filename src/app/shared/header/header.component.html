@@ -1,0 +1,15 @@
+<header class="site-header">
+  <div class="brand">
+    <a routerLink="/dashboard">SAS Equip</a>
+  </div>
+
+  <nav class="site-nav">
+    <a routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
+    <a routerLink="/reports" routerLinkActive="active">Reports</a>
+    <a routerLink="/settings" routerLinkActive="active">Settings</a>
+  </nav>
+
+  <button class="logout-button" type="button" (click)="logout()">
+    Sign out
+  </button>
+</header>

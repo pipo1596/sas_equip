@@ -1,0 +1,299 @@
+/* You can add global styles to this file, and also import other style files */
+
+@import 'bootstrap/dist/css/bootstrap.min.css';
+
+/* ===== SHELL COMPONENT STYLES ===== */
+app-shell {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+}
+
+.shell-main {
+  flex: 1;
+  padding: 2rem 1.5rem;
+  background: #f3f4f6;
+}
+
+/* ===== HEADER COMPONENT STYLES ===== */
+app-header {
+  display: block;
+}
+
+.site-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  background: #ffffff;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.brand a {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #111827;
+  text-decoration: none;
+}
+
+.site-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.site-nav a {
+  color: #374151;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.site-nav a.active,
+.site-nav a:hover {
+  color: #1d4ed8;
+}
+
+.logout-button {
+  border: none;
+  background: #ef4444;
+  color: white;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  cursor: pointer;
+}
+
+/* ===== FOOTER COMPONENT STYLES ===== */
+app-footer {
+  display: block;
+}
+
+.site-footer {
+  text-align: center;
+  padding: 1rem 1.5rem;
+  background: #f8fafc;
+  color: #6b7280;
+  font-size: 0.95rem;
+}
+
+/* ===== AUTH COMPONENTS STYLES ===== */
+app-login,
+app-mfa {
+  display: block;
+  min-height: 100vh;
+  background: #fafafa;
+  padding: 2rem;
+}
+
+.auth-page {
+  display: grid;
+  place-items: center;
+  min-height: 100%;
+}
+
+.auth-panel {
+  width: min(540px, 100%);
+  background: #ffffff;
+  border-radius: 0.5rem;
+  padding: 0;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.login-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #000000;
+  padding: 0.5rem 0.75rem;
+}
+
+.logo-container {
+  text-align: left;
+  margin-bottom: 0;
+}
+
+.login-logo {
+  max-width: 120px;
+  height: auto;
+}
+
+.title-container h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  text-align: right;
+}
+
+.login-content {
+  padding: 2rem;
+}
+
+.login-description {
+  margin: 0 0 1.5rem;
+  color: #4a5568;
+  font-size: 0.95rem;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.login-info {
+  background: #f7fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-bottom: .75rem;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.info-item:last-child {
+  margin-bottom: 0;
+}
+
+.info-item strong {
+  color: #2d3748;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.info-item span {
+  color: #718096;
+  font-size: 0.875rem;
+}
+
+.auth-panel p {
+  margin: 0 0 2rem;
+  color: #4a5568;
+  font-size: 0.95rem;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.auth-form label {
+  display: none;
+}
+
+.auth-form input {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.25rem;
+  padding: 1.125rem 1rem;
+  font-size: 1rem;
+  background: #ffffff;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+.auth-form input::placeholder {
+  color: #a0aec0;
+}
+
+.auth-form input:focus {
+  outline: none;
+  border-color: #4299e1;
+  box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.1);
+}
+
+.auth-form input.invalid {
+  border-color: #f56565;
+}
+
+.auth-form input.invalid:focus {
+  box-shadow: 0 0 0 2px rgba(245, 101, 101, 0.1);
+}
+
+.field-error {
+  display: block;
+  height: 1.5rem;
+  color: #c53030;
+  font-size: 0.875rem;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  line-height: 1.5rem;
+}
+
+.field-error.visible {
+  opacity: 1;
+}
+
+.submit-button {
+  width: 100%;
+  border: none;
+  padding: 0.5rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #ffffff;
+  background: #1a202c;
+  cursor: pointer;
+  transition: background-color 0.2s ease, opacity 0.2s ease;
+}
+
+.submit-button:hover:not(:disabled) {
+  background: #2d3748;
+}
+
+.submit-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.form-error {
+  padding: 1rem;
+  margin-top: 1rem;
+  background: #fed7d7;
+  color: #c53030;
+  border: 1px solid #fc8181;
+  border-radius: 0.25rem;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.login-footer {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e2e8f0;
+  text-align: center;
+}
+
+.login-footer p {
+  margin: 0.5rem 0;
+  font-size: 0.875rem;
+  color: #718096;
+}
+
+.login-footer strong {
+  color: #2d3748;
+}
+
+.system-info {
+  font-size: 0.75rem !important;
+  color: #a0aec0 !important;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ===== FEATURE COMPONENTS STYLES ===== */
+app-dashboard,
+app-reports,
+app-settings {
+  display: block;
+  padding: 1.5rem;
+}
+
+.page-shell {
+  max-width: 900px;
+  margin: 0 auto;
+}

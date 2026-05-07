@@ -1,0 +1,29 @@
+<section class="auth-page">
+  <div class="auth-panel">
+    <h1>Multi-factor authentication</h1>
+    <p>Enter the verification code you received by text message or email.</p>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="auth-form">
+      <div class="form-group">
+        <label for="code">Verification code</label>
+        <input
+          id="code"
+          type="text"
+          formControlName="code"
+          placeholder="123456"
+          [class.invalid]="codeControl?.invalid && codeControl?.touched"
+        />
+        <div class="field-error" [class.visible]="codeControl?.invalid && codeControl?.touched">
+          <span *ngIf="codeControl?.errors?.['required']">Code is required.</span>
+          <span *ngIf="codeControl?.errors?.['minlength']">Enter at least 4 digits.</span>
+        </div>
+      </div>
+
+      <button type="submit" class="submit-button" [disabled]="loading() || form.invalid">
+        {{ loading() ? 'Verifying…' : 'Verify code' }}
+      </button>
+
+      <div class="form-error" *ngIf="error()">{{ error() }}</div>
+    </form>
+  </div>
+</section>

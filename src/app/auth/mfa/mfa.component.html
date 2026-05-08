@@ -1,29 +1,35 @@
-<section class="auth-page">
-  <div class="auth-panel">
-    <h1>Multi-factor authentication</h1>
-    <p>Enter the verification code you received by text message or email.</p>
+<div class="d-grid align-items-center justify-content-center min-vh-100 bg-light p-4">
+  <div class="card auth-card">
+    <div class="card-body">
+      <h1 class="card-title mb-2">Multi-factor authentication</h1>
+      <p class="text-muted mb-4">Enter the verification code you received by text message or email.</p>
 
-    <form [formGroup]="form" (ngSubmit)="submit()" class="auth-form">
-      <div class="form-group">
-        <label for="code">Verification code</label>
-        <input
-          id="code"
-          type="text"
-          formControlName="code"
-          placeholder="123456"
-          [class.invalid]="codeControl?.invalid && codeControl?.touched"
-        />
-        <div class="field-error" [class.visible]="codeControl?.invalid && codeControl?.touched">
-          <span *ngIf="codeControl?.errors?.['required']">Code is required.</span>
-          <span *ngIf="codeControl?.errors?.['minlength']">Enter at least 4 digits.</span>
+      <form [formGroup]="form" (ngSubmit)="submit()" class="d-flex flex-column">
+        <div class="mb-3">
+          <label for="code" class="form-label">Verification code</label>
+          <input
+            id="code"
+            type="text"
+            formControlName="code"
+            placeholder="123456"
+            class="form-control"
+            autocomplete="one-time-code"
+            [class.is-invalid]="codeControl?.invalid && codeControl?.touched"
+          />
+          <div class="invalid-feedback" [class.show]="codeControl?.invalid && codeControl?.touched">
+            <span *ngIf="codeControl?.errors?.['required']">Code is required.</span>
+            <span *ngIf="codeControl?.errors?.['minlength']">Enter at least 4 digits.</span>
+          </div>
         </div>
-      </div>
 
-      <button type="submit" class="submit-button" [disabled]="loading() || form.invalid">
-        {{ loading() ? 'Verifying…' : 'Verify code' }}
-      </button>
+        <button type="submit" class="btn btn-dark w-100 mb-3" [disabled]="loading() || form.invalid">
+          {{ loading() ? 'Verifying…' : 'Verify code' }}
+        </button>
 
-      <div class="form-error" *ngIf="error()">{{ error() }}</div>
-    </form>
+        <div class="alert alert-danger mb-0" role="alert" *ngIf="error()">
+          {{ error() }}
+        </div>
+      </form>
+    </div>
   </div>
-</section>
+</div>

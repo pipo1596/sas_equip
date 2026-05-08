@@ -1,66 +1,60 @@
-<section class="auth-page">
-  <div class="auth-panel">
-    <div class="login-header">
-      <div class="logo-container">
-        <img src="/equip-logo.png" alt="eQuip Logo" class="login-logo" />
+<div class="d-grid align-items-center justify-content-center min-vh-100 bg-light p-4">
+  <div class="card auth-card">
+    <div class="card-header bg-dark d-flex justify-content-between align-items-center px-3 py-1">
+      <img src="/equip-logo.png" alt="eQuip Logo" class="auth-logo" />
+      <h1 class="text-white text-end flex-grow-1 ms-3 mb-0 auth-title">Admin Portal</h1>
+    </div>
+    <div class="card-body">
+      <form [formGroup]="form" (ngSubmit)="submit()" class="d-flex flex-column">
+        <div class="mb-0">
+          <div class="invalid-feedback" [class.show]="emailControl?.invalid && emailControl?.touched">
+            <span *ngIf="emailControl?.errors?.['required']">Email is required.</span>
+            <span *ngIf="emailControl?.errors?.['email']">Enter a valid email address.</span>
+          </div>
+          <input
+            id="email"
+            type="email"
+            formControlName="email"
+            placeholder="Email address"
+            class="form-control"
+            autocomplete="email"
+            [class.is-invalid]="emailControl?.invalid && emailControl?.touched"
+          />
+        </div>
+
+        <div class="mb-3">
+           <div class="invalid-feedback" [class.show]="passwordControl?.invalid && passwordControl?.touched">
+            <span>Password is required.</span>
+          </div>
+          <input
+            id="password"
+            type="password"
+            formControlName="password"
+            placeholder="Password"
+            class="form-control"
+            autocomplete="current-password"
+            [class.is-invalid]="passwordControl?.invalid && passwordControl?.touched"
+          />
+         
+        </div>
+
+        <button type="submit" class="btn btn-dark w-100 mb-3" [disabled]="loading() || form.invalid">
+          {{ loading() ? 'Signing in…' : 'Sign in' }}
+        </button>
+
+        <div class="alert alert-danger mb-3" role="alert" *ngIf="error()">
+          {{ error() }}
+        </div>
+      </form>
+
+      <div class="alert alert-info mb-3" role="alert">
+        <p class="mb-0 small mt-1">Access the platform administration dashboard. Manage all tenants and system configuration.</p>
       </div>
-      <div class="title-container">
-        <h1>Administrator Portal</h1>
+
+      <div class="border-top pt-3">
+        <p class="mb-2 small"><strong>Need help?</strong> Contact platform support or system administrators.</p>
+        <p class="mb-0 text-muted tiny">eQuip Portal • Platform Administrator Access</p>
       </div>
     </div>
-    <div class="login-content">
-      
-      
-
-      <form [formGroup]="form" (ngSubmit)="submit()" class="auth-form">
-      <div class="form-group">
-        <label for="email">Email Address</label>
-        <input
-          id="email"
-          type="email"
-          formControlName="email"
-          placeholder="admin@equip.internal"
-          [class.invalid]="emailControl?.invalid && emailControl?.touched"
-        />
-        <div class="field-error" [class.visible]="emailControl?.invalid && emailControl?.touched">
-          <span *ngIf="emailControl?.errors?.['required']">Email is required.</span>
-          <span *ngIf="emailControl?.errors?.['email']">Enter a valid email address.</span>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label for="password">Password</label>
-        <input
-          id="password"
-          type="password"
-          formControlName="password"
-          placeholder="Enter your password"
-          [class.invalid]="passwordControl?.invalid && passwordControl?.touched"
-        />
-        <div class="field-error" [class.visible]="passwordControl?.invalid && passwordControl?.touched">
-          <span>Password is required.</span>
-        </div>
-      </div>
-
-      <button type="submit" class="submit-button" [disabled]="loading() || form.invalid">
-        {{ loading() ? 'Signing in…' : 'Sign in' }}
-      </button>
-
-      <div class="form-error" *ngIf="error()">{{ error() }}</div>
-    </form>
-    
-    <div class="login-footer">
-      <div class="login-info">
-        <div class="info-item">
-          <strong>
-          Access the platform administration dashboard. Manage all tenants and system configuration.
-          </strong>
-          <span>Secure access with MFA verification</span>
-        </div>
-      </div>
-      <p><strong>Need help?</strong> Contact platform support or system administrators.</p>
-      <p class="system-info">eQuip Portal • Platform Administrator Access</p>
-    </div>
   </div>
-  </div>
-</section>
+</div>

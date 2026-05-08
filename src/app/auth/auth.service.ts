@@ -1,4 +1,5 @@
 import { Injectable, computed, signal } from '@angular/core';
+import { environment } from '../../environments/environment';
 
 export interface AuthState {
   authenticated: boolean;
@@ -13,6 +14,9 @@ export interface AuthState {
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly storageKey = 'sas-equip-auth';
+
+  private readonly loginEndpoint =
+    `${environment.apiBaseUrl}${environment.endpoints.login}`;
 
   private readonly state = signal<AuthState>({
     authenticated: false,
@@ -39,20 +43,20 @@ export class AuthService {
 
   async login(email: string, password: string) {
     this.patch({ loading: true, error: null });
-
+    const action = 'LOGIN'
     try {
-      const endpoint = 'https://uw3261.uniformworks.ca/cgi/CGB2LOGIN';
-      const body = new URLSearchParams({
+      const body = {
         email,
         password,
-      });
+        action
+        };
 
-      const response = await fetch(endpoint, {
+      const response = await fetch(this.loginEndpoint, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
+          'Content-Type': 'application/json',
         },
-        body: body.toString(),
+        body: JSON.stringify(body),
         credentials: 'include',
       });
 
@@ -96,14 +100,13 @@ export class AuthService {
     this.patch({ loading: true, error: null });
 
     try {
-      const endpoint = 'https://uw3261.uniformworks.ca/cgi/CGB2LOGIN';
       const body = new URLSearchParams({
         email: this.state().email ?? '',
         code,
         sessionId: this.state().pendingSessionId ?? '',
       });
 
-      const response = await fetch(endpoint, {
+      const response = await fetch(this.loginEndpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -174,7 +177,8 @@ export class AuthService {
   }
 
   private isBrowser(): boolean {
-    return typeof window !== 'undefined' && typeof localStorage !== 'undefined';
+    return typeof window !== 'undefined' &&
+           typeof localStorage !== 'undefined';
   }
 
   private persistState() {
@@ -197,6 +201,7 @@ export class AuthService {
     }
 
     const raw = localStorage.getItem(this.storageKey);
+
     if (!raw) {
       return;
     }

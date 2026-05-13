@@ -94,3 +94,14 @@
 .auth-title {
   font-size: 1.5rem;
 }
+
+.otp-input {
+  flex: 1;
+  min-width: 0;
+  max-width: 4rem;
+  height: 3.5rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  padding: 0;
+  caret-color: transparent;
+}

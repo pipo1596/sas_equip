@@ -1,0 +1,8 @@
+{
+  "/cgi": {
+    "target": "http://10.32.234.145",
+    "secure": false,
+    "changeOrigin": true,
+    "followRedirects": true
+  }
+}

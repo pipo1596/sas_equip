@@ -1,8 +1,19 @@
 import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormBuilder,
+  ReactiveFormsModule,
+  Validators,
+  FormGroup,
+  FormControl,
+} from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../auth.service';
+
+type LoginForm = FormGroup<{
+  email: FormControl<string>;
+  password: FormControl<string>;
+}>;
 
 @Component({
   selector: 'app-login',
@@ -13,24 +24,29 @@ import { AuthService } from '../auth.service';
 export class LoginComponent {
   error = signal<string | null>(null);
   loading = signal(false);
-  form: any;
 
-  constructor(private fb: FormBuilder, private auth: AuthService, private router: Router) {
-    this.form = this.fb.group({
+  form: LoginForm;
+
+  constructor(
+    private fb: FormBuilder,
+    private auth: AuthService,
+    private router: Router
+  ) {
+    this.form = this.fb.nonNullable.group({
       email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required]],
+      password: ['', Validators.required],
     });
   }
 
   get emailControl() {
-    return this.form.get('email');
+    return this.form.controls.email;
   }
 
   get passwordControl() {
-    return this.form.get('password');
+    return this.form.controls.password;
   }
 
-  async submit() {
+  async submit(): Promise<void> {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
@@ -40,8 +56,8 @@ export class LoginComponent {
     this.loading.set(true);
 
     try {
-      const email = this.form.value.email ?? '';
-      const password = this.form.value.password ?? '';
+      const { email, password } = this.form.getRawValue();
+
       await this.auth.login(email, password);
 
       if (this.auth.pendingMfa()) {
@@ -50,7 +66,11 @@ export class LoginComponent {
         await this.router.navigate(['/dashboard']);
       }
     } catch (error: unknown) {
-      this.error.set(error instanceof Error ? error.message : 'Unable to sign in.');
+      this.error.set(
+        error instanceof Error
+          ? error.message
+          : 'Unable to sign in.'
+      );
     } finally {
       this.loading.set(false);
     }

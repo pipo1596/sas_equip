@@ -7,9 +7,13 @@
     <div class="card-body">
       <form [formGroup]="form" (ngSubmit)="submit()" class="d-flex flex-column">
         <div class="mb-0">
-          <div class="invalid-feedback" [class.show]="emailControl?.invalid && emailControl?.touched">
-            <span *ngIf="emailControl?.errors?.['required']">Email is required.</span>
-            <span *ngIf="emailControl?.errors?.['email']">Enter a valid email address.</span>
+          <div class="invalid-feedback ps-1" [class.show]="emailControl.invalid && emailControl.touched">
+            @if (emailControl.errors?.['required']) {
+              <span>Email is required.</span>
+            }
+            @if (emailControl.errors?.['email']) {
+              <span>Enter a valid email address.</span>
+            }
           </div>
           <input
             id="email"
@@ -18,12 +22,12 @@
             placeholder="Email address"
             class="form-control"
             autocomplete="email"
-            [class.is-invalid]="emailControl?.invalid && emailControl?.touched"
+            [class.is-invalid]="emailControl.invalid && emailControl.touched"
           />
         </div>
 
         <div class="mb-3">
-           <div class="invalid-feedback" [class.show]="passwordControl?.invalid && passwordControl?.touched">
+           <div class="invalid-feedback ps-1" [class.show]="passwordControl.invalid && passwordControl.touched">
             <span>Password is required.</span>
           </div>
           <input
@@ -33,7 +37,7 @@
             placeholder="Password"
             class="form-control"
             autocomplete="current-password"
-            [class.is-invalid]="passwordControl?.invalid && passwordControl?.touched"
+            [class.is-invalid]="passwordControl.invalid && passwordControl.touched"
           />
          
         </div>
@@ -41,10 +45,11 @@
         <button type="submit" class="btn btn-dark w-100 mb-3" [disabled]="loading() || form.invalid">
           {{ loading() ? 'Signing in…' : 'Sign in' }}
         </button>
-
-        <div class="alert alert-danger mb-3" role="alert" *ngIf="error()">
-          {{ error() }}
-        </div>
+        @if(error()){
+          <div class="alert alert-danger mb-3" role="alert">
+            {{ error() }}
+          </div>
+        }
       </form>
 
       <div class="alert alert-info mb-3" role="alert">

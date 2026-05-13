@@ -6,10 +6,17 @@ export interface AuthState {
   mfaRequired: boolean;
   pendingSessionId: string | null;
   email: string | null;
+  userid: string | null;
   token: string | null;
   error: string | null;
   loading: boolean;
 }
+
+// Cookies set automatically when running on localhost (dev only).
+// Add any name/value pairs the API expects here.
+const DEV_COOKIES: Record<string, string> = {
+   'SEWEBTCOM': '123456789012345',
+};
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -23,6 +30,7 @@ export class AuthService {
     mfaRequired: false,
     pendingSessionId: null,
     email: null,
+    userid: null,
     token: null,
     error: null,
     loading: false,
@@ -35,6 +43,7 @@ export class AuthService {
 
   constructor() {
     this.restoreState();
+    this.applyDevCookies();
   }
 
   get email() {
@@ -43,7 +52,7 @@ export class AuthService {
 
   async login(email: string, password: string) {
     this.patch({ loading: true, error: null });
-    const action = 'LOGIN'
+    const action = 'LOGIN1';
     try {
       const body = {
         email,
@@ -73,6 +82,7 @@ export class AuthService {
           mfaRequired: true,
           pendingSessionId: payload.sessionId ?? null,
           email,
+          userid: payload.userid ?? null,  
           token: null,
           loading: false,
         });
@@ -84,6 +94,7 @@ export class AuthService {
         mfaRequired: false,
         pendingSessionId: null,
         email,
+        userid: payload.userid ?? null,
         token: payload.token ?? null,
         loading: false,
       });
@@ -100,18 +111,19 @@ export class AuthService {
     this.patch({ loading: true, error: null });
 
     try {
-      const body = new URLSearchParams({
-        email: this.state().email ?? '',
+      
+      const body = {
+        userid: this.state().userid ?? '',
         code,
-        sessionId: this.state().pendingSessionId ?? '',
-      });
+        sessionId: this.state().pendingSessionId ?? ''
+        };
 
       const response = await fetch(this.loginEndpoint, {
-        method: 'POST',
+       method: 'POST',
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
+          'Content-Type': 'application/json',
         },
-        body: body.toString(),
+        body: JSON.stringify(body),
         credentials: 'include',
       });
 
@@ -144,6 +156,7 @@ export class AuthService {
       mfaRequired: false,
       pendingSessionId: null,
       email: null,
+      userid: null,
       token: null,
       error: null,
       loading: false,
@@ -159,6 +172,7 @@ export class AuthService {
   private parseResponse(raw: string) {
     try {
       return JSON.parse(raw) as {
+        userid?: string | null;
         success?: boolean;
         mfaRequired?: boolean;
         sessionId?: string | null;
@@ -167,12 +181,20 @@ export class AuthService {
       };
     } catch {
       return {
+        userid: null,
         success: true,
         mfaRequired: true,
         sessionId: null,
         token: null,
         message: undefined,
       };
+    }
+  }
+
+  private applyDevCookies(): void {
+    if (!this.isBrowser() || window.location.hostname !== 'localhost') return;
+    for (const [name, value] of Object.entries(DEV_COOKIES)) {
+      document.cookie = `${name}=${encodeURIComponent(value)}; SameSite=Lax; Path=/`;
     }
   }
 
@@ -190,6 +212,7 @@ export class AuthService {
       authenticated: this.state().authenticated,
       token: this.state().token,
       email: this.state().email,
+      userid: this.state().userid
     };
 
     localStorage.setItem(this.storageKey, JSON.stringify(payload));
@@ -211,6 +234,7 @@ export class AuthService {
         authenticated?: boolean;
         token?: string | null;
         email?: string | null;
+        userid?: string | null;
       };
 
       if (parsed.authenticated && parsed.token) {
@@ -219,6 +243,7 @@ export class AuthService {
           mfaRequired: false,
           pendingSessionId: null,
           email: parsed.email ?? null,
+          userid: parsed.userid ?? null,
           token: parsed.token,
           error: null,
           loading: false,

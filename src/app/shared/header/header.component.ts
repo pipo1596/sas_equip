@@ -1,17 +1,36 @@
-import { Component } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, ElementRef, HostListener, ViewChild, signal } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../auth/auth.service';
+import { SidebarService } from '../sidebar/sidebar.service';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive],
+  imports: [CommonModule, RouterLink],
   templateUrl: './header.component.html',
 })
 export class HeaderComponent {
-  constructor(private auth: AuthService, private router: Router) {}
+  @ViewChild('userDropdown') userDropdownEl!: ElementRef<HTMLElement>;
+
+  userMenuOpen = signal(false);
+
+  constructor(
+    private auth: AuthService,
+    private router: Router,
+    readonly sidebar: SidebarService,
+  ) {}
+
+  toggleUserMenu() {
+    this.userMenuOpen.update(v => !v);
+  }
+
+  @HostListener('document:click', ['$event'])
+  closeMenus(event: Event) {
+    if (this.userDropdownEl && !this.userDropdownEl.nativeElement.contains(event.target as Node)) {
+      this.userMenuOpen.set(false);
+    }
+  }
 
   async logout() {
     this.auth.logout();

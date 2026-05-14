@@ -115,6 +115,241 @@
   }
 }
 
+/* ── Layout wrapper ─────────────────────────────── */
+.wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.content-wrapper {
+  flex: 1;
+  margin-left: 250px;
+  transition: margin-left 0.3s ease-in-out;
+  padding: 1.5rem;
+}
+
+body.sidebar-closed .content-wrapper {
+  margin-left: 0;
+}
+
+/* ── AdminLTE-style sidebar ─────────────────────── */
+.main-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 250px;
+  background-color: #343a40;
+  z-index: 1035;
+  overflow-y: auto;
+  transition: margin-left 0.3s ease-in-out;
+
+  .brand-link {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #4b545c;
+    color: #fff;
+    text-decoration: none;
+    font-size: 1.1rem;
+    font-weight: 700;
+    white-space: nowrap;
+
+    &:hover { color: #fff; }
+  }
+
+  .brand-image {
+    height: 44px;
+    width: auto;
+    opacity: 0.95;
+  }
+
+  .sidebar { padding: 0 0.5rem; }
+
+  .user-panel {
+    padding: 1rem 0.5rem;
+    border-bottom: 1px solid #4b545c;
+    gap: 0.75rem;
+
+    .user-panel-icon {
+      color: rgba(255,255,255,0.7);
+      font-size: 2rem;
+      line-height: 1;
+    }
+
+    .user-panel-info a {
+      color: #fff;
+      font-weight: 600;
+      text-decoration: none;
+      font-size: 0.9rem;
+
+      &:hover { color: #ced4da; }
+    }
+  }
+
+  .sidebar-nav-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .sidebar-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.6rem 0.75rem;
+    color: rgba(255, 255, 255, 0.75);
+    text-decoration: none;
+    border-radius: 0.25rem;
+    font-size: 0.9rem;
+    transition: background-color 0.15s ease, color 0.15s ease;
+
+    .nav-icon { font-size: 1rem; width: 1.25rem; text-align: center; }
+
+    &:hover {
+      background-color: rgba(255,255,255,0.08);
+      color: #fff;
+    }
+
+    &.active {
+      background-color: #007bff;
+      color: #fff;
+    }
+  }
+}
+
+body.sidebar-closed .main-sidebar {
+  margin-left: -250px;
+}
+
+/* Header and footer shift with sidebar */
+.main-header,
+.main-footer {
+  margin-left: 250px;
+  transition: margin-left 0.3s ease-in-out;
+}
+
+body.sidebar-closed .main-header,
+body.sidebar-closed .main-footer {
+  margin-left: 0;
+}
+
+/* ── AdminLTE-style header ─────────────────────── */
+.main-header {
+  background-color: #343a40;
+  border-bottom: 1px solid #4b545c;
+  z-index: 1040;
+
+  .navbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #fff;
+    padding: 0.25rem 0.75rem;
+    border-right: 1px solid #4b545c;
+    margin-right: 0.5rem;
+
+    &:hover { color: #fff; }
+  }
+
+  .brand-image {
+    height: 28px;
+    width: auto;
+    opacity: 0.9;
+  }
+
+  .brand-text {
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+
+  /* Override Bootstrap collapse: hide by default, show when .show */
+  .navbar-collapse {
+    display: none;
+    width: 100%;
+
+    &.show {
+      display: flex;
+      flex-direction: column;
+      background-color: #343a40;
+      padding: 0.5rem 0;
+    }
+
+    @media (min-width: 992px) {
+      display: flex !important;
+      flex-direction: row;
+      align-items: center;
+      width: auto;
+      padding: 0;
+    }
+  }
+
+  .navbar-toggler {
+    color: rgba(255, 255, 255, 0.8);
+    background: none;
+    cursor: pointer;
+
+    &:hover { color: #fff; }
+  }
+
+  .nav-link {
+    color: rgba(255, 255, 255, 0.8);
+    padding: 0.5rem 0.75rem;
+    transition: color 0.15s ease;
+
+    &:hover,
+    &.active {
+      color: #fff;
+    }
+  }
+
+  .user-toggle {
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .dropdown-menu {
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    min-width: 10rem;
+    /* Bootstrap sets display:none by default; .show overrides */
+  }
+
+  .dropdown-item {
+    font-size: 0.875rem;
+    padding: 0.4rem 1rem;
+  }
+}
+
+/* AdminLTE-style footer */
+.main-footer {
+  background-color: #fff;
+  border-top: 1px solid #dee2e6;
+  color: #495057;
+  font-size: 0.875rem;
+  padding: 0.75rem 1rem;
+
+  a {
+    color: #343a40;
+    text-decoration: none;
+    font-weight: 600;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .float-end {
+    color: #6c757d;
+  }
+}
+
 .otp-input {
   flex: 1;
   min-width: 0;

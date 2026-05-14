@@ -12,12 +12,6 @@ export interface AuthState {
   loading: boolean;
 }
 
-// Cookies set automatically when running on localhost (dev only).
-// Add any name/value pairs the API expects here.
-const DEV_COOKIES: Record<string, string> = {
-   'SEWEBTCOM': '123456789012345',
-};
-
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly storageKey = 'sas-equip-auth';
@@ -43,7 +37,6 @@ export class AuthService {
 
   constructor() {
     this.restoreState();
-    this.applyDevCookies();
   }
 
   get email() {
@@ -109,10 +102,11 @@ export class AuthService {
 
   async verifyMfa(code: string) {
     this.patch({ loading: true, error: null });
-
+    const action = 'MFA1';
     try {
       
       const body = {
+        action,
         userid: this.state().userid ?? '',
         code,
         sessionId: this.state().pendingSessionId ?? ''
@@ -130,7 +124,7 @@ export class AuthService {
       const raw = await response.text();
       const payload = this.parseResponse(raw);
 
-      if (!response.ok || payload.success === false) {
+      if (!response || !response.ok || payload.success !== true) {
         throw new Error(payload.message ?? 'The verification code is invalid.');
       }
 
@@ -182,19 +176,12 @@ export class AuthService {
     } catch {
       return {
         userid: null,
-        success: true,
-        mfaRequired: true,
+        success: false,
+        mfaRequired: false,
         sessionId: null,
         token: null,
         message: undefined,
       };
-    }
-  }
-
-  private applyDevCookies(): void {
-    if (!this.isBrowser() || window.location.hostname !== 'localhost') return;
-    for (const [name, value] of Object.entries(DEV_COOKIES)) {
-      document.cookie = `${name}=${encodeURIComponent(value)}; SameSite=Lax; Path=/`;
     }
   }
 

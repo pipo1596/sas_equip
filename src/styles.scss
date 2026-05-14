@@ -95,6 +95,25 @@
   font-size: 1.5rem;
 }
 
+.password-toggle-btn {
+  border: 1px solid #cbd5e1;
+  border-left: none;
+  background-color: #fff;
+  color: #64748b;
+  padding: 0 0.75rem;
+  line-height: 1;
+
+  &:hover {
+    background-color: #f1f5f9;
+    color: #1a202c;
+  }
+
+  &:focus {
+    box-shadow: none;
+    outline: none;
+  }
+}
+
 .otp-input {
   flex: 1;
   min-width: 0;

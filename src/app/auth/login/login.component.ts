@@ -24,6 +24,11 @@ type LoginForm = FormGroup<{
 export class LoginComponent {
   error = signal<string | null>(null);
   loading = signal(false);
+  showPassword = signal(false);
+
+  togglePassword(): void {
+    this.showPassword.update(v => !v);
+  }
 
   form: LoginForm;
 

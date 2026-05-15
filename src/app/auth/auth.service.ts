@@ -15,6 +15,7 @@ export interface AuthState {
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly storageKey = 'sas-equip-auth';
+  private readonly sessionKey = 'sas-equip-session';
 
   private readonly loginEndpoint =
     `${environment.apiBaseUrl}${environment.endpoints.login}`;
@@ -187,7 +188,8 @@ export class AuthService {
 
   private isBrowser(): boolean {
     return typeof window !== 'undefined' &&
-           typeof localStorage !== 'undefined';
+           typeof localStorage !== 'undefined' &&
+           typeof sessionStorage !== 'undefined';
   }
 
   private persistState() {
@@ -203,10 +205,22 @@ export class AuthService {
     };
 
     localStorage.setItem(this.storageKey, JSON.stringify(payload));
+
+    if (this.state().authenticated) {
+      sessionStorage.setItem(this.sessionKey, '1');
+    } else {
+      sessionStorage.removeItem(this.sessionKey);
+    }
   }
 
   private restoreState() {
     if (!this.isBrowser()) {
+      return;
+    }
+
+    // Session sentinel is set on login and survives F5, but cleared when the
+    // browser closes. Without it, skip restore so closing the browser logs out.
+    if (!sessionStorage.getItem(this.sessionKey)) {
       return;
     }
 

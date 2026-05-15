@@ -1,4 +1,4 @@
-import { Component, ElementRef, QueryList, signal, ViewChildren } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, QueryList, signal, ViewChildren } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -10,7 +10,7 @@ import { AuthService } from '../auth.service';
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './mfa.component.html',
 })
-export class MfaComponent {
+export class MfaComponent implements AfterViewInit {
   @ViewChildren('codeInput') inputs!: QueryList<ElementRef<HTMLInputElement>>;
 
   error = signal<string | null>(null);
@@ -68,6 +68,10 @@ export class MfaComponent {
 
   private control(index: number): AbstractControl {
     return this.form.get(`d${index}`) as AbstractControl;
+  }
+
+  ngAfterViewInit(): void {
+    this.focusInput(0);
   }
 
   private focusInput(index: number): void {

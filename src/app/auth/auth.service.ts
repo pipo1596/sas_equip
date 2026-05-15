@@ -238,14 +238,14 @@ export class AuthService {
         userid?: string | null;
       };
 
-      if (parsed.authenticated && parsed.token) {
+      if (parsed.authenticated) {
         this.state.set({
           authenticated: true,
           mfaRequired: false,
           pendingSessionId: null,
           email: parsed.email ?? null,
           userid: parsed.userid ?? null,
-          token: parsed.token,
+          token: parsed.token ?? null,
           error: null,
           loading: false,
         });

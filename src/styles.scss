@@ -3,6 +3,13 @@
 @import 'bootstrap/dist/css/bootstrap.min.css';
 @import 'bootstrap-icons/font/bootstrap-icons.css';
 
+/* Hide the entire app until the router completes its first navigation.
+   Prevents SSR-rendered protected pages from flashing before the auth
+   guard redirects unauthenticated users. */
+app-root:not(.app-ready) {
+  visibility: hidden;
+}
+
 
 /* Form control overrides */
 .form-control {

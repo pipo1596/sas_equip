@@ -187,7 +187,7 @@ export class AuthService {
 
   private isBrowser(): boolean {
     return typeof window !== 'undefined' &&
-           typeof localStorage !== 'undefined';
+           typeof sessionStorage !== 'undefined';
   }
 
   private persistState() {
@@ -202,7 +202,7 @@ export class AuthService {
       userid: this.state().userid
     };
 
-    localStorage.setItem(this.storageKey, JSON.stringify(payload));
+    sessionStorage.setItem(this.storageKey, JSON.stringify(payload));
   }
 
   private restoreState() {
@@ -210,7 +210,7 @@ export class AuthService {
       return;
     }
 
-    const raw = localStorage.getItem(this.storageKey);
+    const raw = sessionStorage.getItem(this.storageKey);
 
     if (!raw) {
       return;
@@ -237,7 +237,7 @@ export class AuthService {
         });
       }
     } catch {
-      localStorage.removeItem(this.storageKey);
+      sessionStorage.removeItem(this.storageKey);
     }
   }
 }

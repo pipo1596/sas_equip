@@ -7,6 +7,8 @@ export interface AuthState {
   pendingSessionId: string | null;
   email: string | null;
   userid: string | null;
+  firstName: string | null;
+  lastName: string | null;
   token: string | null;
   error: string | null;
   loading: boolean;
@@ -26,6 +28,8 @@ export class AuthService {
     pendingSessionId: null,
     email: null,
     userid: null,
+    firstName: null,
+    lastName: null,
     token: null,
     error: null,
     loading: false,
@@ -35,6 +39,26 @@ export class AuthService {
   readonly pendingMfa = computed(() => this.state().mfaRequired);
   readonly loading = computed(() => this.state().loading);
   readonly errorMessage = computed(() => this.state().error);
+  readonly displayName = computed(() => {
+    const state = this.state();
+    if (state.firstName) {
+      const lastInitial = state.lastName ? ` ${state.lastName[0].toUpperCase()}.` : '';
+      return `${state.firstName}${lastInitial}`;
+    }
+    if (state.email) {
+      return state.email.split('@')[0];
+    }
+    return 'Admin';
+  });
+  readonly initials = computed(() => {
+    const name = this.displayName();
+    return name
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((part) => part[0]?.toUpperCase())
+      .slice(0, 2)
+      .join('');
+  });
 
   constructor() {
     this.restoreState();
@@ -76,7 +100,9 @@ export class AuthService {
           mfaRequired: true,
           pendingSessionId: payload.sessionId ?? null,
           email,
-          userid: payload.userid ?? null,  
+          userid: payload.userid ?? null,
+          firstName: payload.firstName ?? null,
+          lastName: payload.lastName ?? null,
           token: null,
           loading: false,
         });
@@ -89,6 +115,8 @@ export class AuthService {
         pendingSessionId: null,
         email,
         userid: payload.userid ?? null,
+        firstName: payload.firstName ?? null,
+        lastName: payload.lastName ?? null,
         token: payload.token ?? null,
         loading: false,
       });
@@ -133,6 +161,8 @@ export class AuthService {
         authenticated: true,
         mfaRequired: false,
         pendingSessionId: null,
+        firstName: payload.firstName ?? this.state().firstName ?? null,
+        lastName: payload.lastName ?? this.state().lastName ?? null,
         token: payload.token ?? null,
         loading: false,
       });
@@ -152,6 +182,8 @@ export class AuthService {
       pendingSessionId: null,
       email: null,
       userid: null,
+      firstName: null,
+      lastName: null,
       token: null,
       error: null,
       loading: false,
@@ -168,6 +200,8 @@ export class AuthService {
     try {
       return JSON.parse(raw) as {
         userid?: string | null;
+        firstName?: string | null;
+        lastName?: string | null;
         success?: boolean;
         mfaRequired?: boolean;
         sessionId?: string | null;
@@ -177,6 +211,8 @@ export class AuthService {
     } catch {
       return {
         userid: null,
+        firstName: null,
+        lastName: null,
         success: false,
         mfaRequired: false,
         sessionId: null,
@@ -201,7 +237,9 @@ export class AuthService {
       authenticated: this.state().authenticated,
       token: this.state().token,
       email: this.state().email,
-      userid: this.state().userid
+      userid: this.state().userid,
+      firstName: this.state().firstName,
+      lastName: this.state().lastName,
     };
 
     localStorage.setItem(this.storageKey, JSON.stringify(payload));
@@ -232,6 +270,8 @@ export class AuthService {
 
     try {
       const parsed = JSON.parse(raw) as {
+        lastName: null;
+        firstName: null;
         authenticated?: boolean;
         token?: string | null;
         email?: string | null;
@@ -245,6 +285,8 @@ export class AuthService {
           pendingSessionId: null,
           email: parsed.email ?? null,
           userid: parsed.userid ?? null,
+          firstName: parsed.firstName ?? null,
+          lastName: parsed.lastName ?? null,
           token: parsed.token ?? null,
           error: null,
           loading: false,

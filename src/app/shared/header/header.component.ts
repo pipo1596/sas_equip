@@ -15,6 +15,14 @@ export class HeaderComponent {
 
   userMenuOpen = signal(false);
 
+  get displayName() {
+    return this.auth.displayName;
+  }
+
+  get initials() {
+    return this.auth.initials;
+  }
+
   constructor(
     private auth: AuthService,
     private router: Router,

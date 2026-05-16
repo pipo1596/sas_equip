@@ -1,0 +1,192 @@
+<section class="page-shell">
+
+  <div class="page-shell-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div>
+      <button class="btn btn-link text-muted p-0 mb-1 small" (click)="cancel()">
+        <i class="bi bi-arrow-left me-1"></i>Back to Platform Admins
+      </button>
+      <h1 class="page-title">New Platform Admin</h1>
+      <p class="page-subtitle">Create a new platform administrator account.</p>
+    </div>
+  </div>
+
+  @if (error()) {
+    <div class="alert alert-danger d-flex align-items-center gap-2 mb-3" role="alert">
+      <i class="bi bi-exclamation-triangle-fill"></i>
+      <span>{{ error() }}</span>
+      <button type="button" class="btn-close ms-auto" aria-label="Dismiss" (click)="error.set(null)"></button>
+    </div>
+  }
+
+  <div class="card border-0 shadow-sm" style="max-width: 760px;">
+    <div class="card-body p-4">
+      <div class="row g-3">
+
+        <!-- Username -->
+        <div class="col-md-6">
+          <label class="form-label fw-semibold" for="f-username">
+            Username <span class="text-danger">*</span>
+          </label>
+          <input
+            id="f-username"
+            type="text"
+            class="form-control"
+            [(ngModel)]="formData.username"
+            name="username"
+            autocomplete="off"
+            maxlength="100"
+            placeholder="e.g. jsmith"
+          />
+        </div>
+
+        <!-- Email -->
+        <div class="col-md-6">
+          <label class="form-label fw-semibold" for="f-email">
+            Email <span class="text-danger">*</span>
+          </label>
+          <input
+            id="f-email"
+            type="email"
+            class="form-control"
+            [(ngModel)]="formData.emailAddress"
+            name="emailAddress"
+            autocomplete="off"
+            maxlength="200"
+            placeholder="e.g. john.smith@example.com"
+          />
+        </div>
+
+        <!-- First Name -->
+        <div class="col-md-6">
+          <label class="form-label fw-semibold" for="f-first-name">First Name</label>
+          <input
+            id="f-first-name"
+            type="text"
+            class="form-control"
+            [(ngModel)]="formData.firstName"
+            name="firstName"
+            maxlength="100"
+          />
+        </div>
+
+        <!-- Last Name -->
+        <div class="col-md-6">
+          <label class="form-label fw-semibold" for="f-last-name">Last Name</label>
+          <input
+            id="f-last-name"
+            type="text"
+            class="form-control"
+            [(ngModel)]="formData.lastName"
+            name="lastName"
+            maxlength="100"
+          />
+        </div>
+
+        <!-- Phone -->
+        <div class="col-md-6">
+          <label class="form-label fw-semibold" for="f-phone">Phone Number</label>
+          <input
+            id="f-phone"
+            type="tel"
+            class="form-control"
+            [(ngModel)]="formData.phoneNumber"
+            name="phoneNumber"
+            maxlength="25"
+          />
+        </div>
+
+        <!-- Status -->
+        <div class="col-md-6">
+          <label class="form-label fw-semibold" for="f-status">Status</label>
+          <select
+            id="f-status"
+            class="form-select"
+            [(ngModel)]="formData.status"
+            name="status"
+          >
+            <option value="ACTIVE">Active</option>
+            <option value="LOCKED">Locked</option>
+            <option value="DISABLED">Disabled</option>
+          </select>
+        </div>
+
+        <!-- Password -->
+        <div class="col-md-6">
+          <label class="form-label fw-semibold" for="f-password">
+            Password <span class="text-danger">*</span>
+          </label>
+          <input
+            id="f-password"
+            type="password"
+            class="form-control"
+            [(ngModel)]="formData.password"
+            name="password"
+            autocomplete="new-password"
+            maxlength="255"
+          />
+        </div>
+
+        <!-- MFA Enabled -->
+        <div class="col-md-3">
+          <label class="form-label fw-semibold d-block">MFA Enabled</label>
+          <div class="d-flex gap-3 pt-1">
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="radio"
+                id="f-mfa-y"
+                name="mfaEnabled"
+                value="Y"
+                [(ngModel)]="formData.mfaEnabled"
+              />
+              <label class="form-check-label" for="f-mfa-y">Yes</label>
+            </div>
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="radio"
+                id="f-mfa-n"
+                name="mfaEnabled"
+                value="N"
+                [(ngModel)]="formData.mfaEnabled"
+              />
+              <label class="form-check-label" for="f-mfa-n">No</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- MFA Method -->
+        @if (formData.mfaEnabled === 'Y') {
+          <div class="col-md-3">
+            <label class="form-label fw-semibold" for="f-mfa-method">MFA Method</label>
+            <select
+              id="f-mfa-method"
+              class="form-select"
+              [(ngModel)]="formData.mfaMethod"
+              name="mfaMethod"
+            >
+              <option value="EMAIL">Email</option>
+              <option value="SMS">SMS</option>
+            </select>
+          </div>
+        }
+
+      </div><!-- /row -->
+    </div><!-- /card-body -->
+
+    <div class="card-footer bg-transparent d-flex justify-content-end gap-2 p-4 pt-0 border-0">
+      <button type="button" class="btn btn-outline-secondary" (click)="cancel()" [disabled]="saving()">
+        Cancel
+      </button>
+      <button type="button" class="btn btn-dark" (click)="save()" [disabled]="saving()">
+        @if (saving()) {
+          <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+          Saving…
+        } @else {
+          <i class="bi bi-person-plus me-2"></i>Create Admin
+        }
+      </button>
+    </div>
+  </div>
+
+</section>

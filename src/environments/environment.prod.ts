@@ -5,5 +5,6 @@ export const environment = {
 
   endpoints: {
     login: 'APPLOGIN',
+    platformAdmins: 'APPPADMIN',
   },
 };

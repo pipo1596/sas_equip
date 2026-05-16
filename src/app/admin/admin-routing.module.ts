@@ -3,11 +3,13 @@ import { RouterModule, Routes } from '@angular/router';
 
 import { AdminComponent } from './admin/admin.component';
 import { PlatformAdminsComponent } from './platform-admins/platform-admins.component';
+import { PlatformAdminNewComponent } from './platform-admins/platform-admin-new.component';
 import { TenantPartnersComponent } from './tenant-partners/tenant-partners.component';
 
 const routes: Routes = [
   { path: '', component: AdminComponent },
   { path: 'platform-admins', component: PlatformAdminsComponent },
+  { path: 'platform-admins/new', component: PlatformAdminNewComponent },
   { path: 'tenant-partners', component: TenantPartnersComponent },
 ];
 

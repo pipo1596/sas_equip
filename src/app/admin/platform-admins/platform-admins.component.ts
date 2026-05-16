@@ -76,8 +76,8 @@ export class PlatformAdminsComponent implements OnInit {
         pageSize: this.pageSize(),
         search: this.search(),
       });
-      this.admins.set(result.admins);
-      this.total.set(result.total);
+      this.admins.set(result.data);
+      this.total.set(result.pagination.totalRows);
     } catch (err) {
       this.error.set(err instanceof Error ? err.message : 'Failed to load platform admins.');
     } finally {

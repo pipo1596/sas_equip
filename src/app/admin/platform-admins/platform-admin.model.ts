@@ -19,10 +19,12 @@ export interface PlatformAdmin {
 }
 
 export interface PlatformAdminsPage {
-  admins: PlatformAdmin[];
-  total: number;
-  page: number;
-  pageSize: number;
+  data: PlatformAdmin[];
+  pagination: {
+    totalRows: number;
+    page: number;
+    pageSize: number;
+  };  
 }
 
 export interface PlatformAdminForm {

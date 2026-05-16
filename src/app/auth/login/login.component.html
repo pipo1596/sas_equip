@@ -20,7 +20,7 @@
             type="email"
             formControlName="email"
             placeholder="Email address"
-            class="form-control"
+            class="form-control form-control-custom"
             autocomplete="email"
             [class.is-invalid]="emailControl.invalid && emailControl.touched"
           />
@@ -36,7 +36,7 @@
               [type]="showPassword() ? 'text' : 'password'"
               formControlName="password"
               placeholder="Password"
-              class="form-control"
+              class="form-control form-control-custom"
               autocomplete="current-password"
               [class.is-invalid]="passwordControl.invalid && passwordControl.touched"
             />

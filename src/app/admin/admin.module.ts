@@ -6,10 +6,11 @@ import { AdminRoutingModule } from './admin-routing.module';
 import { AdminComponent } from './admin/admin.component';
 import { PlatformAdminsComponent } from './platform-admins/platform-admins.component';
 import { PlatformAdminNewComponent } from './platform-admins/platform-admin-new.component';
+import { PlatformAdminEditComponent } from './platform-admins/platform-admin-edit.component';
 import { TenantPartnersComponent } from './tenant-partners/tenant-partners.component';
 
 @NgModule({
   imports: [CommonModule, RouterModule, FormsModule, AdminRoutingModule],
-  declarations: [AdminComponent, PlatformAdminsComponent, PlatformAdminNewComponent, TenantPartnersComponent],
+  declarations: [AdminComponent, PlatformAdminsComponent, PlatformAdminNewComponent, PlatformAdminEditComponent, TenantPartnersComponent],
 })
 export class AdminModule {}

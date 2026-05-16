@@ -27,7 +27,7 @@ export class AdminComponent {
       description: 'Manage tenant partner organisations and their access.',
       icon: 'bi-building-fill-lock',
       route: 'tenant-partners',
-      color: '#007bff',
+      color: '#15987c',
     },
   ];
 }

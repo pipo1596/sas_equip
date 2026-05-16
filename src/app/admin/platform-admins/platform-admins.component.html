@@ -83,11 +83,8 @@
           <tr>
             <td colspan="7" class="text-center py-4 text-muted">
               <i class="bi bi-people me-2"></i>
-              @if (search()) {
-                No admins match your search.
-              } @else {
-                No platform admins found.
-              }
+              @if (search()) { No admins match your search. }
+              @else { No platform admins found. }
             </td>
           </tr>
         } @else {
@@ -115,7 +112,7 @@
                 <button
                   class="btn btn-sm btn-outline-secondary me-1"
                   title="Edit"
-                  (click)="openEditModal(admin)"
+                  (click)="editAdmin(admin)"
                 >
                   <i class="bi bi-pencil"></i>
                 </button>
@@ -135,168 +132,63 @@
   </div>
 
   <!-- Pagination footer -->
-  @if (!loading() && total() > 0) {
+  @if (!loading() && totalPages() > 1) {
     <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mt-3">
       <p class="small text-muted mb-0">
-        Showing {{ startRecord() }}–{{ endRecord() }} of {{ total() }} admins
+        {{ startRecord() }}–{{ endRecord() }} of {{ total() }} admins
       </p>
 
-      <nav aria-label="Platform admins pagination">
-        <ul class="pagination pagination-sm mb-0">
-          <li class="page-item" [class.disabled]="page() === 1">
-            <button class="page-link" (click)="goToPage(1)" aria-label="First">
-              <i class="bi bi-chevron-double-left"></i>
-            </button>
-          </li>
-          <li class="page-item" [class.disabled]="page() === 1">
-            <button class="page-link" (click)="goToPage(page() - 1)" aria-label="Previous">
-              <i class="bi bi-chevron-left"></i>
-            </button>
-          </li>
+      <div class="d-flex align-items-center gap-1">
+        <!-- First / Prev — hidden on first page -->
+        @if (page() > 1) {
+          <button
+            class="btn btn-sm btn-outline-secondary"
+            (click)="goToPage(1)"
+            title="First page"
+          >
+            <i class="bi bi-chevron-double-left"></i>
+          </button>
+          <button
+            class="btn btn-sm btn-outline-secondary"
+            (click)="goToPage(page() - 1)"
+            title="Previous page"
+          >
+            <i class="bi bi-chevron-left"></i>
+          </button>
+        }
 
-          @for (p of pageWindow(); track p) {
-            <li class="page-item" [class.active]="p === page()">
-              <button class="page-link" (click)="goToPage(p)">{{ p }}</button>
-            </li>
-          }
+        <!-- Page number pills -->
+        @for (p of pageWindow(); track p) {
+          <button
+            class="btn btn-sm"
+            [class.btn-dark]="p === page()"
+            [class.btn-outline-secondary]="p !== page()"
+            (click)="goToPage(p)"
+          >{{ p }}</button>
+        }
 
-          <li class="page-item" [class.disabled]="page() === totalPages()">
-            <button class="page-link" (click)="goToPage(page() + 1)" aria-label="Next">
-              <i class="bi bi-chevron-right"></i>
-            </button>
-          </li>
-          <li class="page-item" [class.disabled]="page() === totalPages()">
-            <button class="page-link" (click)="goToPage(totalPages())" aria-label="Last">
-              <i class="bi bi-chevron-double-right"></i>
-            </button>
-          </li>
-        </ul>
-      </nav>
+        <!-- Next / Last — hidden on last page -->
+        @if (page() < totalPages()) {
+          <button
+            class="btn btn-sm btn-outline-secondary"
+            (click)="goToPage(page() + 1)"
+            title="Next page"
+          >
+            <i class="bi bi-chevron-right"></i>
+          </button>
+          <button
+            class="btn btn-sm btn-outline-secondary"
+            (click)="goToPage(totalPages())"
+            title="Last page"
+          >
+            <i class="bi bi-chevron-double-right"></i>
+          </button>
+        }
+      </div>
     </div>
   }
 
 </section>
-
-<!-- ── Edit Modal ──────────────────────────────────────────────────────── -->
-@if (showEditModal()) {
-  <div class="modal-backdrop fade show"></div>
-  <div class="modal d-block" tabindex="-1" role="dialog" aria-modal="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-      <div class="modal-content">
-
-        <div class="modal-header">
-          <h5 class="modal-title">
-            <i class="bi bi-pencil-square me-2"></i>Edit Platform Admin
-          </h5>
-          <button type="button" class="btn-close" aria-label="Close" (click)="closeEditModal()"></button>
-        </div>
-
-        <div class="modal-body">
-
-          @if (modalError()) {
-            <div class="alert alert-danger d-flex align-items-center gap-2 py-2" role="alert">
-              <i class="bi bi-exclamation-triangle-fill"></i>
-              <span>{{ modalError() }}</span>
-            </div>
-          }
-
-          <div class="row g-3">
-
-            <div class="col-md-6">
-              <label class="form-label fw-semibold" for="e-username">Username <span class="text-danger">*</span></label>
-              <input id="e-username" type="text" class="form-control" [(ngModel)]="formData.username"
-                name="username" autocomplete="off" maxlength="100" />
-            </div>
-
-            <div class="col-md-6">
-              <label class="form-label fw-semibold" for="e-email">Email <span class="text-danger">*</span></label>
-              <input id="e-email" type="email" class="form-control" [(ngModel)]="formData.emailAddress"
-                name="emailAddress" autocomplete="off" maxlength="200" />
-            </div>
-
-            <div class="col-md-6">
-              <label class="form-label fw-semibold" for="e-first-name">First Name</label>
-              <input id="e-first-name" type="text" class="form-control" [(ngModel)]="formData.firstName"
-                name="firstName" maxlength="100" />
-            </div>
-
-            <div class="col-md-6">
-              <label class="form-label fw-semibold" for="e-last-name">Last Name</label>
-              <input id="e-last-name" type="text" class="form-control" [(ngModel)]="formData.lastName"
-                name="lastName" maxlength="100" />
-            </div>
-
-            <div class="col-md-6">
-              <label class="form-label fw-semibold" for="e-phone">Phone Number</label>
-              <input id="e-phone" type="tel" class="form-control" [(ngModel)]="formData.phoneNumber"
-                name="phoneNumber" maxlength="25" />
-            </div>
-
-            <div class="col-md-6">
-              <label class="form-label fw-semibold" for="e-status">Status</label>
-              <select id="e-status" class="form-select" [(ngModel)]="formData.status" name="status">
-                <option value="ACTIVE">Active</option>
-                <option value="LOCKED">Locked</option>
-                <option value="DISABLED">Disabled</option>
-              </select>
-            </div>
-
-            <div class="col-md-6">
-              <label class="form-label fw-semibold" for="e-password">
-                Password
-                <span class="text-muted fw-normal small">(leave blank to keep current)</span>
-              </label>
-              <input id="e-password" type="password" class="form-control" [(ngModel)]="formData.password"
-                name="password" autocomplete="new-password" maxlength="255" />
-            </div>
-
-            <div class="col-md-3">
-              <label class="form-label fw-semibold d-block">MFA Enabled</label>
-              <div class="d-flex gap-3 pt-1">
-                <div class="form-check">
-                  <input class="form-check-input" type="radio" id="e-mfa-y" name="mfaEnabled"
-                    value="Y" [(ngModel)]="formData.mfaEnabled" />
-                  <label class="form-check-label" for="e-mfa-y">Yes</label>
-                </div>
-                <div class="form-check">
-                  <input class="form-check-input" type="radio" id="e-mfa-n" name="mfaEnabled"
-                    value="N" [(ngModel)]="formData.mfaEnabled" />
-                  <label class="form-check-label" for="e-mfa-n">No</label>
-                </div>
-              </div>
-            </div>
-
-            @if (formData.mfaEnabled === 'Y') {
-              <div class="col-md-3">
-                <label class="form-label fw-semibold" for="e-mfa-method">MFA Method</label>
-                <select id="e-mfa-method" class="form-select" [(ngModel)]="formData.mfaMethod" name="mfaMethod">
-                  <option value="EMAIL">Email</option>
-                  <option value="SMS">SMS</option>
-                </select>
-              </div>
-            }
-
-          </div>
-        </div>
-
-        <div class="modal-footer">
-          <button type="button" class="btn btn-outline-secondary" (click)="closeEditModal()" [disabled]="saving()">
-            Cancel
-          </button>
-          <button type="button" class="btn btn-dark" (click)="saveEdit()" [disabled]="saving()">
-            @if (saving()) {
-              <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-              Saving…
-            } @else {
-              <i class="bi bi-check-lg me-2"></i>Save Changes
-            }
-          </button>
-        </div>
-
-      </div>
-    </div>
-  </div>
-}
 
 <!-- ── Delete Confirmation Modal ──────────────────────────────────────── -->
 @if (showDeleteModal()) {

@@ -1,18 +1,7 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Router } from '@angular/router';
 import { PlatformAdminsService } from './platform-admins.service';
-import { PlatformAdmin, PlatformAdminForm } from './platform-admin.model';
-
-const EMPTY_EDIT_FORM: PlatformAdminForm = {
-  username: '',
-  emailAddress: '',
-  phoneNumber: '',
-  firstName: '',
-  lastName: '',
-  status: 'ACTIVE',
-  mfaEnabled: 'Y',
-  mfaMethod: 'EMAIL',
-  password: '',
-};
+import { PlatformAdmin } from './platform-admin.model';
 
 @Component({
   selector: 'app-platform-admins',
@@ -21,6 +10,7 @@ const EMPTY_EDIT_FORM: PlatformAdminForm = {
 })
 export class PlatformAdminsComponent implements OnInit {
   private readonly service = inject(PlatformAdminsService);
+  private readonly router = inject(Router);
 
   readonly admins = signal<PlatformAdmin[]>([]);
   readonly total = signal(0);
@@ -30,18 +20,10 @@ export class PlatformAdminsComponent implements OnInit {
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
 
-  // Edit modal state
-  readonly showEditModal = signal(false);
-  readonly saving = signal(false);
-  readonly modalError = signal<string | null>(null);
-  readonly editingId = signal<number | null>(null);
-
   // Delete modal state
   readonly showDeleteModal = signal(false);
   readonly deleting = signal(false);
   readonly deleteTarget = signal<PlatformAdmin | null>(null);
-
-  formData: PlatformAdminForm = { ...EMPTY_EDIT_FORM };
 
   readonly totalPages = computed(() => Math.max(1, Math.ceil(this.total() / this.pageSize())));
 
@@ -106,41 +88,10 @@ export class PlatformAdminsComponent implements OnInit {
     this.loadAdmins();
   }
 
-  openEditModal(admin: PlatformAdmin): void {
-    this.formData = {
-      username: admin.username,
-      emailAddress: admin.emailAddress,
-      phoneNumber: admin.phoneNumber ?? '',
-      firstName: admin.firstName ?? '',
-      lastName: admin.lastName ?? '',
-      status: admin.status,
-      mfaEnabled: admin.mfaEnabled,
-      mfaMethod: admin.mfaMethod ?? 'EMAIL',
-      password: '',
-    };
-    this.editingId.set(admin.padminId);
-    this.modalError.set(null);
-    this.showEditModal.set(true);
-  }
-
-  closeEditModal(): void {
-    this.showEditModal.set(false);
-  }
-
-  async saveEdit(): Promise<void> {
-    const id = this.editingId();
-    if (id == null) return;
-    this.saving.set(true);
-    this.modalError.set(null);
-    try {
-      await this.service.update(id, this.formData);
-      this.showEditModal.set(false);
-      await this.loadAdmins();
-    } catch (err) {
-      this.modalError.set(err instanceof Error ? err.message : 'Save failed. Please try again.');
-    } finally {
-      this.saving.set(false);
-    }
+  editAdmin(admin: PlatformAdmin): void {
+    this.router.navigate(['/admin/platform-admins', admin.padminId, 'edit'], {
+      state: { admin },
+    });
   }
 
   openDeleteModal(admin: PlatformAdmin): void {

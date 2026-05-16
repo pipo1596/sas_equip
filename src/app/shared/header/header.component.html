@@ -8,20 +8,23 @@
         <i class="bi bi-list fs-4"></i>
       </button>
     </li>
-    <li class="nav-item d-none d-md-block">
-          <a class="nav-link" routerLink="/dashboard" routerLinkActive="active">
-            Dashboard
-          </a>
-        </li>
-    <li class="nav-item d-none d-md-block">
-      <a class="nav-link" routerLink="/reports" routerLinkActive="active">
-        Reports
-      </a>
+  </ul>
+
+  <!-- Logo: mobile only — sidebar carries it on larger screens -->
+  <a class="navbar-brand d-flex d-lg-none align-items-center ms-1 me-auto" routerLink="/dashboard">
+    <img src="/equip-logo.png" alt="eQuip" class="brand-image" />
+  </a>
+
+  <!-- Left nav links (desktop) -->
+  <ul class="navbar-nav d-none d-lg-flex">
+    <li class="nav-item">
+      <a class="nav-link" routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
     </li>
-    <li class="nav-item d-none d-md-block">
-      <a class="nav-link" routerLink="/settings" routerLinkActive="active">
-        Settings
-      </a>
+    <li class="nav-item">
+      <a class="nav-link" routerLink="/reports" routerLinkActive="active">Reports</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" routerLink="/settings" routerLinkActive="active">Settings</a>
     </li>
   </ul>
 

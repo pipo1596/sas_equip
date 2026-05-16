@@ -13,14 +13,18 @@ import { SidebarService } from '../shared/sidebar/sidebar.service';
   templateUrl: './shell.component.html',
 })
 export class ShellComponent {
+  protected readonly sidebar = inject(SidebarService);
+
   constructor() {
-    const sidebar = inject(SidebarService);
     const doc = inject(DOCUMENT);
     const platformId = inject(PLATFORM_ID);
 
     if (isPlatformBrowser(platformId)) {
+      // Start closed on mobile (< 992px), open on desktop
+      this.sidebar.open.set(window.innerWidth >= 992);
+
       effect(() => {
-        doc.body.classList.toggle('sidebar-closed', !sidebar.open());
+        doc.body.classList.toggle('sidebar-closed', !this.sidebar.open());
       });
     }
   }

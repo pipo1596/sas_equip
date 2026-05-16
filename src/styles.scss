@@ -308,6 +308,37 @@ body.sidebar-closed .main-footer {
   margin-left: 0;
 }
 
+/* ── Mobile: sidebar overlays instead of pushing ── */
+@media (max-width: 991.98px) {
+  /* Content and header never shift — sidebar floats above */
+  .main-header,
+  .main-footer,
+  .content-wrapper {
+    margin-left: 0 !important;
+    transition: none !important;
+  }
+
+  /* Raise sidebar above content on mobile */
+  .main-sidebar {
+    z-index: 1050;
+  }
+
+  /* Show backdrop when sidebar is open on mobile */
+  body:not(.sidebar-closed) .sidebar-backdrop {
+    display: block;
+  }
+}
+
+/* Backdrop: hidden on desktop, shown on mobile when sidebar is open */
+.sidebar-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 1049;
+  cursor: pointer;
+}
+
 /* ── AdminLTE-style header ─────────────────────── */
 .main-header {
   background-color: #343a40;

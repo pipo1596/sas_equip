@@ -1,0 +1,23 @@
+<section class="page-shell">
+  <div class="page-shell-header">
+    <h1 class="page-title">Administration</h1>
+    <p class="page-subtitle">Select a maintenance area to manage.</p>
+  </div>
+
+  <div class="admin-card-grid">
+    @for (card of cards; track card.route) {
+      <a class="admin-card" [routerLink]="card.route" [style.border-left-color]="card.color">
+        <div class="admin-card-icon" [style.color]="card.color">
+          <i class="bi {{ card.icon }}"></i>
+        </div>
+        <div class="admin-card-body">
+          <h2 class="admin-card-title">{{ card.title }}</h2>
+          <p class="admin-card-desc">{{ card.description }}</p>
+        </div>
+        <div class="admin-card-arrow" [style.color]="card.color">
+          <i class="bi bi-chevron-right"></i>
+        </div>
+      </a>
+    }
+  </div>
+</section>

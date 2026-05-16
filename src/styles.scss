@@ -156,7 +156,7 @@ body.sidebar-closed .content-wrapper {
     display: flex;
     align-items: center;
     gap: 0.6rem;
-    padding: 0.75rem 1rem;
+    padding: 0.63rem 1rem;
     border-bottom: 1px solid #4b545c;
     color: #fff;
     text-decoration: none;
@@ -222,6 +222,70 @@ body.sidebar-closed .content-wrapper {
 
     &.active {
       background-color: #007bff;
+      color: #fff;
+    }
+  }
+
+  .sidebar-nav-group {
+    display: flex;
+    align-items: stretch;
+  }
+
+  .sidebar-nav-main {
+    flex: 1;
+  }
+
+  .sidebar-chevron-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+    border-radius: 0.25rem;
+    cursor: pointer;
+    font-size: 0.75rem;
+    transition: background-color 0.15s ease, color 0.15s ease;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.08);
+      color: #fff;
+    }
+  }
+
+  .sidebar-sub-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.25s ease;
+
+    &.open { max-height: 500px; }
+  }
+
+  .sidebar-sub-link {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem 0.75rem 0.5rem 2.5rem;
+    color: rgba(255, 255, 255, 0.6);
+    text-decoration: none;
+    border-radius: 0.25rem;
+    font-size: 0.85rem;
+    transition: background-color 0.15s ease, color 0.15s ease;
+
+    .nav-icon { font-size: 0.9rem; width: 1.25rem; text-align: center; }
+
+    &:hover {
+      background-color: rgba(255,255,255,0.08);
+      color: #fff;
+    }
+
+    &.active {
+      background-color: rgba(0, 123, 255, 0.5);
       color: #fff;
     }
   }
@@ -361,6 +425,98 @@ body.sidebar-closed .main-footer {
 
   .float-end {
     color: #6c757d;
+  }
+}
+
+/* ── Page shell ─────────────────────────────────── */
+.page-shell {
+  padding: 0.5rem 0;
+}
+
+.page-shell-header {
+  margin-bottom: 2rem;
+}
+
+.page-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1a202c;
+  margin: 0 0 0.25rem;
+}
+
+.page-subtitle {
+  color: #6c757d;
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+/* ── Admin maintenance card grid ────────────────── */
+.admin-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 0.875rem;
+  max-width: 900px;
+}
+
+.admin-card {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1.25rem 1.25rem 1.25rem 1.5rem;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-left: 4px solid #007bff;
+  border-radius: 0.5rem;
+  text-decoration: none;
+  color: #1a202c;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+
+  &:hover {
+    box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+    transform: translateX(3px);
+    color: #1a202c;
+  }
+}
+
+.admin-card-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 0.4rem;
+  background-color: #f0f6ff;
+  font-size: 1.35rem;
+  flex-shrink: 0;
+}
+
+.admin-card-body {
+  flex: 1;
+}
+
+.admin-card-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0 0 0.2rem;
+}
+
+.admin-card-desc {
+  font-size: 0.8rem;
+  color: #6c757d;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.admin-card-arrow {
+  font-size: 0.85rem;
+  opacity: 0.5;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  flex-shrink: 0;
+
+  .admin-card:hover & {
+    opacity: 1;
+    transform: translateX(3px);
   }
 }
 

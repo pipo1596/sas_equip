@@ -7,39 +7,68 @@
 
   <div class="sidebar">
 
-    <!-- User panel -->
-    <div class="user-panel d-flex align-items-center">
-      <div class="user-panel-icon">
-        <i class="bi bi-person-circle"></i>
-      </div>
-      <div class="user-panel-info">
-        <a href="#" class="d-block">Platform Admins</a>
-      </div>
-    </div>
-
     <!-- Nav links -->
     <nav class="mt-3">
       <ul class="sidebar-nav-list">
+
+        <!-- Administration (collapsible) -->
+        <li class="nav-item">
+          <div class="sidebar-nav-group">
+            <a class="sidebar-nav-link sidebar-nav-main" routerLink="/admin" routerLinkActive="active"
+               [routerLinkActiveOptions]="{ exact: true }">
+              <i class="bi bi-shield-lock nav-icon"></i>
+              <span>Administration</span>
+            </a>
+            <button class="sidebar-chevron-btn" (click)="toggleAdmin()" type="button">
+              <i class="bi" [class.bi-chevron-down]="!adminOpen()" [class.bi-chevron-up]="adminOpen()"></i>
+            </button>
+          </div>
+          <ul class="sidebar-sub-list" [class.open]="adminOpen()">
+            <li>
+              <a class="sidebar-sub-link" routerLink="/admin/platform-admins" routerLinkActive="active">
+                <i class="bi bi-people nav-icon"></i>
+                <span>Platform Admins</span>
+              </a>
+            </li>
+            <li>
+              <a class="sidebar-sub-link" routerLink="/admin/tenant-partners" routerLinkActive="active">
+                <i class="bi bi-building-fill-lock nav-icon"></i>
+                <span>Tenant Partners</span>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+      </ul>
+
+      <hr class="sidebar-divider border-light" />
+
+      <ul class="sidebar-nav-list">
+
         <li class="nav-item">
           <a class="sidebar-nav-link" routerLink="/dashboard" routerLinkActive="active">
             <i class="bi bi-speedometer2 nav-icon"></i>
             <span>Dashboard</span>
           </a>
         </li>
+
         <li class="nav-item">
           <a class="sidebar-nav-link" routerLink="/reports" routerLinkActive="active">
             <i class="bi bi-bar-chart-line nav-icon"></i>
             <span>Reports</span>
           </a>
         </li>
+
         <li class="nav-item">
           <a class="sidebar-nav-link" routerLink="/settings" routerLinkActive="active">
             <i class="bi bi-gear nav-icon"></i>
             <span>Settings</span>
           </a>
         </li>
+
       </ul>
     </nav>
+
 
   </div>
 </aside>

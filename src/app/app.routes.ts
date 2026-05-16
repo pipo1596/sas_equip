@@ -15,7 +15,7 @@ export const routes: Routes = [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       {
         path: 'dashboard',
-        loadChildren: () => import('./dashboard/dashboard.module').then((m) => m.DashboardModule),
+        loadComponent: () => import('./dashboard/dashboard/dashboard.component').then((m) => m.DashboardComponent),
       },
       {
         path: 'reports',
@@ -24,6 +24,10 @@ export const routes: Routes = [
       {
         path: 'settings',
         loadChildren: () => import('./settings/settings.module').then((m) => m.SettingsModule),
+      },
+      {
+        path: 'admin',
+        loadChildren: () => import('./admin/admin.module').then((m) => m.AdminModule),
       },
       { path: '**', redirectTo: 'dashboard' },
     ],

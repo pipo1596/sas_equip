@@ -32,7 +32,7 @@ export class PlatformAdminFormComponent implements OnInit {
     lastName: '',
     status: 'ACTIVE',
     mfaEnabled: 'Y',
-    mfaMethod: 'EMAIL',
+    mfaMethod: 'SMS',
     password: '',
   };
 

@@ -5,6 +5,7 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
+    "build:ssr": "ng build --configuration=node-ssr,production",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "serve:ssr:sas-equip": "node dist/sas-equip/server/server.mjs"

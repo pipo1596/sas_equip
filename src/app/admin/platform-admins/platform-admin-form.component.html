@@ -71,15 +71,15 @@
                 name="emailAddress"
                 #emailAddress="ngModel"
                 required
-                email
                 autocomplete="off"
                 maxlength="200"
                 placeholder="e.g. john.smith@example.com"
-                [class.is-invalid]="emailAddress.invalid && emailAddress.touched"
+                (blur)="emailTouched.set(true)"
+                [class.is-invalid]="emailTouched() && (emailAddress.errors?.['required'] || emailError())"
               />
-              <div class="invalid-feedback" [class.show]="emailAddress.invalid && emailAddress.touched">
+              <div class="invalid-feedback" [class.show]="emailTouched() && (emailAddress.errors?.['required'] || emailError())">
                 @if (emailAddress.errors?.['required']) { Email is required. }
-                @else if (emailAddress.errors?.['email']) { Enter a valid email address. }
+                @else if (emailError()) { Enter a valid email address. }
               </div>
             </div>
 

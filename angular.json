@@ -27,19 +27,14 @@
               {
                 "glob": "**/*",
                 "input": "public"
+              },
+              {
+                "glob": ".htaccess",
+                "input": "public"
               }
             ],
             "styles": ["src/styles.scss"],
-            "scripts": ["node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"],
-            "server": "src/main.server.ts",
-            "outputMode": "server",
-            "prerender": false,
-            "security": {
-              "allowedHosts": []
-            },
-            "ssr": {
-              "entry": "src/server.ts"
-            }
+            "scripts": ["node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"]
           },
           "configurations": {
             "production": {
@@ -61,6 +56,13 @@
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true
+            },
+            "node-ssr": {
+              "server": "src/main.server.ts",
+              "outputMode": "server",
+              "ssr": {
+                "entry": "src/server.ts"
+              }
             }
           },
           "defaultConfiguration": "production"

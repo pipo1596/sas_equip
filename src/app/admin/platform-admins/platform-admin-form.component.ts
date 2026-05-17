@@ -20,6 +20,8 @@ export class PlatformAdminFormComponent implements OnInit {
   readonly error = signal<string | null>(null);
   readonly notFound = signal(false);
   readonly showPassword = signal(false);
+  readonly emailTouched = signal(false);
+  readonly emailError = signal(false);
 
   isEdit = false;
   padminId: number | null = null;
@@ -84,8 +86,15 @@ export class PlatformAdminFormComponent implements OnInit {
     this.router.navigate(['/admin/platform-admins']);
   }
 
+  private validateEmail(email: string): boolean {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }
+
   async save(): Promise<void> {
-    if (this.adminForm.invalid) {
+    this.emailTouched.set(true);
+    this.emailError.set(!this.validateEmail(this.formData.emailAddress));
+
+    if (this.adminForm.invalid || this.emailError()) {
       this.adminForm.form.markAllAsTouched();
       return;
     }

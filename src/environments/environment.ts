@@ -4,7 +4,7 @@ export const environment = {
   apiBaseUrl: '/cgi/APPSEDSPCH?SEPGM=',
 
   endpoints: {
-    login: 'APPLOGIN',
-    platformAdmins: 'APPPADMIN',
+    login: 'APILOGIN',
+    platformAdmins: 'APIPADMIN',
   },
 };

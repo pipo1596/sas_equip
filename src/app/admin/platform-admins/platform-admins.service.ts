@@ -11,7 +11,7 @@ export class PlatformAdminsService {
     const response = await fetch(this.endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'LIST', ...params }),
+      body: JSON.stringify({ action: '*LIST', ...params }),
       credentials: 'include',
     });
     const data = await this.parseJson(response);
@@ -25,7 +25,7 @@ export class PlatformAdminsService {
     const response = await fetch(this.endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'CREATE', ...form }),
+      body: JSON.stringify({ action: '*CREATE', ...form }),
       credentials: 'include',
     });
     const data = await this.parseJson(response);
@@ -38,7 +38,7 @@ export class PlatformAdminsService {
     const response = await fetch(this.endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'UPDATE', padminId, ...form }),
+      body: JSON.stringify({ action: '*UPDATE', padminId, ...form }),
       credentials: 'include',
     });
     const data = await this.parseJson(response);
@@ -51,7 +51,7 @@ export class PlatformAdminsService {
     const response = await fetch(this.endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'DELETE', padminId }),
+      body: JSON.stringify({ action: '*DELETE', padminId }),
       credentials: 'include',
     });
     const data = await this.parseJson(response);

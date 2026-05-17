@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, ViewChild, inject, signal } from '@angular/core';
+import { NgForm } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PlatformAdminsService } from './platform-admins.service';
 import { PlatformAdmin, PlatformAdminForm } from './platform-admin.model';
@@ -9,6 +10,8 @@ import { PlatformAdmin, PlatformAdminForm } from './platform-admin.model';
   standalone: false,
 })
 export class PlatformAdminFormComponent implements OnInit {
+  @ViewChild('adminForm') adminForm!: NgForm;
+
   private readonly service = inject(PlatformAdminsService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
@@ -17,10 +20,6 @@ export class PlatformAdminFormComponent implements OnInit {
   readonly error = signal<string | null>(null);
   readonly notFound = signal(false);
   readonly showPassword = signal(false);
-
-  togglePassword(): void {
-    this.showPassword.update(v => !v);
-  }
 
   isEdit = false;
   padminId: number | null = null;
@@ -37,9 +36,27 @@ export class PlatformAdminFormComponent implements OnInit {
     password: '',
   };
 
+  togglePassword(): void {
+    this.showPassword.update(v => !v);
+  }
+
+  formatPhone(value: string): string {
+    const digits = value.replace(/\D/g, '').slice(0, 10);
+    if (digits.length > 6) {
+      return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+    }
+    if (digits.length > 3) {
+      return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+    }
+    if (digits.length > 0) {
+      return `(${digits}`;
+    }
+    return '';
+  }
+
   ngOnInit(): void {
     const idParam = this.route.snapshot.paramMap.get('id');
-    if (!idParam) return; // new mode
+    if (!idParam) return;
 
     this.isEdit = true;
     this.padminId = Number(idParam);
@@ -52,9 +69,9 @@ export class PlatformAdminFormComponent implements OnInit {
 
     this.formData = {
       username: admin.username,
-      emailAddress: admin.emailAddress,
-      phoneNumber: admin.phoneNumber ?? '',
-      firstName: admin.firstName ?? '',
+      emailAddress: admin.emailAddress?.trim(),
+      phoneNumber: admin.phoneNumber?.trim() ?? '',
+      firstName: admin.firstName?.trim() ?? '',
       lastName: admin.lastName ?? '',
       status: admin.status,
       mfaEnabled: admin.mfaEnabled,
@@ -68,6 +85,11 @@ export class PlatformAdminFormComponent implements OnInit {
   }
 
   async save(): Promise<void> {
+    if (this.adminForm.invalid) {
+      this.adminForm.form.markAllAsTouched();
+      return;
+    }
+
     this.saving.set(true);
     this.error.set(null);
     try {

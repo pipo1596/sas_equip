@@ -463,6 +463,61 @@ body.sidebar-closed .main-footer {
   }
 }
 
+/* ── Stacked responsive table ───────────────────── */
+@media (max-width: 767.98px) {
+  .table-stacked {
+    thead {
+      display: none;
+    }
+
+    /* Data rows become cards */
+    tbody tr:has(td[data-label]) {
+      display: block;
+      border: 1px solid #dee2e6;
+      border-radius: 0.375rem;
+      margin-bottom: 0.75rem;
+      padding: 0.25rem 0;
+      background: #fff;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    }
+
+    /* Each labelled cell: label left, value right */
+    tbody td[data-label] {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.45rem 0.75rem;
+      border: none;
+      border-bottom: 1px solid #f3f4f6;
+      font-size: 0.875rem;
+
+      &:last-of-type {
+        border-bottom: none;
+      }
+
+      &::before {
+        content: attr(data-label);
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: #6c757d;
+        flex-shrink: 0;
+        margin-right: 1rem;
+        white-space: nowrap;
+      }
+    }
+
+    /* Actions cell: no label, buttons flush right */
+    tbody td:not([data-label]):not([colspan]) {
+      display: flex;
+      justify-content: flex-end;
+      padding: 0.5rem 0.75rem;
+      border: none;
+    }
+  }
+}
+
 /* ── Page shell ─────────────────────────────────── */
 .page-shell {
   padding: 0.5rem 0;

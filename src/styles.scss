@@ -12,11 +12,14 @@ app-root:not(.app-ready) {
 
 
 /* Form control overrides */
-.form-control-custom {
+.form-control,.form-select {
   border: 1px solid #cbd5e1;
   border-radius: 0.25rem;
   padding: 0.75rem 1rem;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.form-label {
+     margin-bottom: 0;
 }
 
 .form-control:focus {
@@ -466,7 +469,7 @@ body.sidebar-closed .main-footer {
 }
 
 .page-shell-header {
-  margin-bottom: 2rem;
+  margin-bottom: .2rem;
 }
 
 .page-title {

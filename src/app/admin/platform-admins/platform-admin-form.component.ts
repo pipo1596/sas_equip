@@ -4,11 +4,11 @@ import { PlatformAdminsService } from './platform-admins.service';
 import { PlatformAdmin, PlatformAdminForm } from './platform-admin.model';
 
 @Component({
-  selector: 'app-platform-admin-edit',
-  templateUrl: './platform-admin-edit.component.html',
+  selector: 'app-platform-admin-form',
+  templateUrl: './platform-admin-form.component.html',
   standalone: false,
 })
-export class PlatformAdminEditComponent implements OnInit {
+export class PlatformAdminFormComponent implements OnInit {
   private readonly service = inject(PlatformAdminsService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
@@ -16,8 +16,14 @@ export class PlatformAdminEditComponent implements OnInit {
   readonly saving = signal(false);
   readonly error = signal<string | null>(null);
   readonly notFound = signal(false);
+  readonly showPassword = signal(false);
 
-  padminId!: number;
+  togglePassword(): void {
+    this.showPassword.update(v => !v);
+  }
+
+  isEdit = false;
+  padminId: number | null = null;
 
   formData: PlatformAdminForm = {
     username: '',
@@ -32,7 +38,11 @@ export class PlatformAdminEditComponent implements OnInit {
   };
 
   ngOnInit(): void {
-    this.padminId = Number(this.route.snapshot.paramMap.get('id'));
+    const idParam = this.route.snapshot.paramMap.get('id');
+    if (!idParam) return; // new mode
+
+    this.isEdit = true;
+    this.padminId = Number(idParam);
 
     const admin = (window.history.state as { admin?: PlatformAdmin }).admin;
     if (!admin || admin.padminId !== this.padminId) {
@@ -61,7 +71,11 @@ export class PlatformAdminEditComponent implements OnInit {
     this.saving.set(true);
     this.error.set(null);
     try {
-      await this.service.update(this.padminId, this.formData);
+      if (this.isEdit && this.padminId != null) {
+        await this.service.update(this.padminId, this.formData);
+      } else {
+        await this.service.create(this.formData);
+      }
       this.router.navigate(['/admin/platform-admins']);
     } catch (err) {
       this.error.set(err instanceof Error ? err.message : 'Save failed. Please try again.');

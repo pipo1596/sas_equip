@@ -1,14 +1,28 @@
 <section class="page-shell">
 
-  <div class="page-shell-header d-flex align-items-center justify-content-between flex-wrap gap-2">
-    <div>
-      <button class="btn btn-link text-muted p-0 mb-1 small" (click)="cancel()">
-        <i class="bi bi-arrow-left me-1"></i>Back to Platform Admins
-      </button>
-      <h1 class="page-title">Edit Platform Admin</h1>
-      <p class="page-subtitle">Update administrator account details.</p>
-    </div>
+  <div class="page-shell-header">
+  
+  <div class="d-flex align-items-center justify-content-between flex-wrap">
+    <h1 class="page-title mb-0">
+      {{ isEdit ? 'Edit Platform Admin' : 'New Platform Admin' }}
+    </h1>
+
+    <button
+      class="btn btn-outline-secondary"
+      (click)="cancel()"
+    >
+      <i class="bi bi-arrow-left me-1"></i>
+      Back to Platform Admins
+    </button>
   </div>
+
+  <p class="page-subtitle mt-2">
+    {{ isEdit
+      ? 'Update administrator account details.'
+      : 'Create a new platform administrator account.' }}
+  </p>
+
+</div>
 
   @if (notFound()) {
     <div class="alert alert-warning d-flex align-items-center gap-2" role="alert">
@@ -25,45 +39,47 @@
         <button type="button" class="btn-close ms-auto" aria-label="Dismiss" (click)="error.set(null)"></button>
       </div>
     }
-
-    <div class="card border-0 shadow-sm" style="max-width: 760px;">
+    
+    <div class="card border-0 shadow-sm" >
       <div class="card-body p-4">
         <div class="row g-3">
 
           <div class="col-md-6">
-            <label class="form-label fw-semibold" for="e-username">
+            <label class="form-label fw-semibold" for="f-username">
               Username <span class="text-danger">*</span>
             </label>
             <input
-              id="e-username"
+              id="f-username"
               type="text"
               class="form-control"
               [(ngModel)]="formData.username"
               name="username"
               autocomplete="off"
               maxlength="100"
+              placeholder="e.g. jsmith"
             />
           </div>
 
           <div class="col-md-6">
-            <label class="form-label fw-semibold" for="e-email">
+            <label class="form-label fw-semibold" for="f-email">
               Email <span class="text-danger">*</span>
             </label>
             <input
-              id="e-email"
+              id="f-email"
               type="email"
               class="form-control"
               [(ngModel)]="formData.emailAddress"
               name="emailAddress"
               autocomplete="off"
               maxlength="200"
+              placeholder="e.g. john.smith@example.com"
             />
           </div>
 
           <div class="col-md-6">
-            <label class="form-label fw-semibold" for="e-first-name">First Name</label>
+            <label class="form-label fw-semibold" for="f-first-name">First Name</label>
             <input
-              id="e-first-name"
+              id="f-first-name"
               type="text"
               class="form-control"
               [(ngModel)]="formData.firstName"
@@ -73,9 +89,9 @@
           </div>
 
           <div class="col-md-6">
-            <label class="form-label fw-semibold" for="e-last-name">Last Name</label>
+            <label class="form-label fw-semibold" for="f-last-name">Last Name</label>
             <input
-              id="e-last-name"
+              id="f-last-name"
               type="text"
               class="form-control"
               [(ngModel)]="formData.lastName"
@@ -85,9 +101,9 @@
           </div>
 
           <div class="col-md-6">
-            <label class="form-label fw-semibold" for="e-phone">Phone Number</label>
+            <label class="form-label fw-semibold" for="f-phone">Phone Number</label>
             <input
-              id="e-phone"
+              id="f-phone"
               type="tel"
               class="form-control"
               [(ngModel)]="formData.phoneNumber"
@@ -97,13 +113,14 @@
           </div>
 
           <div class="col-md-6">
-            <label class="form-label fw-semibold" for="e-status">Status</label>
+            <label class="form-label fw-semibold" for="f-status">Status</label>
             <select
-              id="e-status"
+              id="f-status"
               class="form-select"
               [(ngModel)]="formData.status"
               name="status"
             >
+              <option value="">Select Status</option>
               <option value="ACTIVE">Active</option>
               <option value="LOCKED">Locked</option>
               <option value="DISABLED">Disabled</option>
@@ -111,21 +128,52 @@
           </div>
 
           <div class="col-md-6">
-            <label class="form-label fw-semibold" for="e-password">
+            <label class="form-label fw-semibold" for="f-password">
               Password
-              <span class="text-muted fw-normal small">(leave blank to keep current)</span>
+              @if (isEdit) {
+                <span class="text-muted fw-normal small">(leave blank to keep current)</span>
+              } @else {
+                <span class="text-danger">*</span>
+              }
             </label>
-            <input
-              id="e-password"
-              type="password"
-              class="form-control"
-              [(ngModel)]="formData.password"
-              name="password"
-              autocomplete="new-password"
-              maxlength="255"
-            />
+            <div class="input-group">
+              <input
+                id="f-password"
+                [type]="showPassword() ? 'text' : 'password'"
+                class="form-control"
+                [(ngModel)]="formData.password"
+                name="password"
+                autocomplete="new-password"
+                maxlength="255"
+              />
+              <button
+                class="btn password-toggle-btn"
+                type="button"
+                (click)="togglePassword()"
+                tabindex="-1"
+                [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'"
+              >
+                <i [class]="showPassword() ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
+              </button>
+            </div>
           </div>
 
+          
+          @if (formData.mfaEnabled === 'Y') {
+            <div class="col-md-3">
+              <label class="form-label fw-semibold" for="f-mfa-method">MFA Method</label>
+              <select
+                id="f-mfa-method"
+                class="form-select"
+                [(ngModel)]="formData.mfaMethod"
+                name="mfaMethod"
+              >
+                <option value="">Select MFA Method</option>
+                <option value="EMAIL">Email</option>
+                <option value="SMS">SMS</option>
+              </select>
+            </div>
+          }
           <div class="col-md-3">
             <label class="form-label fw-semibold d-block">MFA Enabled</label>
             <div class="d-flex gap-3 pt-1">
@@ -133,41 +181,27 @@
                 <input
                   class="form-check-input"
                   type="radio"
-                  id="e-mfa-y"
+                  id="f-mfa-y"
                   name="mfaEnabled"
                   value="Y"
                   [(ngModel)]="formData.mfaEnabled"
                 />
-                <label class="form-check-label" for="e-mfa-y">Yes</label>
+                <label class="form-check-label" for="f-mfa-y">Yes</label>
               </div>
               <div class="form-check">
                 <input
                   class="form-check-input"
                   type="radio"
-                  id="e-mfa-n"
+                  id="f-mfa-n"
                   name="mfaEnabled"
                   value="N"
                   [(ngModel)]="formData.mfaEnabled"
                 />
-                <label class="form-check-label" for="e-mfa-n">No</label>
+                <label class="form-check-label" for="f-mfa-n">No</label>
               </div>
             </div>
           </div>
 
-          @if (formData.mfaEnabled === 'Y') {
-            <div class="col-md-3">
-              <label class="form-label fw-semibold" for="e-mfa-method">MFA Method</label>
-              <select
-                id="e-mfa-method"
-                class="form-select"
-                [(ngModel)]="formData.mfaMethod"
-                name="mfaMethod"
-              >
-                <option value="EMAIL">Email</option>
-                <option value="SMS">SMS</option>
-              </select>
-            </div>
-          }
 
         </div>
       </div>
@@ -180,8 +214,10 @@
           @if (saving()) {
             <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
             Saving…
-          } @else {
+          } @else if (isEdit) {
             <i class="bi bi-check-lg me-2"></i>Save Changes
+          } @else {
+            <i class="bi bi-person-plus me-2"></i>Create Admin
           }
         </button>
       </div>

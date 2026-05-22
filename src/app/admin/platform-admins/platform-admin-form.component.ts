@@ -27,7 +27,7 @@ export class PlatformAdminFormComponent implements OnInit {
   padminId: number | null = null;
 
   formData: PlatformAdminForm = {
-    username: '',
+    role: 'ADMIN',
     emailAddress: '',
     phoneNumber: '',
     firstName: '',
@@ -70,7 +70,7 @@ export class PlatformAdminFormComponent implements OnInit {
     }
 
     this.formData = {
-      username: admin.username,
+      role: admin.role,
       emailAddress: admin.emailAddress?.trim(),
       phoneNumber: admin.phoneNumber?.trim() ?? '',
       firstName: admin.firstName?.trim() ?? '',

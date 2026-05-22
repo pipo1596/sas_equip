@@ -1,6 +1,6 @@
 export interface PlatformAdmin {
   padminId: number;
-  username: string;
+  role: string;
   emailAddress: string;
   phoneNumber: string | null;
   firstName: string | null;
@@ -28,7 +28,7 @@ export interface PlatformAdminsPage {
 }
 
 export interface PlatformAdminForm {
-  username: string;
+  role: string;
   emailAddress: string;
   phoneNumber: string;
   firstName: string;

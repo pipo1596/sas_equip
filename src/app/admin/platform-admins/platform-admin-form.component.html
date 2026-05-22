@@ -35,28 +35,7 @@
         <div class="card-body p-4">
           <div class="row g-3">
 
-            <!-- Username -->
-            <div class="col-md-6  mt-0">
-              <label class="form-label fw-semibold" for="f-username">
-                Username <span class="text-danger">*</span>
-              </label>
-              <input
-                id="f-username"
-                type="text"
-                class="form-control"
-                [(ngModel)]="formData.username"
-                name="username"
-                #username="ngModel"
-                required
-                autocomplete="off"
-                maxlength="100"
-                placeholder="e.g. jsmith"
-                [class.is-invalid]="username.invalid && username.touched"
-              />
-              <div class="invalid-feedback" [class.show]="username.invalid && username.touched">
-                Username is required.
-              </div>
-            </div>
+            
 
             <!-- Email -->
             <div class="col-md-6 mt-0">
@@ -80,6 +59,26 @@
               <div class="invalid-feedback" [class.show]="emailTouched() && (emailAddress.errors?.['required'] || emailError())">
                 @if (emailAddress.errors?.['required']) { Email is required. }
                 @else if (emailError()) { Enter a valid email address. }
+              </div>
+            </div>
+            
+            <!-- Role -->
+            <div class="col-md-6  mt-0">
+              <label class="form-label fw-semibold" for="f-role">
+                Role <span class="text-danger">*</span>
+              </label>
+              <select
+                id="f-role"
+                class="form-select"
+                [(ngModel)]="formData.role"
+                #role="ngModel"
+                name="role"
+              >
+                <option value="ADMIN">Administrator</option>
+              </select>
+              
+              <div class="invalid-feedback" [class.show]="role.invalid && role.touched">
+                Role is required.
               </div>
             </div>
 

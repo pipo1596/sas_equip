@@ -29,7 +29,7 @@
       <input
         type="text"
         class="form-control border-start-0 ps-0"
-        placeholder="Search by name, username or email…"
+        placeholder="Search by name or email…"
         [value]="search()"
         (input)="onSearchChange($any($event.target).value)"
       />
@@ -62,7 +62,7 @@
       <thead class="table-dark">
         <tr>
           <th scope="col">Name</th>
-          <th scope="col">Username</th>
+          <th scope="col">Role</th>
           <th scope="col">Email</th>
           <th scope="col">Status</th>
           <th scope="col">MFA</th>
@@ -92,7 +92,9 @@
               <td data-label="Name">
                 <span class="fw-semibold">{{ displayName(admin) }}</span>
               </td>
-              <td data-label="Username" class="text-muted small">{{ admin.username }}</td>
+              <td data-label="Role" class="text-muted small">
+                {{ admin.role === 'ADMIN' ? 'Administrator' : admin.role }}
+              </td>
               <td data-label="Email" class="small">{{ admin.emailAddress }}</td>
               <td data-label="Status">
                 <span [class]="statusBadgeClass(admin.status)">{{ admin.status }}</span>
@@ -109,14 +111,14 @@
               <td data-label="Last Login" class="small text-muted">{{ formatDate(admin.lastLoginTs) }}</td>
               <td class="text-end">
                 <button
-                  class="btn btn-sm btn-outline-secondary me-1"
+                  class="btn btn-sm btn-outline-secondary m-1 px-3"
                   title="Edit"
                   (click)="editAdmin(admin)"
                 >
                   <i class="bi bi-pencil"></i>
                 </button>
                 <button
-                  class="btn btn-sm btn-outline-danger"
+                  class="btn btn-sm btn-outline-danger m-1 px-3"
                   title="Delete"
                   (click)="openDeleteModal(admin)"
                 >
@@ -208,8 +210,8 @@
           @if (deleteTarget(); as target) {
             <p class="mb-0">
               Are you sure you want to delete
-              <strong>{{ displayName(target) || target.username }}</strong>
-              (<span class="text-muted">{{ target.username }}</span>)?
+              <strong>{{ displayName(target) }}</strong>
+              (<span class="text-muted">{{ target.role }}</span>)?
               This action cannot be undone.
             </p>
           }

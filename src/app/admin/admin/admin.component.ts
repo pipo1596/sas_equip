@@ -29,5 +29,12 @@ export class AdminComponent {
       route: 'tenant-partners',
       color: '#c394c0',
     },
+    {
+      title: 'Audit Log',
+      description: 'Browse and filter system audit events across all entities.',
+      icon: 'bi-journal-text',
+      route: 'audit-log',
+      color: '#6c757d',
+    },
   ];
 }

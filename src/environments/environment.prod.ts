@@ -6,5 +6,6 @@ export const environment = {
   endpoints: {
     login: 'APILOGIN',
     platformAdmins: 'APIPADMIN',
+    auditLog: 'APIAUDIT',
   },
 };

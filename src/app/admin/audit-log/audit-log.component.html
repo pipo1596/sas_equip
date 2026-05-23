@@ -1,0 +1,367 @@
+<section class="page-shell">
+
+  <!-- Page header -->
+  <div class="page-shell-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div>
+      <h1 class="page-title">Audit Log</h1>
+      <p class="page-subtitle">Browse and filter system audit events.</p>
+    </div>
+  </div>
+
+  <!-- Error banner -->
+  @if (error()) {
+    <div class="alert alert-danger d-flex align-items-center gap-2 mb-3" role="alert">
+      <i class="bi bi-exclamation-triangle-fill"></i>
+      <span>{{ error() }}</span>
+      <button type="button" class="btn-close ms-auto" aria-label="Dismiss" (click)="error.set(null)"></button>
+    </div>
+  }
+
+  <!-- Filters -->
+  <div class="card mb-3">
+    <div class="card-body py-2">
+      <div class="row g-2 align-items-end">
+
+        <!-- Entity Type -->
+        <div class="col-12 col-sm-6 col-lg-3">
+          <label class="form-label small text-muted mb-1">Data Table</label>
+          <select
+            class="form-select form-select-sm"
+            [ngModel]="filterEntityType()"
+            (ngModelChange)="filterEntityType.set($event); onFilterChange()"
+          >
+            <option value="">All tables</option>
+            <option value="SE_PLATFORM_ADMINS">SE_PLATFORM_ADMINS</option>
+            <option value="SE_TENANT_PARTNERS">SE_TENANT_PARTNERS</option>
+          </select>
+        </div>
+
+        <!-- Date From -->
+        <div class="col-12 col-sm-6 col-lg-2">
+          <label class="form-label small text-muted mb-1">From</label>
+          <input
+            type="datetime-local"
+            class="form-control form-control-sm"
+            [value]="filterDateFrom()"
+            (change)="filterDateFrom.set($any($event.target).value); onFilterChange()"
+          />
+        </div>
+
+        <!-- Date To -->
+        <div class="col-12 col-sm-6 col-lg-2">
+          <label class="form-label small text-muted mb-1">To</label>
+          <input
+            type="datetime-local"
+            class="form-control form-control-sm"
+            [value]="filterDateTo()"
+            (change)="filterDateTo.set($any($event.target).value); onFilterChange()"
+          />
+        </div>
+
+        <!-- Free-text search -->
+        <div class="col-12 col-sm-6 col-lg-3">
+          <label class="form-label small text-muted mb-1">Search</label>
+          <div class="input-group input-group-sm">
+            <span class="input-group-text bg-white border-end-0">
+              <i class="bi bi-search text-muted"></i>
+            </span>
+            <input
+              type="text"
+              class="form-control border-start-0 ps-0"
+              placeholder="Key, note, session…"
+              [value]="filterSearch()"
+              (input)="onSearchChange($any($event.target).value)"
+            />
+            @if (filterSearch()) {
+              <button class="btn btn-outline-secondary" type="button"
+                (click)="onSearchChange('')">
+                <i class="bi bi-x-lg"></i>
+              </button>
+            }
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="col-12 col-lg-2 d-flex gap-2">
+          <button class="btn btn-dark btn-sm flex-fill" (click)="onFilterChange()">
+            <i class="bi bi-funnel me-1"></i>Apply
+          </button>
+          @if (hasActiveFilters()) {
+            <button class="btn btn-outline-secondary btn-sm" (click)="clearFilters()" title="Clear filters">
+              <i class="bi bi-x-circle"></i>
+            </button>
+          }
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Rows per page -->
+  <div class="d-flex justify-content-end mb-2">
+    <div class="d-flex align-items-center gap-2">
+      <label class="small text-muted mb-0 text-nowrap" for="pageSizeSelect">Rows per page:</label>
+      <select
+        id="pageSizeSelect"
+        class="form-select form-select-sm pe-4"
+        [ngModel]="pageSize()"
+        (ngModelChange)="onPageSizeChange($event)"
+      >
+        <option value="25">25</option>
+        <option value="50">50</option>
+        <option value="100">100</option>
+        <option value="200">200</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0 table-stacked">
+      <thead class="table-dark">
+        <tr>
+          <th scope="col">Timestamp</th>
+          <th scope="col">Action</th>
+          <th scope="col">Data Table</th>
+          <th scope="col">Entity Key</th>
+          <th scope="col">Actor</th>
+          <th scope="col">Level</th>
+          <th scope="col">Note</th>
+          <th scope="col" class="text-end">Detail</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (loading()) {
+          <tr>
+            <td colspan="9" class="text-center py-4 text-muted">
+              <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>
+              Loading…
+            </td>
+          </tr>
+        } @else if (entries().length === 0) {
+          <tr>
+            <td colspan="9" class="text-center py-4 text-muted">
+              <i class="bi bi-journal-x me-2"></i>
+              @if (hasActiveFilters()) { No audit records match the active filters. }
+              @else { No audit records found. }
+            </td>
+          </tr>
+        } @else {
+          @for (entry of entries(); track entry.audId) {
+            <tr>
+              <td data-label="Timestamp" class="small text-nowrap">{{ formatTs(entry.createdTs) }}</td>
+              <td data-label="Action">
+                <span [class]="actionBadgeClass(entry.action)">{{ entry.action }}</span>
+              </td>
+              <td data-label="Data Table" class="small">{{ entry.entityType }}</td>
+              <td data-label="Entity Key" class="small font-monospace">
+                {{ truncate(entry.entityKey, 40) }}
+              </td>
+              <td data-label="Actor" class="small">{{ actorDisplay(entry) }}</td>
+              <td data-label="Level" class="small">
+                <span class="badge bg-light text-dark border">{{ entry.actorLevel }}</span>
+              </td>
+              <td data-label="Note" class="small text-muted">{{ truncate(entry.reason, 50) }}</td>
+              <td class="text-end">
+                <button
+                  class="btn btn-sm btn-outline-secondary px-2"
+                  title="View detail"
+                  (click)="openDetail(entry)"
+                >
+                  <i class="bi bi-eye"></i>
+                </button>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination footer -->
+  @if (!loading() && totalPages() > 1) {
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mt-3">
+      <p class="small text-muted mb-0">
+        {{ startRecord() }}–{{ endRecord() }} of {{ total() }} records
+      </p>
+
+      <div class="d-flex align-items-center gap-1">
+        @if (page() > 1) {
+          <button class="btn btn-sm btn-outline-secondary" (click)="goToPage(1)" title="First page">
+            <i class="bi bi-chevron-double-left"></i>
+          </button>
+          <button class="btn btn-sm btn-outline-secondary" (click)="goToPage(page() - 1)" title="Previous page">
+            <i class="bi bi-chevron-left"></i>
+          </button>
+        }
+
+        @for (p of pageWindow(); track p) {
+          <button
+            class="btn btn-sm"
+            [class.btn-dark]="p === page()"
+            [class.btn-outline-secondary]="p !== page()"
+            (click)="goToPage(p)"
+          >{{ p }}</button>
+        }
+
+        @if (page() < totalPages()) {
+          <button class="btn btn-sm btn-outline-secondary" (click)="goToPage(page() + 1)" title="Next page">
+            <i class="bi bi-chevron-right"></i>
+          </button>
+          <button class="btn btn-sm btn-outline-secondary" (click)="goToPage(totalPages())" title="Last page">
+            <i class="bi bi-chevron-double-right"></i>
+          </button>
+        }
+      </div>
+    </div>
+  }
+
+</section>
+
+<!-- ── Detail Modal ────────────────────────────────────────────────────── -->
+@if (detailEntry(); as entry) {
+  <div class="modal-backdrop fade show"></div>
+  <div class="modal d-block" tabindex="-1" role="dialog" aria-modal="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content">
+
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title">
+            <i class="bi bi-journal-text me-2"></i>Audit Entry #{{ entry.audId }}
+          </h5>
+          <button type="button" class="btn-close" aria-label="Close" (click)="closeDetail()"></button>
+        </div>
+
+        <div class="modal-body pt-2">
+
+          <!-- Summary row -->
+          <div class="row g-2 mb-3">
+            <div class="col-6 col-md-3">
+              <p class="text-muted small mb-0">Timestamp</p>
+              <p class="mb-0 small">{{ formatTs(entry.createdTs) }}</p>
+            </div>
+            <div class="col-6 col-md-3">
+              <p class="text-muted small mb-0">Action</p>
+              <span [class]="actionBadgeClass(entry.action)">{{ entry.action }}</span>
+            </div>
+            <div class="col-6 col-md-3">
+              <p class="text-muted small mb-0">Actor</p>
+              <p class="mb-0 small">{{ actorDisplay(entry) }} ({{ entry.actorType }})</p>
+            </div>
+            <div class="col-6 col-md-3">
+              <p class="text-muted small mb-0">Level</p>
+              <span class="badge bg-light text-dark border">{{ entry.actorLevel }}</span>
+            </div>
+          </div>
+
+          <hr class="my-2">
+
+          <!-- Entity -->
+          <div class="row g-2 mb-3">
+            <div class="col-12 col-md-6">
+              <p class="text-muted small mb-0">Data Table</p>
+              <p class="mb-0 small font-monospace">{{ entry.entityType }}</p>
+            </div>
+            <div class="col-6 col-md-3">
+              <p class="text-muted small mb-0">Entity ID</p>
+              <p class="mb-0 small">{{ entry.entityId ?? '—' }}</p>
+            </div>
+            <div class="col-6 col-md-3">
+              <p class="text-muted small mb-0">PII Entity</p>
+              @if (entry.isPiiEntity === 'Y') {
+                <span class="badge bg-warning text-dark"><i class="bi bi-shield-exclamation me-1"></i>Yes</span>
+              } @else {
+                <span class="badge bg-light text-dark border">No</span>
+              }
+            </div>
+            @if (entry.entityKey) {
+              <div class="col-12">
+                <p class="text-muted small mb-0">Entity Key</p>
+                <p class="mb-0 small font-monospace">{{ entry.entityKey }}</p>
+              </div>
+            }
+          </div>
+
+          <hr class="my-2">
+
+          <!-- Before / After diff -->
+          <div class="row g-2 mb-3">
+            @if (diffValues(entry.beforeValue, entry.afterValue); as diff) {
+              <div class="col-12">
+                <p class="text-muted small mb-1">Changes</p>
+                <div class="table-responsive" style="max-height: 280px; overflow-y: auto;">
+                  <table class="table table-sm table-bordered small mb-0">
+                    <thead class="table-dark" style="position: sticky; top: 0;">
+                      <tr>
+                        <th style="width: 30%">Field</th>
+                        <th style="width: 35%">Before</th>
+                        <th style="width: 35%">After</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (row of diff; track row.key) {
+                        <tr
+                          [class.table-warning]="row.state === 'changed'"
+                          [class.table-success]="row.state === 'added'"
+                          [class.table-danger]="row.state === 'removed'"
+                          [class.text-muted]="row.state === 'unchanged'"
+                        >
+                          <td class="fw-semibold">{{ row.key }}</td>
+                          <td class="font-monospace" style="word-break: break-all;">{{ row.before ?? '—' }}</td>
+                          <td class="font-monospace" style="word-break: break-all;">{{ row.after ?? '—' }}</td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            } @else {
+              <div class="col-12 col-md-6">
+                <p class="text-muted small mb-1">Before Value</p>
+                <pre class="small bg-light border rounded p-2 mb-0" style="max-height:200px;overflow:auto;white-space:pre-wrap;">{{ formatJson(entry.beforeValue) }}</pre>
+              </div>
+              <div class="col-12 col-md-6">
+                <p class="text-muted small mb-1">After Value</p>
+                <pre class="small bg-light border rounded p-2 mb-0" style="max-height:200px;overflow:auto;white-space:pre-wrap;">{{ formatJson(entry.afterValue) }}</pre>
+              </div>
+            }
+          </div>
+
+          <!-- Extra metadata -->
+          <div class="row g-2">
+            @if (entry.tpId) {
+              <div class="col-6 col-md-3">
+                <p class="text-muted small mb-0">Tenant Partner ID</p>
+                <p class="mb-0 small">{{ entry.tpId }}</p>
+              </div>
+            }
+            @if (entry.reqHostname) {
+              <div class="col-6 col-md-3">
+                <p class="text-muted small mb-0">Host</p>
+                <p class="mb-0 small font-monospace">{{ entry.reqHostname }}</p>
+              </div>
+            }
+            @if (entry.sessionId) {
+              <div class="col-12 col-md-6">
+                <p class="text-muted small mb-0">Session ID</p>
+                <p class="mb-0 small font-monospace">{{ entry.sessionId }}</p>
+              </div>
+            }
+            @if (entry.reason) {
+              <div class="col-12">
+                <p class="text-muted small mb-0">Note</p>
+                <p class="mb-0 small">{{ entry.reason }}</p>
+              </div>
+            }
+          </div>
+
+        </div>
+
+        <div class="modal-footer border-0 pt-0">
+          <button type="button" class="btn btn-outline-secondary" (click)="closeDetail()">Close</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+}

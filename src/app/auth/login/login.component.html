@@ -5,7 +5,7 @@
       <h1 class="text-white text-end flex-grow-1 ms-3 mb-0 auth-title">Platform Admin Portal</h1>
     </div>
     <div class="card-body">
-      <form [formGroup]="form" (ngSubmit)="submit()" class="d-flex flex-column">
+      <form [formGroup]="form" (ngSubmit)="submit()" class="d-flex flex-column biginputs">
         <div class="mb-0">
           <div class="invalid-feedback ps-1" [class.show]="emailControl.invalid && emailControl.touched">
             @if (emailControl.errors?.['required']) {

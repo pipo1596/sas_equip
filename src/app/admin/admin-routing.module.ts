@@ -5,6 +5,7 @@ import { AdminComponent } from './admin/admin.component';
 import { PlatformAdminsComponent } from './platform-admins/platform-admins.component';
 import { PlatformAdminFormComponent } from './platform-admins/platform-admin-form.component';
 import { TenantPartnersComponent } from './tenant-partners/tenant-partners.component';
+import { TenantPartnerFormComponent } from './tenant-partners/tenant-partner-form.component';
 import { AuditLogComponent } from './audit-log/audit-log.component';
 
 const routes: Routes = [
@@ -13,6 +14,8 @@ const routes: Routes = [
   { path: 'platform-admins/new', component: PlatformAdminFormComponent },
   { path: 'platform-admins/:id/edit', component: PlatformAdminFormComponent },
   { path: 'tenant-partners', component: TenantPartnersComponent },
+  { path: 'tenant-partners/new', component: TenantPartnerFormComponent },
+  { path: 'tenant-partners/:id/edit', component: TenantPartnerFormComponent },
   { path: 'audit-log', component: AuditLogComponent },
 ];
 

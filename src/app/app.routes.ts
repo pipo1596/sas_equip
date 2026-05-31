@@ -3,6 +3,7 @@ import { AuthGuard } from './auth/auth.guard';
 import { GuestGuard } from './auth/guest.guard';
 import { ShellComponent } from './shell/shell.component';
 import { PartnerShellComponent } from './partner/partner-shell/partner-shell.component';
+import { partnerModeGuard } from './partner/partner-mode.guard';
 
 export const routes: Routes = [
   { path: 'login', canMatch: [GuestGuard], canActivate: [GuestGuard], loadComponent: () => import('./auth/login/login.component').then((m) => m.LoginComponent) },
@@ -19,6 +20,7 @@ export const routes: Routes = [
     component: ShellComponent,
     canMatch: [AuthGuard],
     canActivate: [AuthGuard],
+    canActivateChild: [partnerModeGuard],
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       {

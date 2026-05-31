@@ -5,7 +5,7 @@ export interface ActivePartner {
   tpName: string;
 }
 
-const STORAGE_KEY = 'sas_partnerMode';
+const STORAGE_KEY = 'saas_partnerMode';
 
 @Injectable({ providedIn: 'root' })
 export class PartnerModeService {

@@ -1,5 +1,5 @@
 {
-  "name": "sas-equip",
+  "name": "saas-equip",
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
@@ -8,7 +8,7 @@
     "build:ssr": "ng build --configuration=node-ssr,production",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "serve:ssr:sas-equip": "node dist/sas-equip/server/server.mjs"
+    "serve:ssr:saas-equip": "node dist/saas-equip/server/server.mjs"
   },
   "private": true,
   "packageManager": "npm@11.13.0",

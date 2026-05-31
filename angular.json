@@ -1,4 +1,4 @@
-{
+﻿{
   "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
   "version": 1,
   "cli": {
@@ -6,7 +6,7 @@
   },
   "newProjectRoot": "projects",
   "projects": {
-    "sas-equip": {
+    "saas-equip": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -70,10 +70,10 @@
           },
           "configurations": {
             "production": {
-              "buildTarget": "sas-equip:build:production"
+              "buildTarget": "saas-equip:build:production"
             },
             "development": {
-              "buildTarget": "sas-equip:build:development"
+              "buildTarget": "saas-equip:build:development"
             }
           },
           "defaultConfiguration": "development"

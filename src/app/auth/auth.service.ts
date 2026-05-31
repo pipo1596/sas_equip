@@ -16,8 +16,8 @@ export interface AuthState {
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly storageKey = 'sas-equip-auth';
-  private readonly sessionKey = 'sas-equip-session';
+  private readonly storageKey = 'saas-equip-auth';
+  private readonly sessionKey = 'saas-equip-session';
 
   private readonly loginEndpoint =
     `${environment.apiBaseUrl}${environment.endpoints.login}`;

@@ -10,7 +10,7 @@ import { filter, take } from 'rxjs/operators';
   host: { '[class.app-ready]': 'ready()' },
 })
 export class App {
-  protected readonly title = signal('sas-equip');
+  protected readonly title = signal('saas-equip');
   readonly ready = signal(false);
 
   constructor() {

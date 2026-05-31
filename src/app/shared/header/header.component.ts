@@ -1,19 +1,21 @@
-import { Component, ElementRef, HostListener, ViewChild, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Component, ElementRef, HostListener, ViewChild, signal, inject } from '@angular/core';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../auth/auth.service';
 import { SidebarService } from '../sidebar/sidebar.service';
+import { PartnerModeService } from '../../partner/partner-mode.service';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, RouterLinkActive],
   templateUrl: './header.component.html',
 })
 export class HeaderComponent {
   @ViewChild('userDropdown') userDropdownEl!: ElementRef<HTMLElement>;
 
   userMenuOpen = signal(false);
+  readonly partnerMode = inject(PartnerModeService);
 
   get displayName() {
     return this.auth.displayName;

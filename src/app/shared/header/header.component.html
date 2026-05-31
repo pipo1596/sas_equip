@@ -1,4 +1,4 @@
-<nav class="main-header navbar navbar-expand navbar-dark">
+<nav class="main-header navbar navbar-expand navbar-dark" [class.partner-mode-header]="partnerMode.activePartner()">
 
   <!-- Left: sidebar toggle -->
   <ul class="navbar-nav">
@@ -15,18 +15,20 @@
     <img src="/equip-logo.png" alt="eQuip" class="brand-image" />
   </a>
 
-  <!-- Left nav links (desktop) -->
-  <ul class="navbar-nav d-none d-lg-flex">
-    <li class="nav-item">
-      <a class="nav-link" routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link" routerLink="/reports" routerLinkActive="active">Reports</a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link" routerLink="/settings" routerLinkActive="active">Settings</a>
-    </li>
-  </ul>
+  <!-- Left nav links (desktop) — hidden in partner mode -->
+  @if (!partnerMode.activePartner()) {
+    <ul class="navbar-nav d-none d-lg-flex">
+      <li class="nav-item">
+        <a class="nav-link" routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" routerLink="/reports" routerLinkActive="active">Reports</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" routerLink="/settings" routerLinkActive="active">Settings</a>
+      </li>
+    </ul>
+  }
 
   <!-- Right: user dropdown -->
   <ul class="navbar-nav ms-auto">

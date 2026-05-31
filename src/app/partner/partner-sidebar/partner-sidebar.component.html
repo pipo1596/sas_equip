@@ -1,0 +1,41 @@
+<aside class="main-sidebar partner-sidebar">
+
+  <!-- Partner brand header -->
+  <div class="partner-sidebar-header">
+    <div class="partner-sidebar-badge">
+      <i class="bi bi-building-fill-lock"></i>
+    </div>
+    <div class="partner-sidebar-info">
+      <span class="partner-sidebar-label">Partner Mode</span>
+      <span class="partner-sidebar-name">{{ partnerMode.activePartner()?.tpName }}</span>
+    </div>
+  </div>
+
+  <div class="sidebar">
+    <nav class="mt-2">
+      <ul class="sidebar-nav-list">
+
+        <li class="nav-item">
+          <a
+            class="sidebar-nav-link"
+            [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'settings']"
+            routerLinkActive="active"
+          >
+            <i class="bi bi-gear nav-icon"></i>
+            <span>Settings</span>
+          </a>
+        </li>
+
+      </ul>
+    </nav>
+  </div>
+
+  <!-- Exit partner mode -->
+  <div class="partner-sidebar-exit">
+    <button class="partner-exit-btn" type="button" (click)="exitPartnerMode()">
+      <i class="bi bi-arrow-left me-2"></i>
+      Exit Partner Mode
+    </button>
+  </div>
+
+</aside>

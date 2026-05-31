@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { Router } from '@angular/router';
 import { TenantPartnersService } from './tenant-partners.service';
 import { TenantPartner } from './tenant-partner.model';
+import { PartnerModeService } from '../../partner/partner-mode.service';
 
 @Component({
   selector: 'app-tenant-partners',
@@ -11,6 +12,7 @@ import { TenantPartner } from './tenant-partner.model';
 export class TenantPartnersComponent implements OnInit {
   private readonly service = inject(TenantPartnersService);
   private readonly router = inject(Router);
+  private readonly partnerMode = inject(PartnerModeService);
 
   readonly partners = signal<TenantPartner[]>([]);
   readonly total = signal(0);
@@ -85,6 +87,11 @@ export class TenantPartnersComponent implements OnInit {
     if (p < 1 || p > this.totalPages() || p === this.page()) return;
     this.page.set(p);
     this.loadPartners();
+  }
+
+  openPartnerSettings(partner: TenantPartner): void {
+    this.partnerMode.enter({ tpId: partner.tpId, tpName: partner.tpName });
+    this.router.navigate(['/partner', partner.tpId, 'settings']);
   }
 
   editPartner(partner: TenantPartner): void {

@@ -53,6 +53,24 @@
           </a>
         </li>
 
+        <li class="nav-item">
+          <a class="sidebar-nav-link"
+             [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'customers']"
+             routerLinkActive="active">
+            <i class="bi bi-people nav-icon"></i>
+            <span>Customers</span>
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a class="sidebar-nav-link"
+             [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'employees']"
+             routerLinkActive="active">
+            <i class="bi bi-person-vcard nav-icon"></i>
+            <span>Employees</span>
+          </a>
+        </li>
+
       </ul>
     </nav>
   </div>

@@ -629,6 +629,10 @@ body.sidebar-closed .main-footer {
   }
 
   .bi-list { color: #1a202c; }
+
+  .user-avatar {
+    background-color: #1e3a8a !important;
+  }
 }
 
 /* ── Partner mode sidebar ────────────────────────── */
@@ -727,19 +731,6 @@ body.sidebar-closed .main-footer {
   }
 }
 
-/* ── Partner settings icon ───────────────────────── */
-.partner-settings-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 3rem;
-  height: 3rem;
-  border-radius: 0.5rem;
-  background-color: #e8edf8;
-  color: #1e3a8a;
-  font-size: 1.5rem;
-  flex-shrink: 0;
-}
 
 .otp-input {
   flex: 1;

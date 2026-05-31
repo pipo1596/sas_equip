@@ -16,13 +16,40 @@
       <ul class="sidebar-nav-list">
 
         <li class="nav-item">
-          <a
-            class="sidebar-nav-link"
-            [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'settings']"
-            routerLinkActive="active"
-          >
+          <a class="sidebar-nav-link"
+             [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'settings']"
+             routerLinkActive="active">
             <i class="bi bi-gear nav-icon"></i>
             <span>Settings</span>
+          </a>
+        </li>
+
+        <hr class="sidebar-divider border-secondary my-2" />
+
+        <li class="nav-item">
+          <a class="sidebar-nav-link"
+             [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'products']"
+             routerLinkActive="active">
+            <i class="bi bi-box-seam nav-icon"></i>
+            <span>Products</span>
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a class="sidebar-nav-link"
+             [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'uniform-programs']"
+             routerLinkActive="active">
+            <i class="bi bi-person-badge nav-icon"></i>
+            <span>Uniform Programs</span>
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a class="sidebar-nav-link"
+             [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'roles']"
+             routerLinkActive="active">
+            <i class="bi bi-shield-check nav-icon"></i>
+            <span>Roles</span>
           </a>
         </li>
 

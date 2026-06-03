@@ -7,7 +7,7 @@ export const partnerModeGuard: CanActivateChildFn = () => {
   const router = inject(Router);
   const partner = partnerMode.activePartner();
   if (partner) {
-    return router.createUrlTree(['/partner', partner.tpId, 'settings']);
+    return router.createUrlTree(['/partner', partner.tpId, 'dashboard']);
   }
   return true;
 };

@@ -91,7 +91,7 @@ export class TenantPartnersComponent implements OnInit {
 
   openPartnerSettings(partner: TenantPartner): void {
     this.partnerMode.enter({ tpId: partner.tpId, tpName: partner.tpName });
-    this.router.navigate(['/partner', partner.tpId, 'settings']);
+    this.router.navigate(['/partner', partner.tpId, 'dashboard']);
   }
 
   editPartner(partner: TenantPartner): void {

@@ -17,10 +17,10 @@
 
         <li class="nav-item">
           <a class="sidebar-nav-link"
-             [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'settings']"
+             [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'dashboard']"
              routerLinkActive="active">
-            <i class="bi bi-gear nav-icon"></i>
-            <span>Settings</span>
+            <i class="bi bi-speedometer2 nav-icon"></i>
+            <span>Dashboard</span>
           </a>
         </li>
 
@@ -68,6 +68,17 @@
              routerLinkActive="active">
             <i class="bi bi-person-vcard nav-icon"></i>
             <span>Employees</span>
+          </a>
+        </li>
+
+        <hr class="sidebar-divider border-secondary my-2" />
+
+        <li class="nav-item">
+          <a class="sidebar-nav-link"
+             [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'settings']"
+             routerLinkActive="active">
+            <i class="bi bi-gear nav-icon"></i>
+            <span>Settings</span>
           </a>
         </li>
 

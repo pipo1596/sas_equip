@@ -700,6 +700,40 @@ body.sidebar-closed .main-footer {
     }
   }
 
+  .partner-settings-back-btn {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 0.45rem 0.75rem;
+    background: none;
+    border: none;
+    color: #1e3a8a;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 0.25rem;
+    transition: background-color 0.15s ease;
+    margin-bottom: 0.25rem;
+
+    &:hover {
+      background-color: rgba(30, 58, 138, 0.08);
+    }
+  }
+
+  .partner-settings-nav-label {
+    display: flex;
+    align-items: center;
+    padding: 0.6rem 0.75rem;
+    margin-bottom: 0.25rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #1e3a8a;
+    background-color: #e8edf8;
+    border-top: 1px solid #c8d4ee;
+    border-bottom: 1px solid #c8d4ee;
+    border-radius: 0.25rem;
+  }
+
   .partner-sidebar-exit {
     position: absolute;
     bottom: 0;

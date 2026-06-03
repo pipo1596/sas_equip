@@ -13,76 +13,163 @@
 
   <div class="sidebar">
     <nav class="mt-2">
-      <ul class="sidebar-nav-list">
 
-        <li class="nav-item">
-          <a class="sidebar-nav-link"
-             [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'dashboard']"
-             routerLinkActive="active">
-            <i class="bi bi-speedometer2 nav-icon"></i>
-            <span>Dashboard</span>
-          </a>
-        </li>
+      <!-- ── Settings sub-nav ── -->
+      @if (inSettingsMode()) {
 
-        <hr class="sidebar-divider border-secondary my-2" />
+        <div class="partner-settings-nav-label">
+          <i class="bi bi-gear me-2"></i>Settings
+        </div>
 
-        <li class="nav-item">
-          <a class="sidebar-nav-link"
-             [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'products']"
-             routerLinkActive="active">
-            <i class="bi bi-box-seam nav-icon"></i>
-            <span>Products</span>
-          </a>
-        </li>
+        <ul class="sidebar-nav-list">
 
-        <li class="nav-item">
-          <a class="sidebar-nav-link"
-             [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'uniform-programs']"
-             routerLinkActive="active">
-            <i class="bi bi-person-badge nav-icon"></i>
-            <span>Uniform Programs</span>
-          </a>
-        </li>
+          <li class="nav-item">
+            <a class="sidebar-nav-link"
+               [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'settings', 'identity']"
+               routerLinkActive="active">
+              <i class="bi bi-fingerprint nav-icon"></i>
+              <span>Identity</span>
+            </a>
+          </li>
 
-        <li class="nav-item">
-          <a class="sidebar-nav-link"
-             [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'roles']"
-             routerLinkActive="active">
-            <i class="bi bi-shield-check nav-icon"></i>
-            <span>Roles</span>
-          </a>
-        </li>
+          <li class="nav-item">
+            <a class="sidebar-nav-link"
+               [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'settings', 'address']"
+               routerLinkActive="active">
+              <i class="bi bi-geo-alt nav-icon"></i>
+              <span>Address</span>
+            </a>
+          </li>
 
-        <li class="nav-item">
-          <a class="sidebar-nav-link"
-             [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'customers']"
-             routerLinkActive="active">
-            <i class="bi bi-people nav-icon"></i>
-            <span>Customers</span>
-          </a>
-        </li>
+          <li class="nav-item">
+            <a class="sidebar-nav-link"
+               [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'settings', 'primary-contact']"
+               routerLinkActive="active">
+              <i class="bi bi-person-lines-fill nav-icon"></i>
+              <span>Primary Contact</span>
+            </a>
+          </li>
 
-        <li class="nav-item">
-          <a class="sidebar-nav-link"
-             [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'employees']"
-             routerLinkActive="active">
-            <i class="bi bi-person-vcard nav-icon"></i>
-            <span>Employees</span>
-          </a>
-        </li>
+          <li class="nav-item">
+            <a class="sidebar-nav-link"
+               [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'settings', 'mfa']"
+               routerLinkActive="active">
+              <i class="bi bi-shield-lock nav-icon"></i>
+              <span>MFA</span>
+            </a>
+          </li>
 
-        <hr class="sidebar-divider border-secondary my-2" />
+          <li class="nav-item">
+            <a class="sidebar-nav-link"
+               [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'settings', 'storefront-images']"
+               routerLinkActive="active">
+              <i class="bi bi-images nav-icon"></i>
+              <span>Storefront Images</span>
+            </a>
+          </li>
 
-        <li class="nav-item">
-          <a class="sidebar-nav-link"
-             [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'settings']"
-             routerLinkActive="active">
-            <i class="bi bi-gear nav-icon"></i>
-            <span>Settings</span>
-          </a>
-        </li>
+          <li class="nav-item">
+            <a class="sidebar-nav-link"
+               [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'settings', 'storefront-fields']"
+               routerLinkActive="active">
+              <i class="bi bi-layout-text-window nav-icon"></i>
+              <span>Storefront Fields</span>
+            </a>
+          </li>
 
-      </ul>
+          <li class="nav-item">
+            <a class="sidebar-nav-link"
+               [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'settings', 'record-metadata']"
+               routerLinkActive="active">
+              <i class="bi bi-card-list nav-icon"></i>
+              <span>Record Metadata</span>
+            </a>
+          </li>
+
+        </ul>
+
+
+        <button class="partner-settings-back-btn mt-2" type="button" (click)="exitSettingsMode()">
+          <i class="bi bi-arrow-left me-2"></i>Back to Partner
+        </button>
+
+      } @else {
+
+      <!-- ── Main partner nav ── -->
+        <ul class="sidebar-nav-list">
+
+          <li class="nav-item">
+            <a class="sidebar-nav-link"
+               [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'dashboard']"
+               routerLinkActive="active">
+              <i class="bi bi-speedometer2 nav-icon"></i>
+              <span>Dashboard</span>
+            </a>
+          </li>
+
+          <hr class="sidebar-divider border-secondary my-2" />
+
+          <li class="nav-item">
+            <a class="sidebar-nav-link"
+               [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'products']"
+               routerLinkActive="active">
+              <i class="bi bi-box-seam nav-icon"></i>
+              <span>Products</span>
+            </a>
+          </li>
+
+          <li class="nav-item">
+            <a class="sidebar-nav-link"
+               [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'uniform-programs']"
+               routerLinkActive="active">
+              <i class="bi bi-person-badge nav-icon"></i>
+              <span>Uniform Programs</span>
+            </a>
+          </li>
+
+          <li class="nav-item">
+            <a class="sidebar-nav-link"
+               [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'roles']"
+               routerLinkActive="active">
+              <i class="bi bi-shield-check nav-icon"></i>
+              <span>Roles</span>
+            </a>
+          </li>
+
+          <li class="nav-item">
+            <a class="sidebar-nav-link"
+               [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'customers']"
+               routerLinkActive="active">
+              <i class="bi bi-people nav-icon"></i>
+              <span>Customers</span>
+            </a>
+          </li>
+
+          <li class="nav-item">
+            <a class="sidebar-nav-link"
+               [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'employees']"
+               routerLinkActive="active">
+              <i class="bi bi-person-vcard nav-icon"></i>
+              <span>Employees</span>
+            </a>
+          </li>
+
+          <hr class="sidebar-divider border-secondary my-2" />
+
+          <li class="nav-item">
+            <a class="sidebar-nav-link"
+               [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'settings']"
+               routerLinkActive="active"
+               [routerLinkActiveOptions]="{ exact: false }">
+              <i class="bi bi-gear nav-icon"></i>
+              <span>Settings</span>
+            </a>
+          </li>
+
+        </ul>
+
+      }
+
     </nav>
   </div>
 

@@ -1,13 +1,17 @@
-import { Component, inject } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import { PartnerModeService } from '../partner-mode.service';
+import { Component, inject, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-partner-settings',
   standalone: true,
-  templateUrl: './partner-settings.component.html',
+  template: '',
 })
-export class PartnerSettingsComponent {
-  protected readonly partnerMode = inject(PartnerModeService);
-  protected readonly route = inject(ActivatedRoute);
+export class PartnerSettingsComponent implements OnInit {
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+
+  ngOnInit(): void {
+    const id = this.route.snapshot.paramMap.get('id');
+    this.router.navigate(['/partner', id, 'settings', 'identity'], { replaceUrl: true });
+  }
 }

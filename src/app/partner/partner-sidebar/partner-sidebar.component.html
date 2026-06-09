@@ -31,13 +31,13 @@
               <span>Identity</span>
             </a>
           </li>
-
+          
           <li class="nav-item">
             <a class="sidebar-nav-link"
-               [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'settings', 'address']"
+               [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'settings', 'mfa']"
                routerLinkActive="active">
-              <i class="bi bi-geo-alt nav-icon"></i>
-              <span>Address</span>
+              <i class="bi bi-shield-lock nav-icon"></i>
+              <span>MFA</span>
             </a>
           </li>
 
@@ -49,13 +49,13 @@
               <span>Primary Contact</span>
             </a>
           </li>
-
+          
           <li class="nav-item">
             <a class="sidebar-nav-link"
-               [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'settings', 'mfa']"
+               [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'settings', 'address']"
                routerLinkActive="active">
-              <i class="bi bi-shield-lock nav-icon"></i>
-              <span>MFA</span>
+              <i class="bi bi-geo-alt nav-icon"></i>
+              <span>Address</span>
             </a>
           </li>
 
@@ -90,7 +90,7 @@
 
 
         <button class="partner-settings-back-btn mt-2" type="button" (click)="exitSettingsMode()">
-          <i class="bi bi-arrow-left me-2"></i>Back to Partner
+          <i class="bi bi-arrow-left me-2"></i>Back to Main Menu
         </button>
 
       } @else {

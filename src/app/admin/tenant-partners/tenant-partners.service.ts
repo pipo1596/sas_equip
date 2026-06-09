@@ -21,6 +21,20 @@ export class TenantPartnersService {
     return data as unknown as TenantPartnersPage;
   }
 
+  async get(tpId: number): Promise<TenantPartner> {
+    const response = await fetch(this.endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: '*GET', tpId }),
+      credentials: 'include',
+    });
+    const data = await this.parseJson(response);
+    if (!response.ok || data['success'] === false) {
+      throw new Error(String(data['message']) ?? 'Failed to load tenant partner.');
+    }
+    return data as unknown as TenantPartner;
+  }
+
   async create(form: TenantPartnerForm): Promise<void> {
     const response = await fetch(this.endpoint, {
       method: 'POST',

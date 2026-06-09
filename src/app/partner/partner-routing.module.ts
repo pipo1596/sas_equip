@@ -1,7 +1,6 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { PartnerDashboardComponent } from './partner-dashboard/partner-dashboard.component';
-import { PartnerSettingsComponent } from './partner-settings/partner-settings.component';
 import { PartnerProductsComponent } from './partner-products/partner-products.component';
 import { PartnerUniformProgramsComponent } from './partner-uniform-programs/partner-uniform-programs.component';
 import { PartnerRolesComponent } from './partner-roles/partner-roles.component';
@@ -22,7 +21,7 @@ const routes: Routes = [
   { path: ':id/roles', component: PartnerRolesComponent },
   { path: ':id/customers', component: PartnerCustomersComponent },
   { path: ':id/employees', component: PartnerEmployeesComponent },
-  { path: ':id/settings', component: PartnerSettingsComponent },
+  { path: ':id/settings', pathMatch: 'full', redirectTo: ({ params }) => `/partner/${params['id']}/settings/identity` },
   { path: ':id/settings/identity', component: PartnerSettingsIdentityComponent },
   { path: ':id/settings/address', component: PartnerSettingsAddressComponent },
   { path: ':id/settings/primary-contact', component: PartnerSettingsPrimaryContactComponent },

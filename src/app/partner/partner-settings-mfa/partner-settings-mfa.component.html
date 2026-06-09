@@ -1,10 +1,43 @@
 <section class="page-shell">
+
   <div class="page-shell-header">
     <h1 class="page-title">MFA</h1>
-    <p class="page-subtitle">Multi-factor authentication for <strong>{{ partnerMode.activePartner()?.tpName }}</strong></p>
+    <p class="page-subtitle">Multi-factor authentication setting for this partner.</p>
   </div>
-  <div class="alert alert-info d-flex align-items-center gap-2 mt-3">
-    <i class="bi bi-info-circle-fill"></i>
-    <span>MFA settings coming soon.</span>
-  </div>
+
+  @if (loading()) {
+    <div class="text-center py-5 text-muted">
+      <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>
+      Loading…
+    </div>
+  } @else if (error()) {
+    <div class="alert alert-danger d-flex align-items-center gap-2" role="alert">
+      <i class="bi bi-exclamation-triangle-fill"></i>
+      <span>{{ error() }}</span>
+    </div>
+  } @else if (partner(); as p) {
+
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4">
+        <div class="row g-3">
+
+          <div class="col-md-6 mt-0">
+            <label class="form-label fw-semibold">MFA Required</label>
+            <p class="form-control-plaintext pt-2 mb-0">
+              @if (p.mfaRequired === 'Y') {
+                <span class="badge bg-info text-dark">
+                  <i class="bi bi-shield-check me-1"></i>Yes
+                </span>
+              } @else {
+                <span class="badge bg-light text-secondary border">No</span>
+              }
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  }
+
 </section>

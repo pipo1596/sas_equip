@@ -31,6 +31,15 @@
               <span>Identity</span>
             </a>
           </li>
+
+          <li class="nav-item">
+            <a class="sidebar-nav-link"
+               [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'settings', 'organization']"
+               routerLinkActive="active">
+              <i class="bi bi-building nav-icon"></i>
+              <span>Organization</span>
+            </a>
+          </li>
           
           <li class="nav-item">
             <a class="sidebar-nav-link"
@@ -43,13 +52,13 @@
 
           <li class="nav-item">
             <a class="sidebar-nav-link"
-               [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'settings', 'primary-contact']"
+               [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'settings', 'contacts']"
                routerLinkActive="active">
               <i class="bi bi-person-lines-fill nav-icon"></i>
-              <span>Primary Contact</span>
+              <span>Contacts</span>
             </a>
           </li>
-          
+
           <li class="nav-item">
             <a class="sidebar-nav-link"
                [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'settings', 'address']"

@@ -1,0 +1,127 @@
+<section class="page-shell">
+
+  <div class="page-shell-header">
+    <h1 class="page-title">Organization</h1>
+    <p class="page-subtitle">Organization details for <strong>{{ partnerMode.activePartner()?.tpName }}</strong></p>
+  </div>
+
+  @if (loading()) {
+    <div class="text-center py-5 text-muted">
+      <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>
+      Loading…
+    </div>
+  } @else if (loadError()) {
+    <div class="alert alert-danger d-flex align-items-center gap-2 mt-3" role="alert">
+      <i class="bi bi-exclamation-triangle-fill"></i>
+      <span>{{ loadError() }}</span>
+    </div>
+  } @else {
+
+    <form (ngSubmit)="save()" novalidate class="mt-3">
+      <div class="card border-0 shadow-sm">
+
+        <div class="card-body p-4">
+          <div class="row g-3">
+
+            <div class="col-12 mt-0">
+              <label class="form-label fw-semibold" for="org-comp-name">Company Name</label>
+              <input
+                id="org-comp-name"
+                type="text"
+                class="form-control"
+                [(ngModel)]="form.comp_name"
+                name="comp_name"
+                maxlength="150"
+                placeholder="Legal company name"
+              />
+            </div>
+
+            <div class="col-md-6 mt-0">
+              <label class="form-label fw-semibold" for="org-lang">Default Language</label>
+              <select id="org-lang" class="form-select" [(ngModel)]="form.dflt_lang" name="dflt_lang">
+                <option value="EN">English</option>
+                <option value="FR">French</option>
+              </select>
+            </div>
+
+            <div class="col-md-6 mt-0">
+              <label class="form-label fw-semibold" for="org-bilingual">Bilingual Mode</label>
+              <select id="org-bilingual" class="form-select" [(ngModel)]="form.bilng_mode" name="bilng_mode">
+                <option value="N">No</option>
+                <option value="Y">Yes</option>
+              </select>
+            </div>
+
+            <div class="col-md-6 mt-0">
+              <label class="form-label fw-semibold" for="org-timezone">Timezone</label>
+              <select id="org-timezone" class="form-select" [(ngModel)]="form.timezone" name="timezone">
+                <optgroup label="United States">
+                  <option value="Pacific/Honolulu">Hawaii (UTC−10)</option>
+                  <option value="America/Anchorage">Alaska (UTC−9)</option>
+                  <option value="America/Los_Angeles">Pacific (UTC−8/−7)</option>
+                  <option value="America/Denver">Mountain (UTC−7/−6)</option>
+                  <option value="America/Chicago">Central (UTC−6/−5)</option>
+                  <option value="America/New_York">Eastern (UTC−5/−4)</option>
+                </optgroup>
+                <optgroup label="Canada">
+                  <option value="America/Vancouver">Pacific — Vancouver (UTC−8/−7)</option>
+                  <option value="America/Edmonton">Mountain — Edmonton (UTC−7/−6)</option>
+                  <option value="America/Winnipeg">Central — Winnipeg (UTC−6/−5)</option>
+                  <option value="America/Toronto">Eastern — Toronto (UTC−5/−4)</option>
+                  <option value="America/Halifax">Atlantic — Halifax (UTC−4/−3)</option>
+                  <option value="America/St_Johns">Newfoundland — St. John's (UTC−3:30/−2:30)</option>
+                </optgroup>
+              </select>
+            </div>
+
+            <div class="col-md-6 mt-0">
+              <label class="form-label fw-semibold" for="org-currency">Currency</label>
+              <select id="org-currency" class="form-select" [(ngModel)]="form.currency" name="currency">
+                <option value="USD">USD — US Dollar</option>
+                <option value="CAD">CAD — Canadian Dollar</option>
+              </select>
+            </div>
+
+            <div class="col-md-6 mt-0">
+              <label class="form-label fw-semibold" for="org-fiscal">Fiscal Year Start Month</label>
+              <select id="org-fiscal" class="form-select" [(ngModel)]="form.fisc_yr_mo" name="fisc_yr_mo">
+                @for (m of months; track m.value) {
+                  <option [ngValue]="m.value">{{ m.label }}</option>
+                }
+              </select>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="card-footer bg-transparent border-0 d-flex justify-content-end align-items-center p-4 pt-0">
+          <div class="d-flex align-items-center gap-2">
+            @if (saveError()) {
+              <div class="alert alert-danger d-flex align-items-center gap-2 mb-0 py-2 px-3" role="alert">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <span>{{ saveError() }}</span>
+              </div>
+            }
+            @if (saveSuccess()) {
+              <div class="alert alert-success d-flex align-items-center gap-2 mb-0 py-2 px-3" role="alert">
+                <i class="bi bi-patch-check-fill"></i>
+                <span>Saved successfully!</span>
+              </div>
+            }
+            <button type="submit" class="btn btn-dark" [disabled]="saving()">
+              @if (saving()) {
+                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                Saving…
+              } @else {
+                <i class="bi bi-check-lg me-1"></i>Save
+              }
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </form>
+
+  }
+
+</section>

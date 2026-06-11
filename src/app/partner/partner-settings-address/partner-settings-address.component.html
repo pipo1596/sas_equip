@@ -90,15 +90,16 @@
 
             <div class="col-md-6 mt-0">
               <label class="form-label fw-semibold" for="addr-country">Country</label>
-              <input
+              <select
                 id="addr-country"
-                type="text"
-                class="form-control"
+                class="form-select"
                 [(ngModel)]="form.country"
                 name="country"
-                maxlength="100"
-                placeholder="Country"
-              />
+              >
+                <option value="">— Select a country —</option>
+                <option value="US">USA</option>
+                <option value="CA">Canada</option>
+              </select>
             </div>
 
           </div>

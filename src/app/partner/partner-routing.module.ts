@@ -8,7 +8,8 @@ import { PartnerCustomersComponent } from './partner-customers/partner-customers
 import { PartnerEmployeesComponent } from './partner-employees/partner-employees.component';
 import { PartnerSettingsIdentityComponent } from './partner-settings-identity/partner-settings-identity.component';
 import { PartnerSettingsAddressComponent } from './partner-settings-address/partner-settings-address.component';
-import { PartnerSettingsPrimaryContactComponent } from './partner-settings-primary-contact/partner-settings-primary-contact.component';
+import { PartnerSettingsContactsComponent } from './partner-settings-contacts/partner-settings-contacts.component';
+import { PartnerSettingsOrganizationComponent } from './partner-settings-organization/partner-settings-organization.component';
 import { PartnerSettingsMfaComponent } from './partner-settings-mfa/partner-settings-mfa.component';
 import { PartnerSettingsStorefrontImagesComponent } from './partner-settings-storefront-images/partner-settings-storefront-images.component';
 import { PartnerSettingsStorefrontFieldsComponent } from './partner-settings-storefront-fields/partner-settings-storefront-fields.component';
@@ -23,8 +24,9 @@ const routes: Routes = [
   { path: ':id/employees', component: PartnerEmployeesComponent },
   { path: ':id/settings', pathMatch: 'full', redirectTo: ({ params }) => `/partner/${params['id']}/settings/identity` },
   { path: ':id/settings/identity', component: PartnerSettingsIdentityComponent },
+  { path: ':id/settings/organization', component: PartnerSettingsOrganizationComponent },
   { path: ':id/settings/address', component: PartnerSettingsAddressComponent },
-  { path: ':id/settings/primary-contact', component: PartnerSettingsPrimaryContactComponent },
+  { path: ':id/settings/contacts', component: PartnerSettingsContactsComponent },
   { path: ':id/settings/mfa', component: PartnerSettingsMfaComponent },
   { path: ':id/settings/storefront-images', component: PartnerSettingsStorefrontImagesComponent },
   { path: ':id/settings/storefront-fields', component: PartnerSettingsStorefrontFieldsComponent },

@@ -1,0 +1,242 @@
+<section class="page-shell">
+
+  <div class="page-shell-header">
+    <h1 class="page-title">Contacts</h1>
+    <p class="page-subtitle">Contact settings for <strong>{{ partnerMode.activePartner()?.tpName }}</strong></p>
+  </div>
+
+  @if (loading()) {
+    <div class="text-center py-5 text-muted">
+      <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>
+      Loading…
+    </div>
+  } @else if (loadError()) {
+    <div class="alert alert-danger d-flex align-items-center gap-2 mt-3" role="alert">
+      <i class="bi bi-exclamation-triangle-fill"></i>
+      <span>{{ loadError() }}</span>
+    </div>
+  } @else {
+
+    <!-- Primary Contact -->
+    <form (ngSubmit)="savePrimary()" novalidate class="mt-3">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-transparent border-0 px-4 pt-4 pb-0">
+          <h2 class="h6 fw-semibold mb-0"><i class="bi bi-person-lines-fill me-2"></i>Primary Contact</h2>
+        </div>
+        <div class="card-body p-4">
+          <div class="row g-3">
+
+            <div class="col-md-6 mt-0">
+              <label class="form-label fw-semibold" for="pc-name">Contact Name</label>
+              <input
+                id="pc-name"
+                type="text"
+                class="form-control"
+                [(ngModel)]="primaryForm.cont_name"
+                name="cont_name"
+                maxlength="150"
+                placeholder="Full name"
+              />
+            </div>
+
+            <div class="col-md-6 mt-0">
+              <label class="form-label fw-semibold" for="pc-email">Email Address</label>
+              <input
+                id="pc-email"
+                type="email"
+                class="form-control"
+                [(ngModel)]="primaryForm.pric_eml"
+                name="pric_eml"
+                maxlength="200"
+                placeholder="contact@example.com"
+                (blur)="primaryEmailTouched.set(true)"
+                [class.is-invalid]="primaryEmailTouched() && !isValidEmail(primaryForm.pric_eml)"
+              />
+              <div class="invalid-feedback">Enter a valid email address.</div>
+            </div>
+
+            <div class="col-md-6 mt-0">
+              <label class="form-label fw-semibold" for="pc-phone">Phone Number</label>
+              <input
+                id="pc-phone"
+                type="tel"
+                class="form-control"
+                [value]="primaryForm.pric_phn"
+                maxlength="30"
+                placeholder="(555) 555-5555"
+                (input)="onPrimaryPhoneInput($event)"
+                (blur)="primaryPhoneTouched.set(true)"
+                [class.is-invalid]="primaryPhoneTouched() && !isValidPhone(primaryForm.pric_phn)"
+              />
+              <div class="invalid-feedback">Enter a valid phone number.</div>
+            </div>
+
+          </div>
+        </div>
+        <div class="card-footer bg-transparent border-0 d-flex justify-content-end align-items-center p-4 pt-0">
+          <div class="d-flex align-items-center gap-2">
+            @if (saveErrorPrimary()) {
+              <div class="alert alert-danger d-flex align-items-center gap-2 mb-0 py-2 px-3" role="alert">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <span>{{ saveErrorPrimary() }}</span>
+              </div>
+            }
+            @if (saveSuccessPrimary()) {
+              <div class="alert alert-success d-flex align-items-center gap-2 mb-0 py-2 px-3" role="alert">
+                <i class="bi bi-patch-check-fill"></i>
+                <span>Saved successfully!</span>
+              </div>
+            }
+            <button type="submit" class="btn btn-dark" [disabled]="savingPrimary()">
+              @if (savingPrimary()) {
+                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                Saving…
+              } @else {
+                <i class="bi bi-check-lg me-1"></i>Save
+              }
+            </button>
+          </div>
+        </div>
+      </div>
+    </form>
+
+    <!-- Admin Contact -->
+    <form (ngSubmit)="saveAdmin()" novalidate class="mt-4">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-transparent border-0 px-4 pt-4 pb-0">
+          <h2 class="h6 fw-semibold mb-0"><i class="bi bi-person-gear me-2"></i>Admin Contact</h2>
+        </div>
+        <div class="card-body p-4">
+          <div class="row g-3">
+
+            <div class="col-md-6 mt-0">
+              <label class="form-label fw-semibold" for="adm-email">Email Address</label>
+              <input
+                id="adm-email"
+                type="email"
+                class="form-control"
+                [(ngModel)]="adminForm.adm_ct_eml"
+                name="adm_ct_eml"
+                maxlength="200"
+                placeholder="admin@example.com"
+                (blur)="adminEmailTouched.set(true)"
+                [class.is-invalid]="adminEmailTouched() && !isValidEmail(adminForm.adm_ct_eml)"
+              />
+              <div class="invalid-feedback">Enter a valid email address.</div>
+            </div>
+
+            <div class="col-md-6 mt-0">
+              <label class="form-label fw-semibold" for="adm-phone">Phone Number</label>
+              <input
+                id="adm-phone"
+                type="tel"
+                class="form-control"
+                [value]="adminForm.adm_ct_phn"
+                maxlength="30"
+                placeholder="(555) 555-5555"
+                (input)="onAdminPhoneInput($event)"
+                (blur)="adminPhoneTouched.set(true)"
+                [class.is-invalid]="adminPhoneTouched() && !isValidPhone(adminForm.adm_ct_phn)"
+              />
+              <div class="invalid-feedback">Enter a valid phone number.</div>
+            </div>
+
+          </div>
+        </div>
+        <div class="card-footer bg-transparent border-0 d-flex justify-content-end align-items-center p-4 pt-0">
+          <div class="d-flex align-items-center gap-2">
+            @if (saveErrorAdmin()) {
+              <div class="alert alert-danger d-flex align-items-center gap-2 mb-0 py-2 px-3" role="alert">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <span>{{ saveErrorAdmin() }}</span>
+              </div>
+            }
+            @if (saveSuccessAdmin()) {
+              <div class="alert alert-success d-flex align-items-center gap-2 mb-0 py-2 px-3" role="alert">
+                <i class="bi bi-patch-check-fill"></i>
+                <span>Saved successfully!</span>
+              </div>
+            }
+            <button type="submit" class="btn btn-dark" [disabled]="savingAdmin()">
+              @if (savingAdmin()) {
+                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                Saving…
+              } @else {
+                <i class="bi bi-check-lg me-1"></i>Save
+              }
+            </button>
+          </div>
+        </div>
+      </div>
+    </form>
+
+    <!-- Support Contact -->
+    <form (ngSubmit)="saveSupport()" novalidate class="mt-4">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-transparent border-0 px-4 pt-4 pb-0">
+          <h2 class="h6 fw-semibold mb-0"><i class="bi bi-headset me-2"></i>Support Contact</h2>
+        </div>
+        <div class="card-body p-4">
+          <div class="row g-3">
+
+            <div class="col-md-6 mt-0">
+              <label class="form-label fw-semibold" for="sup-name">Support Name</label>
+              <input
+                id="sup-name"
+                type="text"
+                class="form-control"
+                [(ngModel)]="supportForm.supprt_name"
+                name="supprt_name"
+                maxlength="150"
+                placeholder="Support team or person name"
+              />
+            </div>
+
+            <div class="col-md-6 mt-0">
+              <label class="form-label fw-semibold" for="sup-email">Email Address</label>
+              <input
+                id="sup-email"
+                type="email"
+                class="form-control"
+                [(ngModel)]="supportForm.supprt_eml"
+                name="supprt_eml"
+                maxlength="200"
+                placeholder="support@example.com"
+                (blur)="supportEmailTouched.set(true)"
+                [class.is-invalid]="supportEmailTouched() && !isValidEmail(supportForm.supprt_eml)"
+              />
+              <div class="invalid-feedback">Enter a valid email address.</div>
+            </div>
+
+          </div>
+        </div>
+        <div class="card-footer bg-transparent border-0 d-flex justify-content-end align-items-center p-4 pt-0">
+          <div class="d-flex align-items-center gap-2">
+            @if (saveErrorSupport()) {
+              <div class="alert alert-danger d-flex align-items-center gap-2 mb-0 py-2 px-3" role="alert">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <span>{{ saveErrorSupport() }}</span>
+              </div>
+            }
+            @if (saveSuccessSupport()) {
+              <div class="alert alert-success d-flex align-items-center gap-2 mb-0 py-2 px-3" role="alert">
+                <i class="bi bi-patch-check-fill"></i>
+                <span>Saved successfully!</span>
+              </div>
+            }
+            <button type="submit" class="btn btn-dark" [disabled]="savingSupport()">
+              @if (savingSupport()) {
+                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                Saving…
+              } @else {
+                <i class="bi bi-check-lg me-1"></i>Save
+              }
+            </button>
+          </div>
+        </div>
+      </div>
+    </form>
+
+  }
+
+</section>

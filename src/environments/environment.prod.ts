@@ -8,5 +8,6 @@ export const environment = {
     platformAdmins: 'APIPADMIN',
     tenantPartners: 'APITENANTP',
     auditLog: 'APIAUDIT',
+    tpSettings: 'APITPSTNGS',
   },
 };

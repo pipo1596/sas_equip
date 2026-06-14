@@ -32,7 +32,13 @@
                 [modules]="editorModules"
                 [styles]="{ height: '280px' }"
                 placeholder="Enter the full privacy policy text…"
+                (onEditorCreated)="onEditorCreated($event, privacyCharCount)"
+                (onContentChanged)="onContentChanged($event, privacyCharCount)"
               ></quill-editor>
+              <div class="text-end small mt-1"
+                   [ngClass]="privacyCharCount() >= maxLength ? 'text-danger' : 'text-muted'">
+                {{ privacyCharCount() | number }} / {{ maxLength | number }}
+              </div>
             </div>
 
             <div>
@@ -45,7 +51,13 @@
                 [modules]="editorModules"
                 [styles]="{ height: '280px' }"
                 placeholder="Enter the full terms &amp; conditions text…"
+                (onEditorCreated)="onEditorCreated($event, termsCharCount)"
+                (onContentChanged)="onContentChanged($event, termsCharCount)"
               ></quill-editor>
+              <div class="text-end small mt-1"
+                   [ngClass]="termsCharCount() >= maxLength ? 'text-danger' : 'text-muted'">
+                {{ termsCharCount() | number }} / {{ maxLength | number }}
+              </div>
             </div>
 
             <div>
@@ -58,7 +70,13 @@
                 [modules]="editorModules"
                 [styles]="{ height: '280px' }"
                 placeholder="Enter the full returns policy text…"
+                (onEditorCreated)="onEditorCreated($event, returnsCharCount)"
+                (onContentChanged)="onContentChanged($event, returnsCharCount)"
               ></quill-editor>
+              <div class="text-end small mt-1"
+                   [ngClass]="returnsCharCount() >= maxLength ? 'text-danger' : 'text-muted'">
+                {{ returnsCharCount() | number }} / {{ maxLength | number }}
+              </div>
             </div>
 
           </div>

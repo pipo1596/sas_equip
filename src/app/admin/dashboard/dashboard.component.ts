@@ -9,11 +9,11 @@ interface MaintenanceCard {
 }
 
 @Component({
-  selector: 'app-admin',
-  templateUrl: './admin.component.html',
+  selector: 'app-dashboard',
+  templateUrl: './dashboard.component.html',
   standalone: false,
 })
-export class AdminComponent {
+export class DashboardComponent {
   readonly cards: MaintenanceCard[] = [
     {
       title: 'Platform Admins',
@@ -35,6 +35,13 @@ export class AdminComponent {
       icon: 'bi-journal-text',
       route: 'audit-log',
       color: '#6c757d',
+    },
+    {
+      title: 'Reports',
+      description: 'View and export system reports and analytics.',
+      icon: 'bi-bar-chart-line',
+      route: '/reports',
+      color: '#0d9488',
     },
   ];
 }

@@ -22,11 +22,7 @@ export const routes: Routes = [
     canActivate: [AuthGuard],
     canActivateChild: [partnerModeGuard],
     children: [
-      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-      {
-        path: 'dashboard',
-        loadComponent: () => import('./dashboard/dashboard/dashboard.component').then((m) => m.DashboardComponent),
-      },
+      { path: '', redirectTo: 'admin', pathMatch: 'full' },
       {
         path: 'reports',
         loadChildren: () => import('./reports/reports.module').then((m) => m.ReportsModule),
@@ -39,7 +35,7 @@ export const routes: Routes = [
         path: 'admin',
         loadChildren: () => import('./admin/admin.module').then((m) => m.AdminModule),
       },
-      { path: '**', redirectTo: 'dashboard' },
+      { path: '**', redirectTo: 'admin' },
     ],
   },
 ];

@@ -1,0 +1,97 @@
+<section class="page-shell">
+
+  <div class="page-shell-header">
+    <h1 class="page-title">Legal Content</h1>
+    <p class="page-subtitle">Legal content for <strong>{{ partnerMode.activePartner()?.tpName }}</strong></p>
+  </div>
+
+  @if (loading()) {
+    <div class="text-center py-5 text-muted">
+      <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>
+      Loading…
+    </div>
+  } @else if (loadError()) {
+    <div class="alert alert-danger d-flex align-items-center gap-2 mt-3" role="alert">
+      <i class="bi bi-exclamation-triangle-fill"></i>
+      <span>{{ loadError() }}</span>
+    </div>
+  } @else {
+
+    <form (ngSubmit)="save()" novalidate class="mt-3">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+          <div class="d-flex flex-column gap-4">
+
+            <div>
+              <label class="form-label fw-semibold">
+                <i class="bi bi-shield-lock me-2 text-muted"></i>Privacy Policy
+              </label>
+              <quill-editor
+                [(ngModel)]="form.privcyinfo"
+                name="privcyinfo"
+                [modules]="editorModules"
+                [styles]="{ height: '280px' }"
+                placeholder="Enter the full privacy policy text…"
+              ></quill-editor>
+            </div>
+
+            <div>
+              <label class="form-label fw-semibold">
+                <i class="bi bi-file-earmark-text me-2 text-muted"></i>Terms &amp; Conditions
+              </label>
+              <quill-editor
+                [(ngModel)]="form.termsinfo"
+                name="termsinfo"
+                [modules]="editorModules"
+                [styles]="{ height: '280px' }"
+                placeholder="Enter the full terms &amp; conditions text…"
+              ></quill-editor>
+            </div>
+
+            <div>
+              <label class="form-label fw-semibold">
+                <i class="bi bi-arrow-return-left me-2 text-muted"></i>Returns Policy
+              </label>
+              <quill-editor
+                [(ngModel)]="form.retnsinfo"
+                name="retnsinfo"
+                [modules]="editorModules"
+                [styles]="{ height: '280px' }"
+                placeholder="Enter the full returns policy text…"
+              ></quill-editor>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="card-footer bg-transparent border-0 d-flex justify-content-end align-items-center p-4 pt-0">
+          <div class="d-flex align-items-center gap-2">
+            @if (saveError()) {
+              <div class="alert alert-danger d-flex align-items-center gap-2 mb-0 py-2 px-3" role="alert">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <span>{{ saveError() }}</span>
+              </div>
+            }
+            @if (saveSuccess()) {
+              <div class="alert alert-success d-flex align-items-center gap-2 mb-0 py-2 px-3" role="alert">
+                <i class="bi bi-patch-check-fill"></i>
+                <span>Saved successfully!</span>
+              </div>
+            }
+            <button type="submit" class="btn btn-dark" [disabled]="saving()">
+              @if (saving()) {
+                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                Saving…
+              } @else {
+                <i class="bi bi-check-lg me-1"></i>Save
+              }
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </form>
+
+  }
+
+</section>

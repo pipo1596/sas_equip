@@ -23,6 +23,7 @@
 
         <ul class="sidebar-nav-list">
 
+          <!-- Core -->
           <li class="nav-item">
             <a class="sidebar-nav-link"
                [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'settings', 'identity']"
@@ -41,6 +42,39 @@
             </a>
           </li>
 
+          <li class="nav-item">
+            <a class="sidebar-nav-link"
+               [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'settings', 'mfa']"
+               routerLinkActive="active">
+              <i class="bi bi-shield-lock nav-icon"></i>
+              <span>MFA</span>
+            </a>
+          </li>
+
+          <hr class="sidebar-divider border-secondary my-2" />
+
+          <!-- Contact & Location -->
+          <li class="nav-item">
+            <a class="sidebar-nav-link"
+               [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'settings', 'contacts']"
+               routerLinkActive="active">
+              <i class="bi bi-person-lines-fill nav-icon"></i>
+              <span>Contacts</span>
+            </a>
+          </li>
+
+          <li class="nav-item">
+            <a class="sidebar-nav-link"
+               [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'settings', 'address']"
+               routerLinkActive="active">
+              <i class="bi bi-geo-alt nav-icon"></i>
+              <span>Address</span>
+            </a>
+          </li>
+
+          <hr class="sidebar-divider border-secondary my-2" />
+
+          <!-- Storefront -->
           <li class="nav-item">
             <a class="sidebar-nav-link"
                [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'settings', 'branding']"
@@ -67,58 +101,13 @@
               <span>Storefront Copy</span>
             </a>
           </li>
-          
-          <li class="nav-item">
-            <a class="sidebar-nav-link"
-               [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'settings', 'mfa']"
-               routerLinkActive="active">
-              <i class="bi bi-shield-lock nav-icon"></i>
-              <span>MFA</span>
-            </a>
-          </li>
 
           <li class="nav-item">
             <a class="sidebar-nav-link"
-               [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'settings', 'contacts']"
+               [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'settings', 'legal']"
                routerLinkActive="active">
-              <i class="bi bi-person-lines-fill nav-icon"></i>
-              <span>Contacts</span>
-            </a>
-          </li>
-
-          <li class="nav-item">
-            <a class="sidebar-nav-link"
-               [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'settings', 'address']"
-               routerLinkActive="active">
-              <i class="bi bi-geo-alt nav-icon"></i>
-              <span>Address</span>
-            </a>
-          </li>
-
-          <li class="nav-item">
-            <a class="sidebar-nav-link"
-               [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'settings', 'storefront-images']"
-               routerLinkActive="active">
-              <i class="bi bi-images nav-icon"></i>
-              <span>Storefront Images</span>
-            </a>
-          </li>
-
-          <li class="nav-item">
-            <a class="sidebar-nav-link"
-               [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'settings', 'storefront-fields']"
-               routerLinkActive="active">
-              <i class="bi bi-layout-text-window nav-icon"></i>
-              <span>Storefront Fields</span>
-            </a>
-          </li>
-
-          <li class="nav-item">
-            <a class="sidebar-nav-link"
-               [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'settings', 'record-metadata']"
-               routerLinkActive="active">
-              <i class="bi bi-card-list nav-icon"></i>
-              <span>Record Metadata</span>
+              <i class="bi bi-file-earmark-text nav-icon"></i>
+              <span>Legal Content</span>
             </a>
           </li>
 

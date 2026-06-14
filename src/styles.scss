@@ -3,6 +3,8 @@
 @import 'bootstrap/dist/css/bootstrap.min.css';
 @import 'bootstrap-icons/font/bootstrap-icons.css';
 
+quill-editor { display: block !important; }
+
 /* Hide the entire app until the router completes its first navigation.
    Prevents SSR-rendered protected pages from flashing before the auth
    guard redirects unauthenticated users. */

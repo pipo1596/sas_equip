@@ -3,7 +3,11 @@
   <!-- Partner brand header -->
   <div class="partner-sidebar-header">
     <div class="partner-sidebar-badge">
-      <i class="bi bi-building-fill-lock"></i>
+      @if (partnerMode.activePartner()?.logoUrl) {
+        <img [src]="partnerMode.activePartner()!.logoUrl" alt="Partner logo" style="max-height:36px; max-width:36px; object-fit:contain;">
+      } @else {
+        <i class="bi bi-building-fill-lock"></i>
+      }
     </div>
     <div class="partner-sidebar-info">
       <span class="partner-sidebar-label">Partner Mode</span>

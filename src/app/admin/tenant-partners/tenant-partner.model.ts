@@ -3,6 +3,7 @@ export interface TenantPartner {
   tpName: string;
   tpStatus: string;
   loginDomain: string | null;
+  logoUrl: string | null;
   portalBaseDomain: string | null;
   mfaRequired: 'Y' | 'N';
   adminContactEmail: string | null;

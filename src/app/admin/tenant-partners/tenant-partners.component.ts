@@ -90,7 +90,7 @@ export class TenantPartnersComponent implements OnInit {
   }
 
   openPartnerSettings(partner: TenantPartner): void {
-    this.partnerMode.enter({ tpId: partner.tpId, tpName: partner.tpName });
+    this.partnerMode.enter({ tpId: partner.tpId, tpName: partner.tpName, logoUrl: partner.logoUrl });
     this.router.navigate(['/partner', partner.tpId, 'dashboard']);
   }
 

@@ -3,6 +3,7 @@ import { Injectable, signal } from '@angular/core';
 export interface ActivePartner {
   tpId: number;
   tpName: string;
+  logoUrl: string | null;
 }
 
 const STORAGE_KEY = 'saas_partnerMode';

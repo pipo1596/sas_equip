@@ -1,0 +1,131 @@
+<section class="page-shell">
+
+  <div class="page-shell-header">
+    <h1 class="page-title">Storefront Copy</h1>
+    <p class="page-subtitle">Storefront copy for <strong>{{ partnerMode.activePartner()?.tpName }}</strong></p>
+  </div>
+
+  @if (loading()) {
+    <div class="text-center py-5 text-muted">
+      <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>
+      Loading…
+    </div>
+  } @else if (loadError()) {
+    <div class="alert alert-danger d-flex align-items-center gap-2 mt-3" role="alert">
+      <i class="bi bi-exclamation-triangle-fill"></i>
+      <span>{{ loadError() }}</span>
+    </div>
+  } @else {
+
+    <form (ngSubmit)="save()" novalidate class="mt-3">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+          <div class="row g-4">
+
+            <div class="col-md-6 mt-0">
+              <label class="form-label fw-semibold" for="copy-welcome">Welcome Copy</label>
+              <textarea
+                id="copy-welcome"
+                class="form-control"
+                [(ngModel)]="form.welcom_copy"
+                name="welcom_copy"
+                rows="4"
+                placeholder="Introductory text shown on the storefront homepage…"
+              ></textarea>
+            </div>
+
+            <div class="col-md-6 mt-0">
+              <label class="form-label fw-semibold" for="copy-alert">Alert Copy</label>
+              <textarea
+                id="copy-alert"
+                class="form-control"
+                [(ngModel)]="form.alert_copy"
+                name="alert_copy"
+                rows="4"
+                placeholder="Banner or alert message shown to customers…"
+              ></textarea>
+            </div>
+
+            <div class="col-md-6 mt-0">
+              <label class="form-label fw-semibold" for="copy-hero">Hero Copy</label>
+              <textarea
+                id="copy-hero"
+                class="form-control"
+                [(ngModel)]="form.hero_copy"
+                name="hero_copy"
+                rows="4"
+                placeholder="Text overlaid on the hero image…"
+              ></textarea>
+            </div>
+
+            <div class="col-md-6 mt-0">
+              <label class="form-label fw-semibold" for="copy-shop">Shop Copy</label>
+              <textarea
+                id="copy-shop"
+                class="form-control"
+                [(ngModel)]="form.shop_copy"
+                name="shop_copy"
+                rows="4"
+                placeholder="Text displayed in the shop section…"
+              ></textarea>
+            </div>
+
+            <div class="col-md-6 mt-0">
+              <label class="form-label fw-semibold" for="copy-bottom">Bottom Copy</label>
+              <textarea
+                id="copy-bottom"
+                class="form-control"
+                [(ngModel)]="form.botm_copy"
+                name="botm_copy"
+                rows="4"
+                placeholder="Footer or bottom-of-page text…"
+              ></textarea>
+            </div>
+
+            <div class="col-md-6 mt-0">
+              <label class="form-label fw-semibold" for="copy-copyright">Copyright Text</label>
+              <input
+                id="copy-copyright"
+                type="text"
+                class="form-control"
+                [(ngModel)]="form.copyrg_txt"
+                name="copyrg_txt"
+                maxlength="250"
+                placeholder="© 2025 Company Name. All rights reserved."
+              />
+            </div>
+
+          </div>
+        </div>
+
+        <div class="card-footer bg-transparent border-0 d-flex justify-content-end align-items-center p-4 pt-0">
+          <div class="d-flex align-items-center gap-2">
+            @if (saveError()) {
+              <div class="alert alert-danger d-flex align-items-center gap-2 mb-0 py-2 px-3" role="alert">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <span>{{ saveError() }}</span>
+              </div>
+            }
+            @if (saveSuccess()) {
+              <div class="alert alert-success d-flex align-items-center gap-2 mb-0 py-2 px-3" role="alert">
+                <i class="bi bi-patch-check-fill"></i>
+                <span>Saved successfully!</span>
+              </div>
+            }
+            <button type="submit" class="btn btn-dark" [disabled]="saving()">
+              @if (saving()) {
+                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                Saving…
+              } @else {
+                <i class="bi bi-check-lg me-1"></i>Save
+              }
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </form>
+
+  }
+
+</section>

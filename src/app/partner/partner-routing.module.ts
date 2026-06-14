@@ -12,6 +12,7 @@ import { PartnerSettingsContactsComponent } from './partner-settings-contacts/pa
 import { PartnerSettingsOrganizationComponent } from './partner-settings-organization/partner-settings-organization.component';
 import { PartnerSettingsBrandingComponent } from './partner-settings-branding/partner-settings-branding.component';
 import { PartnerSettingsSocialComponent } from './partner-settings-social/partner-settings-social.component';
+import { PartnerSettingsStorefrontCopyComponent } from './partner-settings-storefront-copy/partner-settings-storefront-copy.component';
 import { PartnerSettingsMfaComponent } from './partner-settings-mfa/partner-settings-mfa.component';
 import { PartnerSettingsStorefrontImagesComponent } from './partner-settings-storefront-images/partner-settings-storefront-images.component';
 import { PartnerSettingsStorefrontFieldsComponent } from './partner-settings-storefront-fields/partner-settings-storefront-fields.component';
@@ -29,6 +30,7 @@ const routes: Routes = [
   { path: ':id/settings/organization', component: PartnerSettingsOrganizationComponent },
   { path: ':id/settings/branding', component: PartnerSettingsBrandingComponent },
   { path: ':id/settings/social', component: PartnerSettingsSocialComponent },
+  { path: ':id/settings/storefront-copy', component: PartnerSettingsStorefrontCopyComponent },
   { path: ':id/settings/address', component: PartnerSettingsAddressComponent },
   { path: ':id/settings/contacts', component: PartnerSettingsContactsComponent },
   { path: ':id/settings/mfa', component: PartnerSettingsMfaComponent },

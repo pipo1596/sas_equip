@@ -58,6 +58,15 @@
               <span>Social Links</span>
             </a>
           </li>
+
+          <li class="nav-item">
+            <a class="sidebar-nav-link"
+               [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'settings', 'storefront-copy']"
+               routerLinkActive="active">
+              <i class="bi bi-pencil-square nav-icon"></i>
+              <span>Storefront Copy</span>
+            </a>
+          </li>
           
           <li class="nav-item">
             <a class="sidebar-nav-link"

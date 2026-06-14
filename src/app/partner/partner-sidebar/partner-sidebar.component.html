@@ -40,6 +40,24 @@
               <span>Organization</span>
             </a>
           </li>
+
+          <li class="nav-item">
+            <a class="sidebar-nav-link"
+               [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'settings', 'branding']"
+               routerLinkActive="active">
+              <i class="bi bi-palette nav-icon"></i>
+              <span>Branding &amp; Media</span>
+            </a>
+          </li>
+
+          <li class="nav-item">
+            <a class="sidebar-nav-link"
+               [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'settings', 'social']"
+               routerLinkActive="active">
+              <i class="bi bi-share nav-icon"></i>
+              <span>Social Links</span>
+            </a>
+          </li>
           
           <li class="nav-item">
             <a class="sidebar-nav-link"

@@ -9,5 +9,6 @@ export const environment = {
     tenantPartners: 'APITENANTP',
     auditLog: 'APIAUDIT',
     tpSettings: 'APITPSTNGS',
+    imageUpload: '/cgi/SEPIMGUPL',
   },
 };

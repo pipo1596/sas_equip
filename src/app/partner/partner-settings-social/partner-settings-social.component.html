@@ -1,0 +1,118 @@
+<section class="page-shell">
+
+  <div class="page-shell-header">
+    <h1 class="page-title">Social Links</h1>
+    <p class="page-subtitle">Social &amp; shopping links for <strong>{{ partnerMode.activePartner()?.tpName }}</strong></p>
+  </div>
+
+  @if (loading()) {
+    <div class="text-center py-5 text-muted">
+      <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>
+      Loading…
+    </div>
+  } @else if (loadError()) {
+    <div class="alert alert-danger d-flex align-items-center gap-2 mt-3" role="alert">
+      <i class="bi bi-exclamation-triangle-fill"></i>
+      <span>{{ loadError() }}</span>
+    </div>
+  } @else {
+
+    <form (ngSubmit)="save()" novalidate class="mt-3">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+          <div class="row g-3">
+
+            <div class="col-md-6 mt-0">
+              <label class="form-label fw-semibold" for="social-instagram">Instagram</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-instagram"></i></span>
+                <input id="social-instagram" type="url" class="form-control"
+                       [(ngModel)]="form.instag_url" name="instag_url"
+                       placeholder="https://instagram.com/…"/>
+              </div>
+            </div>
+
+            <div class="col-md-6 mt-0">
+              <label class="form-label fw-semibold" for="social-facebook">Facebook</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-facebook"></i></span>
+                <input id="social-facebook" type="url" class="form-control"
+                       [(ngModel)]="form.facebk_url" name="facebk_url"
+                       placeholder="https://facebook.com/…"/>
+              </div>
+            </div>
+
+            <div class="col-md-6 mt-0">
+              <label class="form-label fw-semibold" for="social-youtube">YouTube</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-youtube"></i></span>
+                <input id="social-youtube" type="url" class="form-control"
+                       [(ngModel)]="form.youtub_url" name="youtub_url"
+                       placeholder="https://youtube.com/…"/>
+              </div>
+            </div>
+
+            <div class="col-md-6 mt-0">
+              <label class="form-label fw-semibold" for="social-linkedin">LinkedIn</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-linkedin"></i></span>
+                <input id="social-linkedin" type="url" class="form-control"
+                       [(ngModel)]="form.linkdin_url" name="linkdin_url"
+                       placeholder="https://linkedin.com/…"/>
+              </div>
+            </div>
+
+            <div class="col-md-6 mt-0">
+              <label class="form-label fw-semibold" for="social-twitter">X / Twitter</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-twitter-x"></i></span>
+                <input id="social-twitter" type="url" class="form-control"
+                       [(ngModel)]="form.twiter_url" name="twiter_url"
+                       placeholder="https://x.com/…"/>
+              </div>
+            </div>
+
+            <div class="col-md-6 mt-0">
+              <label class="form-label fw-semibold" for="social-shopping">Shopping</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-bag"></i></span>
+                <input id="social-shopping" type="url" class="form-control"
+                       [(ngModel)]="form.shopng_url" name="shopng_url"
+                       placeholder="https://…"/>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="card-footer bg-transparent border-0 d-flex justify-content-end align-items-center p-4 pt-0">
+          <div class="d-flex align-items-center gap-2">
+            @if (saveError()) {
+              <div class="alert alert-danger d-flex align-items-center gap-2 mb-0 py-2 px-3" role="alert">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <span>{{ saveError() }}</span>
+              </div>
+            }
+            @if (saveSuccess()) {
+              <div class="alert alert-success d-flex align-items-center gap-2 mb-0 py-2 px-3" role="alert">
+                <i class="bi bi-patch-check-fill"></i>
+                <span>Saved successfully!</span>
+              </div>
+            }
+            <button type="submit" class="btn btn-dark" [disabled]="saving()">
+              @if (saving()) {
+                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                Saving…
+              } @else {
+                <i class="bi bi-check-lg me-1"></i>Save
+              }
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </form>
+
+  }
+
+</section>

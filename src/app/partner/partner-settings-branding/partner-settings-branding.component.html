@@ -1,0 +1,259 @@
+<section class="page-shell">
+
+  <div class="page-shell-header">
+    <h1 class="page-title">Branding &amp; Media</h1>
+    <p class="page-subtitle">Branding &amp; media assets for <strong>{{ partnerMode.activePartner()?.tpName }}</strong></p>
+  </div>
+
+  @if (loading()) {
+    <div class="text-center py-5 text-muted">
+      <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>
+      Loading…
+    </div>
+  } @else if (loadError()) {
+    <div class="alert alert-danger d-flex align-items-center gap-2 mt-3" role="alert">
+      <i class="bi bi-exclamation-triangle-fill"></i>
+      <span>{{ loadError() }}</span>
+    </div>
+  } @else {
+
+    @if (uploadError()) {
+      <div class="alert alert-danger d-flex align-items-center gap-2 mt-3" role="alert">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <span>{{ uploadError() }}</span>
+      </div>
+    }
+
+    <form (ngSubmit)="save()" novalidate class="mt-3">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+
+          <!-- Logos -->
+          <p class="fw-semibold text-muted small text-uppercase mb-3 mt-0">
+            <i class="bi bi-image me-2"></i>Logos
+          </p>
+          <div class="row g-3">
+
+            <div class="col-md-6 mt-0">
+              <label class="form-label fw-semibold" for="brand-logo">Partner Logo URL</label>
+              <div class="input-group">
+                <input id="brand-logo" type="url" class="form-control"
+                       [(ngModel)]="form.logo_url" name="logo_url" placeholder="https://…"/>
+                <button type="button" class="btn btn-outline-secondary"
+                        [disabled]="uploadingField() !== null"
+                        (click)="logoInput.click()">
+                  @if (uploadingField() === 'logo_url') {
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                  } @else {
+                    <i class="bi bi-upload"></i>
+                  }
+                </button>
+                <input #logoInput type="file" class="d-none" accept="image/*"
+                       (change)="onFileSelected($event, 'logo_url')">
+              </div>
+              @if (form.logo_url) {
+                <div class="mt-2 p-2 bg-light rounded text-center" style="min-height:64px;">
+                  <img [src]="form.logo_url" alt="Partner logo preview" class="img-fluid" style="max-height:56px; object-fit:contain;">
+                </div>
+              }
+            </div>
+
+            <div class="col-md-6 mt-0">
+              <label class="form-label fw-semibold" for="brand-sup-logo">Supplier Logo URL</label>
+              <div class="input-group">
+                <input id="brand-sup-logo" type="url" class="form-control"
+                       [(ngModel)]="form.sup_logo_url" name="sup_logo_url" placeholder="https://…"/>
+                <button type="button" class="btn btn-outline-secondary"
+                        [disabled]="uploadingField() !== null"
+                        (click)="supLogoInput.click()">
+                  @if (uploadingField() === 'sup_logo_url') {
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                  } @else {
+                    <i class="bi bi-upload"></i>
+                  }
+                </button>
+                <input #supLogoInput type="file" class="d-none" accept="image/*"
+                       (change)="onFileSelected($event, 'sup_logo_url')">
+              </div>
+              @if (form.sup_logo_url) {
+                <div class="mt-2 p-2 bg-light rounded text-center" style="min-height:64px;">
+                  <img [src]="form.sup_logo_url" alt="Supplier logo preview" class="img-fluid" style="max-height:56px; object-fit:contain;">
+                </div>
+              }
+            </div>
+
+          </div>
+
+          <hr class="my-4">
+
+          <!-- Page Images -->
+          <p class="fw-semibold text-muted small text-uppercase mb-3 mt-0">
+            <i class="bi bi-layout-text-window-reverse me-2"></i>Page Images
+          </p>
+          <div class="row g-3">
+
+            <div class="col-md-6 mt-0">
+              <label class="form-label fw-semibold" for="brand-login-img">Login Image URL</label>
+              <div class="input-group">
+                <input id="brand-login-img" type="url" class="form-control"
+                       [(ngModel)]="form.login_img" name="login_img" placeholder="https://…"/>
+                <button type="button" class="btn btn-outline-secondary"
+                        [disabled]="uploadingField() !== null"
+                        (click)="loginImgInput.click()">
+                  @if (uploadingField() === 'login_img') {
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                  } @else {
+                    <i class="bi bi-upload"></i>
+                  }
+                </button>
+                <input #loginImgInput type="file" class="d-none" accept="image/*"
+                       (change)="onFileSelected($event, 'login_img')">
+              </div>
+              @if (form.login_img) {
+                <div class="mt-2 p-2 bg-light rounded text-center" style="min-height:64px;">
+                  <img [src]="form.login_img" alt="Login image preview" class="img-fluid" style="max-height:56px; object-fit:contain;">
+                </div>
+              }
+            </div>
+
+            <div class="col-md-6 mt-0">
+              <label class="form-label fw-semibold" for="brand-hero-img">Hero Image URL</label>
+              <div class="input-group">
+                <input id="brand-hero-img" type="url" class="form-control"
+                       [(ngModel)]="form.hero_img" name="hero_img" placeholder="https://…"/>
+                <button type="button" class="btn btn-outline-secondary"
+                        [disabled]="uploadingField() !== null"
+                        (click)="heroImgInput.click()">
+                  @if (uploadingField() === 'hero_img') {
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                  } @else {
+                    <i class="bi bi-upload"></i>
+                  }
+                </button>
+                <input #heroImgInput type="file" class="d-none" accept="image/*"
+                       (change)="onFileSelected($event, 'hero_img')">
+              </div>
+              @if (form.hero_img) {
+                <div class="mt-2 p-2 bg-light rounded text-center" style="min-height:64px;">
+                  <img [src]="form.hero_img" alt="Hero image preview" class="img-fluid" style="max-height:56px; object-fit:contain;">
+                </div>
+              }
+            </div>
+
+          </div>
+
+          <hr class="my-4">
+
+          <!-- Menu Category Images -->
+          <p class="fw-semibold text-muted small text-uppercase mb-3 mt-0">
+            <i class="bi bi-grid me-2"></i>Menu Category Images
+          </p>
+          <div class="row g-3">
+
+            <div class="col-md-4 mt-0">
+              <label class="form-label fw-semibold" for="brand-men-clth">Clothing</label>
+              <div class="input-group">
+                <input id="brand-men-clth" type="url" class="form-control"
+                       [(ngModel)]="form.men_clth_im" name="men_clth_im" placeholder="https://…"/>
+                <button type="button" class="btn btn-outline-secondary"
+                        [disabled]="uploadingField() !== null"
+                        (click)="clothingInput.click()">
+                  @if (uploadingField() === 'men_clth_im') {
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                  } @else {
+                    <i class="bi bi-upload"></i>
+                  }
+                </button>
+                <input #clothingInput type="file" class="d-none" accept="image/*"
+                       (change)="onFileSelected($event, 'men_clth_im')">
+              </div>
+              @if (form.men_clth_im) {
+                <div class="mt-2 p-2 bg-light rounded text-center" style="min-height:64px;">
+                  <img [src]="form.men_clth_im" alt="Clothing preview" class="img-fluid" style="max-height:56px; object-fit:contain;">
+                </div>
+              }
+            </div>
+
+            <div class="col-md-4 mt-0">
+              <label class="form-label fw-semibold" for="brand-men-ftw">Footwear</label>
+              <div class="input-group">
+                <input id="brand-men-ftw" type="url" class="form-control"
+                       [(ngModel)]="form.men_ftw_im" name="men_ftw_im" placeholder="https://…"/>
+                <button type="button" class="btn btn-outline-secondary"
+                        [disabled]="uploadingField() !== null"
+                        (click)="footwearInput.click()">
+                  @if (uploadingField() === 'men_ftw_im') {
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                  } @else {
+                    <i class="bi bi-upload"></i>
+                  }
+                </button>
+                <input #footwearInput type="file" class="d-none" accept="image/*"
+                       (change)="onFileSelected($event, 'men_ftw_im')">
+              </div>
+              @if (form.men_ftw_im) {
+                <div class="mt-2 p-2 bg-light rounded text-center" style="min-height:64px;">
+                  <img [src]="form.men_ftw_im" alt="Footwear preview" class="img-fluid" style="max-height:56px; object-fit:contain;">
+                </div>
+              }
+            </div>
+
+            <div class="col-md-4 mt-0">
+              <label class="form-label fw-semibold" for="brand-men-gear">Gear</label>
+              <div class="input-group">
+                <input id="brand-men-gear" type="url" class="form-control"
+                       [(ngModel)]="form.men_gear_im" name="men_gear_im" placeholder="https://…"/>
+                <button type="button" class="btn btn-outline-secondary"
+                        [disabled]="uploadingField() !== null"
+                        (click)="gearInput.click()">
+                  @if (uploadingField() === 'men_gear_im') {
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                  } @else {
+                    <i class="bi bi-upload"></i>
+                  }
+                </button>
+                <input #gearInput type="file" class="d-none" accept="image/*"
+                       (change)="onFileSelected($event, 'men_gear_im')">
+              </div>
+              @if (form.men_gear_im) {
+                <div class="mt-2 p-2 bg-light rounded text-center" style="min-height:64px;">
+                  <img [src]="form.men_gear_im" alt="Gear preview" class="img-fluid" style="max-height:56px; object-fit:contain;">
+                </div>
+              }
+            </div>
+
+          </div>
+
+        </div>
+
+        <div class="card-footer bg-transparent border-0 d-flex justify-content-end align-items-center p-4 pt-0">
+          <div class="d-flex align-items-center gap-2">
+            @if (saveError()) {
+              <div class="alert alert-danger d-flex align-items-center gap-2 mb-0 py-2 px-3" role="alert">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <span>{{ saveError() }}</span>
+              </div>
+            }
+            @if (saveSuccess()) {
+              <div class="alert alert-success d-flex align-items-center gap-2 mb-0 py-2 px-3" role="alert">
+                <i class="bi bi-patch-check-fill"></i>
+                <span>Saved successfully!</span>
+              </div>
+            }
+            <button type="submit" class="btn btn-dark" [disabled]="saving() || uploadingField() !== null">
+              @if (saving()) {
+                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                Saving…
+              } @else {
+                <i class="bi bi-check-lg me-1"></i>Save
+              }
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </form>
+
+  }
+
+</section>

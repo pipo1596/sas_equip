@@ -18,6 +18,7 @@ export class PartnerSettingsOrganizationComponent implements OnInit {
   readonly saving = signal(false);
   readonly saveError = signal<string | null>(null);
   readonly saveSuccess = signal(false);
+  readonly companyNameTouched = signal(false);
 
   readonly months = [
     { value: 1,  label: 'January'   }, { value: 2,  label: 'February'  },
@@ -66,6 +67,8 @@ export class PartnerSettingsOrganizationComponent implements OnInit {
   }
 
   async save(): Promise<void> {
+    this.companyNameTouched.set(true);
+    if (!this.form.comp_name.trim()) return;
     const tpId = this.partnerMode.activePartner()?.tpId;
     if (!tpId) return;
     this.saving.set(true);

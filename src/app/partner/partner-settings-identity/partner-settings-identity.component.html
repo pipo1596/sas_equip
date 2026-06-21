@@ -2,7 +2,7 @@
 
   <div class="page-shell-header">
     <h1 class="page-title">Tenant Partner Identity</h1>
-    <p class="page-subtitle">Read-only view of the partner's identity details.</p>
+    <p class="page-subtitle">Core identity details for this partner account. Some fields are system-managed and cannot be edited directly.</p>
   </div>
 
   @if (loading()) {
@@ -11,57 +11,125 @@
       Loading…
     </div>
   } @else if (error()) {
-    <div class="alert alert-danger d-flex align-items-center gap-2" role="alert">
+    <div class="alert alert-danger d-flex align-items-center gap-2 mt-3" role="alert">
       <i class="bi bi-exclamation-triangle-fill"></i>
       <span>{{ error() }}</span>
     </div>
   } @else if (partner(); as p) {
 
-    <div class="card border-0 shadow-sm">
+    <!-- Info banner -->
+    <div class="info-banner d-flex align-items-center gap-2 mt-3 mb-4">
+      <i class="bi bi-info-circle-fill flex-shrink-0"></i>
+      <span>All fields on this page are system-managed and cannot be edited directly. Contact platform support to request changes.</span>
+    </div>
+
+    <!-- Organisation Identity -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header card-header-org p-4">
+        <div class="d-flex align-items-center gap-3">
+          <div class="section-badge section-badge-org">
+            <i class="bi bi-person-fill"></i>
+          </div>
+          <div>
+            <h2 class="h6 fw-bold mb-0">Organization Identity</h2>
+            <p class="text-muted small mb-0">Legal name and current account status</p>
+          </div>
+        </div>
+      </div>
       <div class="card-body p-4">
         <div class="row g-3">
-
-          <!-- Organisation Name -->
-          <div class="col-md-6 mt-0">
-            <label class="form-label fw-semibold">Organisation Name</label>
-            <p class="form-control-plaintext border rounded px-3 py-2 mb-0 bg-light">{{ p.tpName || '—' }}</p>
+          <div class="col-md-6">
+            <p class="form-label small fw-semibold text-uppercase text-muted mb-1">Organization Name</p>
+            <p class="form-control bg-light text-muted mb-0">{{ p.tpName || '—' }}</p>
           </div>
-
-          <!-- Status -->
-          <div class="col-md-6 mt-0">
-            <label class="form-label fw-semibold">Status</label>
-            <p class="form-control-plaintext pt-2 mb-0">
-              <span [class]="statusBadgeClass(p.tpStatus)">{{ p.tpStatus }}</span>
-            </p>
+          <div class="col-md-6">
+            <p class="form-label small fw-semibold text-uppercase text-muted mb-1">Status</p>
+            <div class="pt-1">
+              <span class="status-dot" [style.background-color]="statusDotColor(p.tpStatus)"></span>
+              <span class="fw-semibold small">{{ p.tpStatus | titlecase }}</span>
+            </div>
           </div>
-
-          <!-- Login Domain -->
-          <div class="col-md-6 mt-0">
-            <label class="form-label fw-semibold">Login Domain</label>
-            <p class="form-control-plaintext border rounded px-3 py-2 mb-0 bg-light">{{ p.loginDomain || '—' }}</p>
-            <div class="form-text">Used for L2 tenant routing. Must be unique.</div>
-          </div>
-
-          <!-- Portal Base Domain -->
-          <div class="col-md-6 mt-0">
-            <label class="form-label fw-semibold">Portal Base Domain</label>
-            <p class="form-control-plaintext border rounded px-3 py-2 mb-0 bg-light">{{ p.portalBaseDomain || '—' }}</p>
-            <div class="form-text">Base URL for the tenant's portal. Must be unique.</div>
-          </div>
-
-          <!-- Admin Contact Email -->
-          <div class="col-md-6 mt-0">
-            <label class="form-label fw-semibold">Admin Contact Email</label>
-            <p class="form-control-plaintext border rounded px-3 py-2 mb-0 bg-light">{{ p.adminContactEmail || '—' }}</p>
-          </div>
-
-          <!-- Admin Contact Phone -->
-          <div class="col-md-6 mt-0">
-            <label class="form-label fw-semibold">Admin Contact Phone</label>
-            <p class="form-control-plaintext border rounded px-3 py-2 mb-0 bg-light">{{ p.adminContactPhone || '—' }}</p>
-          </div>
-
         </div>
+      </div>
+    </div>
+
+    <!-- Domain Configuration -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header card-header-domain p-4">
+        <div class="d-flex align-items-center gap-3">
+          <div class="section-badge section-badge-domain">
+            <i class="bi bi-globe2"></i>
+          </div>
+          <div>
+            <h2 class="h6 fw-bold mb-0">Domain Configuration</h2>
+            <p class="text-muted small mb-0">System-assigned routing and portal domains</p>
+          </div>
+        </div>
+      </div>
+      <div class="card-body p-4">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <p class="form-label small fw-semibold text-uppercase text-muted mb-1">Login Domain</p>
+            <p class="form-control bg-light text-muted mb-0">{{ p.loginDomain || '—' }}</p>
+            <div class="form-text"><i class="bi bi-info-circle me-1"></i>Used for L2 tenant routing. Must be unique.</div>
+          </div>
+          <div class="col-md-6">
+            <p class="form-label small fw-semibold text-uppercase text-muted mb-1">Customer Portal Base Domain</p>
+            <p class="form-control bg-light text-muted mb-0">{{ p.portalBaseDomain || '—' }}</p>
+            <div class="form-text"><i class="bi bi-info-circle me-1"></i>Base URL for the tenant's customer portal. Must be unique.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Primary Admin Contact -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header card-header-contact p-4">
+        <div class="d-flex align-items-center gap-3">
+          <div class="section-badge section-badge-contact">
+            <i class="bi bi-shield-lock-fill"></i>
+          </div>
+          <div>
+            <h2 class="h6 fw-bold mb-0">Primary Admin Contact</h2>
+            <p class="text-muted small mb-0">The main administrator on record for this partner account</p>
+          </div>
+        </div>
+      </div>
+      <div class="card-body p-4">
+        @if (settings(); as s) {
+          <div class="contact-card border rounded p-4 d-flex gap-3">
+            <div class="contact-avatar">{{ initials(s.cont_name) }}</div>
+            <div class="flex-grow-1">
+              <h3 class="h6 fw-bold mb-0">{{ s.cont_name || '—' }}</h3>
+              <p class="text-muted small fw-semibold text-uppercase mb-3" style="letter-spacing:0.06em; font-size:0.7rem;">Primary Administrator</p>
+              <div class="d-flex flex-column gap-2">
+                @if (s.pric_eml) {
+                  <div class="d-flex align-items-center gap-2 small">
+                    <i class="bi bi-envelope text-muted"></i>
+                    <span>{{ s.pric_eml }}</span>
+                  </div>
+                }
+                @if (s.pric_phn) {
+                  <div class="d-flex align-items-center gap-2 small">
+                    <i class="bi bi-telephone text-muted"></i>
+                    <span>{{ s.pric_phn }}</span>
+                  </div>
+                }
+                @if (s.addr_line1) {
+                  <div class="d-flex align-items-start gap-2 small">
+                    <i class="bi bi-geo-alt text-muted mt-1 flex-shrink-0"></i>
+                    <span>
+                      {{ s.addr_line1 }}<br>
+                      @if (s.addr_line2) { {{ s.addr_line2 }}<br> }
+                      {{ cityLine(s) }}<br>
+                      {{ s.country }}
+                    </span>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        }
       </div>
     </div>
 

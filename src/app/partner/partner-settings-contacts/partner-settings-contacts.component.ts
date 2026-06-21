@@ -13,6 +13,8 @@ export class PartnerSettingsContactsComponent implements OnInit {
   protected readonly partnerMode = inject(PartnerModeService);
   private readonly service = inject(TpSettingsService);
 
+  readonly activeTab = signal<'primary' | 'admin' | 'support'>('primary');
+
   readonly loading = signal(false);
   readonly loadError = signal<string | null>(null);
 

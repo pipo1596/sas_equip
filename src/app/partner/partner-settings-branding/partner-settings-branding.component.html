@@ -25,17 +25,25 @@
     }
 
     <form (ngSubmit)="save()" novalidate class="mt-3">
-      <div class="card border-0 shadow-sm">
-        <div class="card-body p-4">
 
-          <!-- Logos -->
-          <p class="fw-semibold text-muted small text-uppercase mb-3 mt-0">
-            <i class="bi bi-image me-2"></i>Logos
-          </p>
+      <!-- Logos -->
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header card-header-section p-4">
+          <div class="d-flex align-items-center gap-3">
+            <div class="section-badge">
+              <i class="bi bi-image-fill"></i>
+            </div>
+            <div>
+              <h2 class="h6 fw-bold mb-0">Logos</h2>
+              <p class="text-muted small mb-0">Primary and supplier brand logos</p>
+            </div>
+          </div>
+        </div>
+        <div class="card-body p-4">
           <div class="row g-3">
 
-            <div class="col-md-6 mt-0">
-              <label class="form-label fw-semibold" for="brand-logo">Partner Logo URL</label>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold text-uppercase text-muted" for="brand-logo">Partner Logo URL</label>
               <div class="input-group">
                 <input id="brand-logo" type="url" class="form-control"
                        [(ngModel)]="form.logo_url" name="logo_url" placeholder="https://…"/>
@@ -58,8 +66,8 @@
               }
             </div>
 
-            <div class="col-md-6 mt-0">
-              <label class="form-label fw-semibold" for="brand-sup-logo">Supplier Logo URL</label>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold text-uppercase text-muted" for="brand-sup-logo">Supplier Logo URL</label>
               <div class="input-group">
                 <input id="brand-sup-logo" type="url" class="form-control"
                        [(ngModel)]="form.sup_logo_url" name="sup_logo_url" placeholder="https://…"/>
@@ -83,17 +91,27 @@
             </div>
 
           </div>
+        </div>
+      </div>
 
-          <hr class="my-4">
-
-          <!-- Page Images -->
-          <p class="fw-semibold text-muted small text-uppercase mb-3 mt-0">
-            <i class="bi bi-layout-text-window-reverse me-2"></i>Page Images
-          </p>
+      <!-- Page Images -->
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header card-header-section p-4">
+          <div class="d-flex align-items-center gap-3">
+            <div class="section-badge">
+              <i class="bi bi-layout-text-window-reverse"></i>
+            </div>
+            <div>
+              <h2 class="h6 fw-bold mb-0">Page Images</h2>
+              <p class="text-muted small mb-0">Login and hero banner images</p>
+            </div>
+          </div>
+        </div>
+        <div class="card-body p-4">
           <div class="row g-3">
 
-            <div class="col-md-6 mt-0">
-              <label class="form-label fw-semibold" for="brand-login-img">Login Image URL</label>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold text-uppercase text-muted" for="brand-login-img">Login Image URL</label>
               <div class="input-group">
                 <input id="brand-login-img" type="url" class="form-control"
                        [(ngModel)]="form.login_img" name="login_img" placeholder="https://…"/>
@@ -116,8 +134,8 @@
               }
             </div>
 
-            <div class="col-md-6 mt-0">
-              <label class="form-label fw-semibold" for="brand-hero-img">Hero Image URL</label>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold text-uppercase text-muted" for="brand-hero-img">Hero Image URL</label>
               <div class="input-group">
                 <input id="brand-hero-img" type="url" class="form-control"
                        [(ngModel)]="form.hero_img" name="hero_img" placeholder="https://…"/>
@@ -141,17 +159,27 @@
             </div>
 
           </div>
+        </div>
+      </div>
 
-          <hr class="my-4">
-
-          <!-- Menu Category Images -->
-          <p class="fw-semibold text-muted small text-uppercase mb-3 mt-0">
-            <i class="bi bi-grid me-2"></i>Menu Category Images
-          </p>
+      <!-- Menu Category Images -->
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header card-header-section p-4">
+          <div class="d-flex align-items-center gap-3">
+            <div class="section-badge">
+              <i class="bi bi-grid-fill"></i>
+            </div>
+            <div>
+              <h2 class="h6 fw-bold mb-0">Menu Category Images</h2>
+              <p class="text-muted small mb-0">Storefront category navigation imagery</p>
+            </div>
+          </div>
+        </div>
+        <div class="card-body p-4">
           <div class="row g-3">
 
-            <div class="col-md-4 mt-0">
-              <label class="form-label fw-semibold" for="brand-men-clth">Clothing</label>
+            <div class="col-md-4">
+              <label class="form-label small fw-semibold text-uppercase text-muted" for="brand-men-clth">Clothing</label>
               <div class="input-group">
                 <input id="brand-men-clth" type="url" class="form-control"
                        [(ngModel)]="form.men_clth_im" name="men_clth_im" placeholder="https://…"/>
@@ -174,8 +202,8 @@
               }
             </div>
 
-            <div class="col-md-4 mt-0">
-              <label class="form-label fw-semibold" for="brand-men-ftw">Footwear</label>
+            <div class="col-md-4">
+              <label class="form-label small fw-semibold text-uppercase text-muted" for="brand-men-ftw">Footwear</label>
               <div class="input-group">
                 <input id="brand-men-ftw" type="url" class="form-control"
                        [(ngModel)]="form.men_ftw_im" name="men_ftw_im" placeholder="https://…"/>
@@ -198,8 +226,8 @@
               }
             </div>
 
-            <div class="col-md-4 mt-0">
-              <label class="form-label fw-semibold" for="brand-men-gear">Gear</label>
+            <div class="col-md-4">
+              <label class="form-label small fw-semibold text-uppercase text-muted" for="brand-men-gear">Gear</label>
               <div class="input-group">
                 <input id="brand-men-gear" type="url" class="form-control"
                        [(ngModel)]="form.men_gear_im" name="men_gear_im" placeholder="https://…"/>
@@ -223,10 +251,11 @@
             </div>
 
           </div>
-
         </div>
-
-        <div class="card-footer bg-transparent border-0 d-flex justify-content-end align-items-center p-4 pt-0">
+        <div class="card-footer bg-transparent border-top d-flex justify-content-between align-items-center px-4 py-3">
+          <span class="text-muted small">
+            <i class="bi bi-info-circle me-1"></i>Changes apply immediately after saving
+          </span>
           <div class="d-flex align-items-center gap-2">
             @if (saveError()) {
               <div class="alert alert-danger d-flex align-items-center gap-2 mb-0 py-2 px-3" role="alert">
@@ -245,13 +274,13 @@
                 <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
                 Saving…
               } @else {
-                <i class="bi bi-check-lg me-1"></i>Save
+                <i class="bi bi-check-lg me-1"></i>Save changes
               }
             </button>
           </div>
         </div>
-
       </div>
+
     </form>
 
   }

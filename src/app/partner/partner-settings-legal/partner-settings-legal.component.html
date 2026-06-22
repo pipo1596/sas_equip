@@ -19,12 +19,25 @@
 
     <form (ngSubmit)="save()" novalidate class="mt-3">
       <div class="card border-0 shadow-sm">
+
+        <div class="card-header card-header-section p-4">
+          <div class="d-flex align-items-center gap-3">
+            <div class="section-badge">
+              <i class="bi bi-journal-text"></i>
+            </div>
+            <div>
+              <h2 class="h6 fw-bold mb-0">Legal Documents</h2>
+              <p class="text-muted small mb-0">Privacy, terms and returns policies displayed to customers</p>
+            </div>
+          </div>
+        </div>
+
         <div class="card-body p-4">
           <div class="d-flex flex-column gap-4">
 
             <div>
-              <label class="form-label fw-semibold">
-                <i class="bi bi-shield-lock me-2 text-muted"></i>Privacy Policy
+              <label class="form-label small fw-semibold text-uppercase text-muted">
+                <i class="bi bi-shield-lock me-2"></i>Privacy Policy
               </label>
               <quill-editor
                 [(ngModel)]="form.privcyinfo"
@@ -42,8 +55,8 @@
             </div>
 
             <div>
-              <label class="form-label fw-semibold">
-                <i class="bi bi-file-earmark-text me-2 text-muted"></i>Terms &amp; Conditions
+              <label class="form-label small fw-semibold text-uppercase text-muted">
+                <i class="bi bi-file-earmark-text me-2"></i>Terms &amp; Conditions
               </label>
               <quill-editor
                 [(ngModel)]="form.termsinfo"
@@ -61,8 +74,8 @@
             </div>
 
             <div>
-              <label class="form-label fw-semibold">
-                <i class="bi bi-arrow-return-left me-2 text-muted"></i>Returns Policy
+              <label class="form-label small fw-semibold text-uppercase text-muted">
+                <i class="bi bi-arrow-return-left me-2"></i>Returns Policy
               </label>
               <quill-editor
                 [(ngModel)]="form.retnsinfo"
@@ -82,7 +95,10 @@
           </div>
         </div>
 
-        <div class="card-footer bg-transparent border-0 d-flex justify-content-end align-items-center p-4 pt-0">
+        <div class="card-footer bg-transparent border-top d-flex justify-content-between align-items-center px-4 py-3">
+          <span class="text-muted small">
+            <i class="bi bi-info-circle me-1"></i>Changes apply immediately after saving
+          </span>
           <div class="d-flex align-items-center gap-2">
             @if (saveError()) {
               <div class="alert alert-danger d-flex align-items-center gap-2 mb-0 py-2 px-3" role="alert">
@@ -101,7 +117,7 @@
                 <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
                 Saving…
               } @else {
-                <i class="bi bi-check-lg me-1"></i>Save
+                <i class="bi bi-check-lg me-1"></i>Save changes
               }
             </button>
           </div>

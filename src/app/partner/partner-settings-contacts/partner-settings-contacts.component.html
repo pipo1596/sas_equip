@@ -17,23 +17,24 @@
     </div>
   } @else {
 
-    <div class="card shadow-sm mt-3">
+    <div class="card border-0 shadow-sm mt-3">
 
-      <!-- Tab navigation -->
-      <div class="card-header pt-0">
+      <!-- Section header + tab navigation -->
+      <div class="card-header card-header-section pt-0 ps-2 overflow-hidden">
+        
         <ul class="nav nav-tabs card-header-tabs">
           <li class="nav-item">
-            <button type="button" class="nav-link tab-primary" [class.active]="activeTab() === 'primary'" (click)="activeTab.set('primary')">
+            <button type="button" class="nav-link tab-primary py-4" [class.active]="activeTab() === 'primary'" (click)="activeTab.set('primary')">
               <i class="bi bi-person-lines-fill me-2"></i>Primary Contact
             </button>
           </li>
           <li class="nav-item">
-            <button type="button" class="nav-link tab-primary" [class.active]="activeTab() === 'admin'" (click)="activeTab.set('admin')">
+            <button type="button" class="nav-link tab-primary py-4" [class.active]="activeTab() === 'admin'" (click)="activeTab.set('admin')">
               <i class="bi bi-person-gear me-2"></i>Admin Contact
             </button>
           </li>
           <li class="nav-item">
-            <button type="button" class="nav-link tab-primary" [class.active]="activeTab() === 'support'" (click)="activeTab.set('support')">
+            <button type="button" class="nav-link tab-primary py-4" [class.active]="activeTab() === 'support'" (click)="activeTab.set('support')">
               <i class="bi bi-headset me-2"></i>Support Contact
             </button>
           </li>

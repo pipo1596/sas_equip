@@ -20,6 +20,8 @@ export interface TpSettings {
   postal_code:   string | null;
   country:       string;
   mfa_reqd:      'Y' | 'N';
+  ses_timeout:   number | null;
+  data_resid:    string | null;
   logo_url:      string | null;
   sup_logo_url:  string | null;
   login_img:     string | null;

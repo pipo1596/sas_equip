@@ -21,81 +21,146 @@
       <div class="card border-0 shadow-sm">
 
         <div class="card-header card-header-section p-4">
-          <div class="d-flex align-items-center gap-3">
-            <div class="section-badge">
-              <i class="bi bi-share-fill"></i>
+          <div class="d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-3">
+              <div class="section-badge">
+                <i class="bi bi-share-fill"></i>
+              </div>
+              <div>
+                <h2 class="h6 fw-bold mb-0">Social Media</h2>
+                <p class="text-muted small mb-0">Profiles shown in storefront header and footer</p>
+              </div>
             </div>
-            <div>
-              <h2 class="h6 fw-bold mb-0">Social &amp; Shopping Links</h2>
-              <p class="text-muted small mb-0">External profile and storefront URLs</p>
-            </div>
+            @if (connectedCount) {
+              <span class="badge rounded-pill bg-success-subtle text-success border border-success-subtle px-3 py-2">
+                <span style="font-size:0.5rem;">&#9679;</span> {{ connectedCount }} connected
+              </span>
+            }
           </div>
         </div>
 
-        <div class="card-body p-4">
-          <div class="row g-3">
+        <div class="card-body p-0">
 
-            <div class="col-md-6">
-              <label class="form-label small fw-semibold text-uppercase text-muted" for="social-instagram">Instagram</label>
-              <div class="input-group">
-                <span class="input-group-text"><i class="bi bi-instagram"></i></span>
-                <input id="social-instagram" type="url" class="form-control"
-                       [(ngModel)]="form.instag_url" name="instag_url"
-                       placeholder="https://instagram.com/…"/>
-              </div>
+          <!-- Instagram -->
+          <div class="social-row">
+            <div class="social-icon" style="background:#fce4ec;">
+              <img src="images/social/instagram.svg" alt="Instagram" width="20" height="20">
             </div>
-
-            <div class="col-md-6">
-              <label class="form-label small fw-semibold text-uppercase text-muted" for="social-facebook">Facebook</label>
-              <div class="input-group">
-                <span class="input-group-text"><i class="bi bi-facebook"></i></span>
-                <input id="social-facebook" type="url" class="form-control"
-                       [(ngModel)]="form.facebk_url" name="facebk_url"
-                       placeholder="https://facebook.com/…"/>
-              </div>
+            <div class="social-label">
+              <p class="name">Instagram</p>
+              <p class="base-url">instagram.com/</p>
             </div>
-
-            <div class="col-md-6">
-              <label class="form-label small fw-semibold text-uppercase text-muted" for="social-youtube">YouTube</label>
-              <div class="input-group">
-                <span class="input-group-text"><i class="bi bi-youtube"></i></span>
-                <input id="social-youtube" type="url" class="form-control"
-                       [(ngModel)]="form.youtub_url" name="youtub_url"
-                       placeholder="https://youtube.com/…"/>
-              </div>
+            <div class="social-input">
+              <input type="text" [(ngModel)]="form.instag_url" name="instag_url"
+                     placeholder="your_handle"/>
             </div>
-
-            <div class="col-md-6">
-              <label class="form-label small fw-semibold text-uppercase text-muted" for="social-linkedin">LinkedIn</label>
-              <div class="input-group">
-                <span class="input-group-text"><i class="bi bi-linkedin"></i></span>
-                <input id="social-linkedin" type="url" class="form-control"
-                       [(ngModel)]="form.linkdin_url" name="linkdin_url"
-                       placeholder="https://linkedin.com/…"/>
-              </div>
-            </div>
-
-            <div class="col-md-6">
-              <label class="form-label small fw-semibold text-uppercase text-muted" for="social-twitter">X / Twitter</label>
-              <div class="input-group">
-                <span class="input-group-text"><i class="bi bi-twitter-x"></i></span>
-                <input id="social-twitter" type="url" class="form-control"
-                       [(ngModel)]="form.twiter_url" name="twiter_url"
-                       placeholder="https://x.com/…"/>
-              </div>
-            </div>
-
-            <div class="col-md-6">
-              <label class="form-label small fw-semibold text-uppercase text-muted" for="social-shopping">Shopping</label>
-              <div class="input-group">
-                <span class="input-group-text"><i class="bi bi-bag"></i></span>
-                <input id="social-shopping" type="url" class="form-control"
-                       [(ngModel)]="form.shopng_url" name="shopng_url"
-                       placeholder="https://…"/>
-              </div>
-            </div>
-
+            <span class="status-dot" [class.active]="form.instag_url" [class.inactive]="!form.instag_url"></span>
+            <a class="link-btn" [href]="form.instag_url" target="_blank" rel="noopener"
+               [class.disabled]="!form.instag_url" tabindex="-1">
+              <i class="bi bi-box-arrow-up-right"></i>
+            </a>
           </div>
+
+          <!-- Facebook -->
+          <div class="social-row">
+            <div class="social-icon" style="background:#e3f2fd;">
+              <img src="images/social/facebook.svg" alt="Facebook" width="20" height="20">
+            </div>
+            <div class="social-label">
+              <p class="name">Facebook</p>
+              <p class="base-url">facebook.com/</p>
+            </div>
+            <div class="social-input">
+              <input type="text" [(ngModel)]="form.facebk_url" name="facebk_url"
+                     placeholder="your_page"/>
+            </div>
+            <span class="status-dot" [class.active]="form.facebk_url" [class.inactive]="!form.facebk_url"></span>
+            <a class="link-btn" [href]="form.facebk_url" target="_blank" rel="noopener"
+               [class.disabled]="!form.facebk_url" tabindex="-1">
+              <i class="bi bi-box-arrow-up-right"></i>
+            </a>
+          </div>
+
+          <!-- YouTube -->
+          <div class="social-row">
+            <div class="social-icon" style="background:#ffebee;">
+              <img src="images/social/youtube.svg" alt="YouTube" width="20" height="20">
+            </div>
+            <div class="social-label">
+              <p class="name">YouTube</p>
+              <p class="base-url">youtube.com/&#64;</p>
+            </div>
+            <div class="social-input">
+              <input type="text" [(ngModel)]="form.youtub_url" name="youtub_url"
+                     placeholder="your_channel"/>
+            </div>
+            <span class="status-dot" [class.active]="form.youtub_url" [class.inactive]="!form.youtub_url"></span>
+            <a class="link-btn" [href]="form.youtub_url" target="_blank" rel="noopener"
+               [class.disabled]="!form.youtub_url" tabindex="-1">
+              <i class="bi bi-box-arrow-up-right"></i>
+            </a>
+          </div>
+
+          <!-- LinkedIn -->
+          <div class="social-row">
+            <div class="social-icon" style="background:#e3f2fd;">
+              <img src="images/social/linkedin.svg" alt="LinkedIn" width="20" height="20">
+            </div>
+            <div class="social-label">
+              <p class="name">LinkedIn</p>
+              <p class="base-url">linkedin.com/company/</p>
+            </div>
+            <div class="social-input">
+              <input type="text" [(ngModel)]="form.linkdin_url" name="linkdin_url"
+                     placeholder="company_name"/>
+            </div>
+            <span class="status-dot" [class.active]="form.linkdin_url" [class.inactive]="!form.linkdin_url"></span>
+            <a class="link-btn" [href]="form.linkdin_url" target="_blank" rel="noopener"
+               [class.disabled]="!form.linkdin_url" tabindex="-1">
+              <i class="bi bi-box-arrow-up-right"></i>
+            </a>
+          </div>
+
+          <!-- X / Twitter -->
+          <div class="social-row">
+            <div class="social-icon" style="background:#f3f4f6;">
+              <img src="images/social/x.svg" alt="X" width="18" height="18">
+            </div>
+            <div class="social-label">
+              <p class="name">X / Twitter</p>
+              <p class="base-url">x.com/</p>
+            </div>
+            <div class="social-input">
+              <input type="text" [(ngModel)]="form.twiter_url" name="twiter_url"
+                     placeholder="handle"/>
+            </div>
+            <span class="status-dot" [class.active]="form.twiter_url" [class.inactive]="!form.twiter_url"></span>
+            <a class="link-btn" [href]="form.twiter_url" target="_blank" rel="noopener"
+               [class.disabled]="!form.twiter_url" tabindex="-1">
+              <i class="bi bi-box-arrow-up-right"></i>
+            </a>
+          </div>
+
+          <!-- Shopping -->
+          <div class="social-row">
+            <div class="social-icon" style="background:#ede7f6;">
+              <i class="bi bi-bag-fill" style="color:#5c6bc0; font-size:1.1rem;"></i>
+            </div>
+            <div class="social-label">
+              <p class="name">Shopping</p>
+              <p class="base-url">storefront URL</p>
+            </div>
+            <div class="social-input">
+              <input type="url" [(ngModel)]="form.shopng_url" name="shopng_url"
+                     placeholder="https://…"/>
+            </div>
+            <span class="status-dot" [class.active]="form.shopng_url" [class.inactive]="!form.shopng_url"></span>
+            <a class="link-btn" [href]="form.shopng_url" target="_blank" rel="noopener"
+               [class.disabled]="!form.shopng_url" tabindex="-1">
+              <i class="bi bi-box-arrow-up-right"></i>
+            </a>
+          </div>
+
         </div>
 
         <div class="card-footer bg-transparent border-top d-flex justify-content-between align-items-center px-4 py-3">

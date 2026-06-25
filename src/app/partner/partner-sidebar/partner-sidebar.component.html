@@ -21,8 +21,8 @@
       <!-- ── Settings sub-nav ── -->
       @if (inSettingsMode()) {
 
-        <div class="partner-settings-nav-label">
-          <i class="bi bi-gear me-2"></i>Settings
+        <div class="partner-settings-nav-label py-0">
+          Settings
         </div>
 
         <ul class="sidebar-nav-list">
@@ -56,8 +56,20 @@
           </li>
 
           <hr class="sidebar-divider border-secondary my-2" />
+          
+          <!-- People -->
+          <div class="partner-settings-nav-label py-0">
+          People
+          </div>
+          <li class="nav-item">
+            <a class="sidebar-nav-link"
+               [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'settings', 'users']"
+               routerLinkActive="active">
+              <i class="bi bi-people-fill nav-icon"></i>
+              <span>Users</span>
+            </a>
+          </li>
 
-          <!-- Contact & Location -->
           <li class="nav-item">
             <a class="sidebar-nav-link"
                [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'settings', 'contacts']"
@@ -79,6 +91,9 @@
           <hr class="sidebar-divider border-secondary my-2" />
 
           <!-- Storefront -->
+          <div class="partner-settings-nav-label py-0">
+          Storefront 
+          </div>
           <li class="nav-item">
             <a class="sidebar-nav-link"
                [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'settings', 'branding']"

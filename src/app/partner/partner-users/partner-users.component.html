@@ -1,0 +1,246 @@
+<section class="page-shell">
+
+  <!-- Page header -->
+  <div class="page-shell-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div>
+      <h1 class="page-title">Users</h1>
+      <p class="page-subtitle">Manage users for <strong>{{ partnerMode.activePartner()?.tpName }}</strong></p>
+    </div>
+    <a class="btn btn-dark" [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'settings', 'users', 'new']">
+      <i class="bi bi-person-plus me-2"></i>New User
+    </a>
+  </div>
+
+  <!-- Error banner -->
+  @if (error()) {
+    <div class="alert alert-danger d-flex align-items-center gap-2 mb-3" role="alert">
+      <i class="bi bi-exclamation-triangle-fill"></i>
+      <span>{{ error() }}</span>
+      <button type="button" class="btn-close ms-auto" aria-label="Dismiss" (click)="error.set(null)"></button>
+    </div>
+  }
+
+  <!-- Toolbar: search + page size -->
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+    <div class="input-group" style="max-width: 360px;">
+      <span class="input-group-text bg-white border-end-0">
+        <i class="bi bi-search text-muted"></i>
+      </span>
+      <input
+        type="text"
+        class="form-control border-start-0 ps-0"
+        placeholder="Search by name or email…"
+        [value]="search()"
+        (input)="onSearchChange($any($event.target).value)"
+      />
+      @if (search()) {
+        <button class="btn btn-outline-secondary" type="button" (click)="onSearchChange('')">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      }
+    </div>
+
+    <div class="d-flex align-items-center gap-2">
+      <label class="small text-muted mb-0 text-nowrap" for="pageSizeSelect">Rows per page:</label>
+      <select
+        id="pageSizeSelect"
+        class="form-select form-select-sm pe-4"
+        [ngModel]="pageSize()"
+        (ngModelChange)="onPageSizeChange($event)"
+      >
+        <option value="10">10</option>
+        <option value="20">20</option>
+        <option value="50">50</option>
+        <option value="100">100</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0 table-stacked">
+      <thead>
+        <tr>
+          <th scope="col">Name &amp; Email</th>
+          <th scope="col" class="text-center">Role</th>
+          <th scope="col" class="text-center">MFA</th>
+          <th scope="col" class="text-center">Status</th>
+          <th scope="col" class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (loading()) {
+          <tr>
+            <td colspan="5" class="text-center py-4 text-muted">
+              <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>
+              Loading…
+            </td>
+          </tr>
+        } @else if (users().length === 0) {
+          <tr>
+            <td colspan="5" class="text-center py-4 text-muted">
+              <i class="bi bi-people me-2"></i>
+              @if (search()) { No users match your search. }
+              @else { No users found. }
+            </td>
+          </tr>
+        } @else {
+          @for (user of users(); track user.userId) {
+            <tr>
+              <td data-label="Name & Email">
+                <div class="d-flex align-items-center gap-3">
+                  <span class="d-inline-flex align-items-center justify-content-center rounded-circle text-white fw-bold flex-shrink-0"
+                        [style.background]="avatarColor(user)"
+                        style="width:40px; height:40px; font-size:0.8rem;">
+                    {{ initials(user) }}
+                  </span>
+                  <div>
+                    <div class="fw-semibold">{{ displayName(user) }}</div>
+                    <div class="text-muted small">{{ user.emailAddress }}</div>
+                  </div>
+                </div>
+              </td>
+              <td data-label="Role" class="text-center">
+                <span [class]="roleBadgeClass(user.role)">{{ roleLabel(user.role) }}</span>
+              </td>
+              <td data-label="MFA" class="text-center">
+                @if (user.mfaEnabled === 'Y') {
+                  <span class="badge bg-info-subtle text-info border border-info-subtle">
+                    <i class="bi bi-shield-check me-1"></i>{{ user.mfaMethod || 'ON' }}
+                  </span>
+                } @else {
+                  <span class="badge bg-light text-secondary border">
+                    <i class="bi bi-x me-1"></i>Off
+                  </span>
+                }
+              </td>
+              <td data-label="Status" class="text-center">
+                <span [class]="statusBadgeClass(user.status)">
+                  <span style="font-size:0.5rem;">&#9679;</span> {{ user.status }}
+                </span>
+              </td>
+              <td class="text-end">
+                <button
+                  class="btn btn-sm btn-outline-secondary m-1 px-3"
+                  title="Edit"
+                  (click)="editUser(user)"
+                >
+                  <i class="bi bi-pencil"></i>
+                </button>
+                <button
+                  class="btn btn-sm btn-outline-danger m-1 px-3"
+                  title="Delete"
+                  (click)="openDeleteModal(user)"
+                >
+                  <i class="bi bi-trash"></i>
+                </button>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination footer -->
+  @if (!loading() && totalPages() > 1) {
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mt-3">
+      <p class="small text-muted mb-0">
+        {{ startRecord() }}–{{ endRecord() }} of {{ total() }} users
+      </p>
+
+      <div class="d-flex align-items-center gap-1">
+        @if (page() > 1) {
+          <button
+            class="btn btn-sm btn-outline-secondary"
+            (click)="goToPage(1)"
+            title="First page"
+          >
+            <i class="bi bi-chevron-double-left"></i>
+          </button>
+          <button
+            class="btn btn-sm btn-outline-secondary"
+            (click)="goToPage(page() - 1)"
+            title="Previous page"
+          >
+            <i class="bi bi-chevron-left"></i>
+          </button>
+        }
+
+        @for (p of pageWindow(); track p) {
+          <button
+            class="btn btn-sm"
+            [class.btn-dark]="p === page()"
+            [class.btn-outline-secondary]="p !== page()"
+            (click)="goToPage(p)"
+          >{{ p }}</button>
+        }
+
+        @if (page() < totalPages()) {
+          <button
+            class="btn btn-sm btn-outline-secondary"
+            (click)="goToPage(page() + 1)"
+            title="Next page"
+          >
+            <i class="bi bi-chevron-right"></i>
+          </button>
+          <button
+            class="btn btn-sm btn-outline-secondary"
+            (click)="goToPage(totalPages())"
+            title="Last page"
+          >
+            <i class="bi bi-chevron-double-right"></i>
+          </button>
+        }
+      </div>
+    </div>
+  }
+
+</section>
+
+<!-- ── Delete Confirmation Modal ──────────────────────────────────────── -->
+@if (showDeleteModal()) {
+  <div class="modal-backdrop fade show"></div>
+  <div class="modal d-block" tabindex="-1" role="dialog" aria-modal="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title text-danger">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>Delete User
+          </h5>
+          <button type="button" class="btn-close" aria-label="Close"
+            (click)="closeDeleteModal()" [disabled]="deleting()"></button>
+        </div>
+
+        <div class="modal-body pt-2">
+          @if (deleteTarget(); as target) {
+            <p class="mb-0">
+              Are you sure you want to delete
+              <strong>{{ displayName(target) }}</strong>
+              (<span class="text-muted">{{ target.emailAddress }}</span>)?
+              This action cannot be undone.
+            </p>
+          }
+        </div>
+
+        <div class="modal-footer border-0 pt-0">
+          <button type="button" class="btn btn-outline-secondary"
+            (click)="closeDeleteModal()" [disabled]="deleting()">
+            Cancel
+          </button>
+          <button type="button" class="btn btn-danger"
+            (click)="confirmDelete()" [disabled]="deleting()">
+            @if (deleting()) {
+              <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+              Deleting…
+            } @else {
+              <i class="bi bi-trash me-2"></i>Delete
+            }
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+}

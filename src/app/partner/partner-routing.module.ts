@@ -15,6 +15,8 @@ import { PartnerSettingsSocialComponent } from './partner-settings-social/partne
 import { PartnerSettingsStorefrontCopyComponent } from './partner-settings-storefront-copy/partner-settings-storefront-copy.component';
 import { PartnerSettingsLegalComponent } from './partner-settings-legal/partner-settings-legal.component';
 import { PartnerSettingsMfaComponent } from './partner-settings-mfa/partner-settings-mfa.component';
+import { PartnerUsersComponent } from './partner-users/partner-users.component';
+import { PartnerUserFormComponent } from './partner-users/partner-user-form.component';
 
 const routes: Routes = [
   { path: ':id/dashboard', component: PartnerDashboardComponent },
@@ -23,6 +25,9 @@ const routes: Routes = [
   { path: ':id/roles', component: PartnerRolesComponent },
   { path: ':id/customers', component: PartnerCustomersComponent },
   { path: ':id/employees', component: PartnerEmployeesComponent },
+  { path: ':id/settings/users', component: PartnerUsersComponent },
+  { path: ':id/settings/users/new', component: PartnerUserFormComponent },
+  { path: ':id/settings/users/:userId/edit', component: PartnerUserFormComponent },
   { path: ':id/settings', pathMatch: 'full', redirectTo: ({ params }) => `/partner/${params['id']}/settings/identity` },
   { path: ':id/settings/identity', component: PartnerSettingsIdentityComponent },
   { path: ':id/settings/organization', component: PartnerSettingsOrganizationComponent },

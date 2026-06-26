@@ -55,7 +55,7 @@ export class PartnerSettingsLegalComponent implements OnInit {
     if (!tpId) return;
     this.loading.set(true);
     try {
-      const s = await this.service.get(tpId);
+      const s = await this.service.getfull(tpId);
       this.form = {
         privcyinfo: s.privcyinfo ?? '',
         termsinfo:  s.termsinfo  ?? '',

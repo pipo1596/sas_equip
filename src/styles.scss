@@ -471,7 +471,8 @@ body.sidebar-closed .main-footer {
   border-spacing: 0;
 
   thead th {
-    background: #1b2f50;
+    background: #343a40;
+    .partner-mode & { background: #1b2f50; }
     color: #fff;
     border: none;
     font-size: 0.75rem;

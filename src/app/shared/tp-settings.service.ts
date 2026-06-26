@@ -21,6 +21,20 @@ export class TpSettingsService {
     return data as unknown as TpSettings;
   }
 
+  async getfull(tpId: number): Promise<TpSettings> {
+    const response = await fetch(this.endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: '*GET_FULL', tp_id: tpId }),
+      credentials: 'include',
+    });
+    const data = await this.parseJson(response);
+    if (!response.ok || data['success'] === false) {
+      throw new Error(String(data['message']) ?? 'Failed to load partner settings.');
+    }
+    return data as unknown as TpSettings;
+  }
+
   async update(action:string,tpId: number, payload: Partial<TpSettings>): Promise<void> {
     const response = await fetch(this.endpoint, {
       method: 'POST',

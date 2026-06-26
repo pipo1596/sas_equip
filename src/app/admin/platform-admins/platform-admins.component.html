@@ -59,28 +59,26 @@
   <!-- Table -->
   <div class="table-responsive">
     <table class="table table-hover align-middle mb-0 table-stacked">
-      <thead class="table-dark">
+      <thead>
         <tr>
-          <th scope="col">Name</th>
-          <th scope="col">Role</th>
-          <th scope="col">Email</th>
-          <th scope="col">Status</th>
-          <th scope="col">MFA</th>
-          <th scope="col">Last Login</th>
+          <th scope="col">Name &amp; Email</th>
+          <th scope="col" class="text-center">Role</th>
+          <th scope="col" class="text-center">MFA</th>
+          <th scope="col" class="text-center">Status</th>
           <th scope="col" class="text-end">Actions</th>
         </tr>
       </thead>
       <tbody>
         @if (loading()) {
           <tr>
-            <td colspan="7" class="text-center py-4 text-muted">
+            <td colspan="5" class="text-center py-4 text-muted">
               <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>
               Loading…
             </td>
           </tr>
         } @else if (admins().length === 0) {
           <tr>
-            <td colspan="7" class="text-center py-4 text-muted">
+            <td colspan="5" class="text-center py-4 text-muted">
               <i class="bi bi-people me-2"></i>
               @if (search()) { No admins match your search. }
               @else { No platform admins found. }
@@ -89,26 +87,38 @@
         } @else {
           @for (admin of admins(); track admin.padminId) {
             <tr>
-              <td data-label="Name">
-                <span class="fw-semibold">{{ displayName(admin) }}</span>
+              <td data-label="Name & Email">
+                <div class="d-flex align-items-center gap-3">
+                  <span class="d-inline-flex align-items-center justify-content-center rounded-circle text-white fw-bold flex-shrink-0"
+                        [style.background]="avatarColor(admin)"
+                        style="width:40px; height:40px; font-size:0.8rem;">
+                    {{ initials(admin) }}
+                  </span>
+                  <div>
+                    <div class="fw-semibold">{{ displayName(admin) }}</div>
+                    <div class="text-muted small">{{ admin.emailAddress }}</div>
+                  </div>
+                </div>
               </td>
-              <td data-label="Role" class="text-muted small">
-                {{ admin.role === 'ADMIN' ? 'Administrator' : admin.role }}
+              <td data-label="Role" class="text-center">
+                <span [class]="roleBadgeClass(admin.role)">{{ roleLabel(admin.role) }}</span>
               </td>
-              <td data-label="Email" class="small">{{ admin.emailAddress }}</td>
-              <td data-label="Status">
-                <span [class]="statusBadgeClass(admin.status)">{{ admin.status }}</span>
-              </td>
-              <td data-label="MFA">
+              <td data-label="MFA" class="text-center">
                 @if (admin.mfaEnabled === 'Y') {
-                  <span class="badge bg-info text-dark">
+                  <span class="badge bg-info-subtle text-info border border-info-subtle">
                     <i class="bi bi-shield-check me-1"></i>{{ admin.mfaMethod || 'ON' }}
                   </span>
                 } @else {
-                  <span class="badge bg-light text-secondary border">Off</span>
+                  <span class="badge bg-light text-secondary border">
+                    <i class="bi bi-x me-1"></i>Off
+                  </span>
                 }
               </td>
-              <td data-label="Last Login" class="small text-muted">{{ formatDate(admin.lastLoginTs) }}</td>
+              <td data-label="Status" class="text-center">
+                <span [class]="statusBadgeClass(admin.status)">
+                  <span style="font-size:0.5rem;">&#9679;</span> {{ admin.status }}
+                </span>
+              </td>
               <td class="text-end">
                 <button
                   class="btn btn-sm btn-outline-secondary m-1 px-3"

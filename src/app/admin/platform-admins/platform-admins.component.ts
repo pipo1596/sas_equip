@@ -127,9 +127,9 @@ export class PlatformAdminsComponent implements OnInit {
 
   statusBadgeClass(status: string): string {
     switch (status) {
-      case 'ACTIVE': return 'badge bg-success';
-      case 'LOCKED': return 'badge bg-warning text-dark';
-      case 'DISABLED': return 'badge bg-secondary';
+      case 'ACTIVE': return 'badge bg-success-subtle text-success border border-success-subtle';
+      case 'LOCKED': return 'badge bg-warning-subtle text-warning border border-warning-subtle';
+      case 'DISABLED': return 'badge bg-secondary-subtle text-secondary border border-secondary-subtle';
       default: return 'badge bg-light text-dark';
     }
   }
@@ -137,6 +137,37 @@ export class PlatformAdminsComponent implements OnInit {
   displayName(admin: PlatformAdmin): string {
     const parts = [admin.firstName, admin.lastName].filter(Boolean);
     return parts.length ? parts.join(' ') : '—';
+  }
+
+  initials(admin: PlatformAdmin): string {
+    const f = admin.firstName?.[0] ?? '';
+    const l = admin.lastName?.[0] ?? '';
+    return (f + l).toUpperCase() || '?';
+  }
+
+  private readonly avatarColors = [
+    '#6366f1', '#8b5cf6', '#a855f7', '#ec4899',
+    '#ef4444', '#f97316', '#eab308', '#22c55e',
+    '#14b8a6', '#06b6d4', '#3b82f6', '#64748b',
+  ];
+
+  avatarColor(admin: PlatformAdmin): string {
+    const hash = (admin.padminId ?? 0) % this.avatarColors.length;
+    return this.avatarColors[hash];
+  }
+
+  roleBadgeClass(role: string): string {
+    switch (role) {
+      case 'ADMIN': return 'badge border border-primary-subtle text-primary bg-primary-subtle';
+      default: return 'badge border bg-light text-dark';
+    }
+  }
+
+  roleLabel(role: string): string {
+    switch (role) {
+      case 'ADMIN': return 'Administrator';
+      default: return role;
+    }
   }
 
   formatDate(ts: string | null): string {

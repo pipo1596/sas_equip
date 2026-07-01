@@ -1,0 +1,114 @@
+<section class="page-shell">
+
+  <div class="page-shell-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div>
+      <h1 class="page-title">{{ isEdit ? 'Edit Category' : 'New Category' }}</h1>
+    </div>
+    <button type="button" class="btn btn-outline-secondary" (click)="cancel()">
+      <i class="bi bi-arrow-left me-2"></i>Back to Categories
+    </button>
+  </div>
+
+  @if (error()) {
+    <div class="alert alert-danger d-flex align-items-center gap-2 mb-3">
+      <i class="bi bi-exclamation-triangle-fill"></i><span>{{ error() }}</span>
+      <button class="btn-close ms-auto" (click)="error.set(null)"></button>
+    </div>
+  }
+
+  <form #catForm="ngForm" (ngSubmit)="save()" novalidate>
+    <div class="row g-4">
+      <div class="col-12 col-lg-8">
+
+        <div class="card mb-4">
+          <div class="card-body">
+            <h6 class="card-title fw-semibold mb-3">Category Information</h6>
+
+            <div class="mb-3">
+              <label class="form-label fw-medium">Category Name <span class="text-danger">*</span></label>
+              <input type="text" class="form-control"
+                     name="catName"
+                     [ngModel]="formData.catName"
+                     (ngModelChange)="onNameChange($event)"
+                     required
+                     #nameCtrl="ngModel"
+                     [class.is-invalid]="nameCtrl.invalid && nameCtrl.touched" />
+              @if (nameCtrl.invalid && nameCtrl.touched) {
+                <div class="invalid-feedback">Category name is required.</div>
+              }
+            </div>
+
+            <div class="row g-3 mb-3">
+              <div class="col-12 col-sm-6">
+                <label class="form-label fw-medium">Slug</label>
+                <input type="text" class="form-control font-monospace" name="catSlug" [(ngModel)]="formData.catSlug" />
+              </div>
+              <div class="col-12 col-sm-6">
+                <label class="form-label fw-medium">Code</label>
+                <input type="text" class="form-control font-monospace" name="catCode" [(ngModel)]="formData.catCode" placeholder="Optional short code" />
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-medium">Description</label>
+              <textarea class="form-control" name="catDescr" [(ngModel)]="formData.catDescr" rows="3"></textarea>
+            </div>
+
+            <div class="mb-0">
+              <label class="form-label fw-medium">Image URL</label>
+              <input type="url" class="form-control" name="imgUrl" [(ngModel)]="formData.imgUrl" placeholder="https://…" />
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="col-12 col-lg-4">
+
+        <div class="card mb-4">
+          <div class="card-body">
+            <h6 class="card-title fw-semibold mb-3">Hierarchy</h6>
+            <label class="form-label fw-medium">Parent Category</label>
+            <select class="form-select" name="parentCatId" [(ngModel)]="formData.parentCatId">
+              <option [ngValue]="null">— Top level —</option>
+              @for (cat of allCategories(); track cat.catId) {
+                <option [ngValue]="cat.catId">{{ cat.catName }}</option>
+              }
+            </select>
+            <div class="form-text mt-2">Leave blank for a top-level category.</div>
+          </div>
+        </div>
+
+        <div class="card mb-4">
+          <div class="card-body">
+            <h6 class="card-title fw-semibold mb-3">Status</h6>
+            <select class="form-select" name="activeFlag" [(ngModel)]="formData.activeFlag">
+              <option value="Y">Active</option>
+              <option value="N">Inactive</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="card mb-4">
+          <div class="card-body">
+            <h6 class="card-title fw-semibold mb-3">Sort Order</h6>
+            <input type="number" class="form-control" name="sortOrder" [(ngModel)]="formData.sortOrder" min="0" />
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="d-flex gap-2 mt-2">
+      <button type="submit" class="btn btn-dark" [disabled]="saving()">
+        @if (saving()) {
+          <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving…
+        } @else {
+          <i class="bi bi-check-lg me-2"></i>{{ isEdit ? 'Save Changes' : 'Create Category' }}
+        }
+      </button>
+      <button type="button" class="btn btn-outline-secondary" (click)="cancel()" [disabled]="saving()">Cancel</button>
+    </div>
+
+  </form>
+
+</section>

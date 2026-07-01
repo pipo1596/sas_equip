@@ -10,6 +10,10 @@ export const environment = {
     auditLog: 'APIAUDIT',
     tpSettings: 'APITPSTNGS',
     tpUsers: 'APITPUSERS',
+    products: 'APIPRODUCT',
+    productSkus: 'APIPROSKU',
+    brands: 'APIBRANDS',
+    categories: 'APICATEGS',
     imageUpload: '/cgi/SEPIMGUPL',
   },
 };

@@ -17,14 +17,37 @@ import { PartnerSettingsLegalComponent } from './partner-settings-legal/partner-
 import { PartnerSettingsMfaComponent } from './partner-settings-mfa/partner-settings-mfa.component';
 import { PartnerUsersComponent } from './partner-users/partner-users.component';
 import { PartnerUserFormComponent } from './partner-users/partner-user-form.component';
+import { ProductFormComponent } from './products/product-form.component';
+import { ProductDetailComponent } from './products/product-detail.component';
+import { ProductSkuDetailComponent } from './products/product-sku-detail.component';
+import { BrandsComponent } from './products/brands.component';
+import { BrandFormComponent } from './products/brand-form.component';
+import { CategoriesComponent } from './products/categories.component';
+import { CategoryFormComponent } from './products/category-form.component';
 
 const routes: Routes = [
   { path: ':id/dashboard', component: PartnerDashboardComponent },
-  { path: ':id/products', component: PartnerProductsComponent },
+
+  // ── Products (static sub-routes MUST come before :productId) ──────────────
+  { path: ':id/products', component: PartnerProductsComponent, pathMatch: 'full' },
+  { path: ':id/products/new', component: ProductFormComponent },
+  { path: ':id/products/brands', component: BrandsComponent },
+  { path: ':id/products/brands/new', component: BrandFormComponent },
+  { path: ':id/products/brands/:brandId/edit', component: BrandFormComponent },
+  { path: ':id/products/categories', component: CategoriesComponent },
+  { path: ':id/products/categories/new', component: CategoryFormComponent },
+  { path: ':id/products/categories/:categoryId/edit', component: CategoryFormComponent },
+  { path: ':id/products/:productId', component: ProductDetailComponent },
+  { path: ':id/products/:productId/skus/new', component: ProductSkuDetailComponent },
+  { path: ':id/products/:productId/skus/:skuId', component: ProductSkuDetailComponent },
+
+  // ── Other sections ─────────────────────────────────────────────────────────
   { path: ':id/uniform-programs', component: PartnerUniformProgramsComponent },
   { path: ':id/roles', component: PartnerRolesComponent },
   { path: ':id/customers', component: PartnerCustomersComponent },
   { path: ':id/employees', component: PartnerEmployeesComponent },
+
+  // ── Settings ───────────────────────────────────────────────────────────────
   { path: ':id/settings/users', component: PartnerUsersComponent },
   { path: ':id/settings/users/new', component: PartnerUserFormComponent },
   { path: ':id/settings/users/:userId/edit', component: PartnerUserFormComponent },

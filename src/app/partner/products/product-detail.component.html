@@ -1,0 +1,544 @@
+<section class="page-shell">
+
+  <!-- Header -->
+  <div class="page-shell-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div class="d-flex align-items-center gap-3">
+      <button type="button" class="btn btn-outline-secondary btn-sm" (click)="backToList()">
+        <i class="bi bi-arrow-left"></i>
+      </button>
+      <div>
+        @if (loadingProduct()) {
+          <div class="placeholder-glow"><span class="placeholder col-6"></span></div>
+        } @else if (product(); as p) {
+          <h1 class="page-title mb-0">{{ p.title }}</h1>
+          <div class="d-flex align-items-center gap-2 mt-1">
+            <span class="text-muted small font-monospace">{{ p.handle }}</span>
+            <span [class]="statusBadge(p.status)"><span style="font-size:0.5rem;">&#9679;</span> {{ p.status }}</span>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Load error -->
+  @if (loadError()) {
+    <div class="alert alert-danger d-flex align-items-center gap-2 mb-3">
+      <i class="bi bi-exclamation-triangle-fill"></i>
+      <span>{{ loadError() }}</span>
+    </div>
+  }
+
+  <!-- Tab nav -->
+  <ul class="nav nav-tabs mb-0" style="border-bottom: 2px solid #dee2e6;">
+    @for (tab of ([
+      {id:'overview', label:'Overview', icon:'bi-info-circle'},
+      {id:'skus', label:'SKUs', icon:'bi-upc-scan'},
+      {id:'images', label:'Images', icon:'bi-images'},
+      {id:'categories', label:'Categories', icon:'bi-folder2'},
+      {id:'attributes', label:'Attributes', icon:'bi-tags'},
+      {id:'xrefs', label:'Cross-refs', icon:'bi-link-45deg'}
+    ]); track tab.id) {
+      <li class="nav-item">
+        <button
+          class="nav-link"
+          [class.active]="activeTab() === tab.id"
+          (click)="setTab($any(tab.id))"
+        >
+          <i class="bi {{ tab.icon }} me-1"></i>{{ tab.label }}
+          @if (tab.id === 'skus' && skus().length > 0) {
+            <span class="badge bg-light text-dark border ms-1" style="font-size:0.65rem;">{{ skus().length }}</span>
+          }
+          @if (tab.id === 'images' && images().length > 0) {
+            <span class="badge bg-light text-dark border ms-1" style="font-size:0.65rem;">{{ images().length }}</span>
+          }
+        </button>
+      </li>
+    }
+  </ul>
+
+  <!-- Tab panels -->
+  <div class="pt-4">
+
+    <!-- ── Overview ── -->
+    @if (activeTab() === 'overview') {
+      @if (saveError()) {
+        <div class="alert alert-danger d-flex align-items-center gap-2 mb-3">
+          <i class="bi bi-exclamation-triangle-fill"></i><span>{{ saveError() }}</span>
+          <button class="btn-close ms-auto" (click)="saveError.set(null)"></button>
+        </div>
+      }
+      @if (saveSuccess()) {
+        <div class="alert alert-success d-flex align-items-center gap-2 mb-3">
+          <i class="bi bi-check-circle-fill"></i><span>Changes saved.</span>
+        </div>
+      }
+
+      <div class="row g-4">
+        <div class="col-12 col-lg-8">
+
+          <div class="card mb-4">
+            <div class="card-body">
+              <h6 class="card-title fw-semibold mb-3">Basic Information</h6>
+              <div class="mb-3">
+                <label class="form-label fw-medium">Title</label>
+                <input type="text" class="form-control" [(ngModel)]="overviewForm.title" />
+              </div>
+              <div class="mb-3">
+                <label class="form-label fw-medium">Handle</label>
+                <input type="text" class="form-control font-monospace" [(ngModel)]="overviewForm.handle" />
+              </div>
+              <div class="mb-3">
+                <label class="form-label fw-medium">Description</label>
+                <textarea class="form-control" [(ngModel)]="overviewForm.descr" rows="5"></textarea>
+              </div>
+              <div class="mb-3">
+                <label class="form-label fw-medium">Vendor</label>
+                <input type="text" class="form-control" [(ngModel)]="overviewForm.vendor" />
+              </div>
+              <div class="mb-0">
+                <label class="form-label fw-medium">Tags</label>
+                <input type="text" class="form-control" [(ngModel)]="overviewForm.tags" placeholder="comma, separated" />
+              </div>
+            </div>
+          </div>
+
+          <div class="card mb-4">
+            <div class="card-body">
+              <h6 class="card-title fw-semibold mb-3">SEO</h6>
+              <div class="mb-3">
+                <label class="form-label fw-medium">Page Title</label>
+                <input type="text" class="form-control" [(ngModel)]="overviewForm.pageTitle" />
+              </div>
+              <div class="mb-0">
+                <label class="form-label fw-medium">Meta Description</label>
+                <textarea class="form-control" [(ngModel)]="overviewForm.seoDescr" rows="3"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="card mb-4">
+            <div class="card-body">
+              <h6 class="card-title fw-semibold mb-3">Internal Notes</h6>
+              <textarea class="form-control" [(ngModel)]="overviewForm.notes" rows="3"></textarea>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="col-12 col-lg-4">
+
+          <div class="card mb-4">
+            <div class="card-body">
+              <h6 class="card-title fw-semibold mb-3">Status</h6>
+              <select class="form-select" [(ngModel)]="overviewForm.status">
+                <option value="DRAFT">Draft</option>
+                <option value="ACTIVE">Active</option>
+                <option value="ARCHIVED">Archived</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="card mb-4">
+            <div class="card-body">
+              <h6 class="card-title fw-semibold mb-3">Brand</h6>
+              <select class="form-select" [(ngModel)]="overviewForm.brandId">
+                <option [ngValue]="null">— No brand —</option>
+                @for (brand of brands(); track brand.brandId) {
+                  <option [ngValue]="brand.brandId">{{ brand.brandName }}</option>
+                }
+              </select>
+            </div>
+          </div>
+
+          @if (thumbnail(); as thumb) {
+            <div class="card mb-4">
+              <div class="card-body">
+                <h6 class="card-title fw-semibold mb-3">Thumbnail</h6>
+                <img [src]="thumb.imgUrl" [alt]="thumb.imgAlt || ''" class="img-fluid rounded" style="max-height:180px; object-fit:contain;">
+              </div>
+            </div>
+          }
+
+        </div>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button class="btn btn-dark" (click)="saveOverview()" [disabled]="saving()">
+          @if (saving()) {
+            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving…
+          } @else {
+            <i class="bi bi-check-lg me-2"></i>Save Changes
+          }
+        </button>
+      </div>
+    }
+
+    <!-- ── SKUs ── -->
+    @if (activeTab() === 'skus') {
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h6 class="fw-semibold mb-0">Product Variants (SKUs)</h6>
+        <button class="btn btn-dark btn-sm" (click)="newSku()">
+          <i class="bi bi-plus-lg me-1"></i>Add SKU
+        </button>
+      </div>
+
+      @if (loadingSkus()) {
+        <div class="text-center py-4 text-muted">
+          <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>Loading…
+        </div>
+      } @else if (skus().length === 0) {
+        <div class="text-center py-5 text-muted">
+          <i class="bi bi-upc-scan mb-2" style="font-size:2rem; display:block;"></i>
+          No SKUs yet. Add a variant to start selling.
+        </div>
+      } @else {
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0 table-stacked">
+            <thead>
+              <tr>
+                <th>SKU Code</th>
+                <th>Title / Options</th>
+                <th class="text-end">Base Price</th>
+                <th class="text-center">Status</th>
+                <th class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (sku of skus(); track sku.skuId) {
+                <tr style="cursor:pointer;" (click)="openSku(sku)">
+                  <td><span class="font-monospace small">{{ sku.skuCode }}</span></td>
+                  <td>
+                    <div>{{ sku.skuTitle || '—' }}</div>
+                    @if (sku.options && sku.options.length > 0) {
+                      <div class="d-flex flex-wrap gap-1 mt-1">
+                        @for (opt of sku.options; track opt.optId) {
+                          <span class="badge bg-light text-dark border small">{{ opt.optName }}: {{ opt.optValue }}</span>
+                        }
+                      </div>
+                    }
+                  </td>
+                  <td class="text-end">
+                    @if (sku.basePrice != null) {
+                      {{ sku.basePrice | number:'1.2-2' }}
+                    } @else { — }
+                  </td>
+                  <td class="text-center">
+                    <span [class]="skuStatusBadge(sku.status)"><span style="font-size:0.5rem;">&#9679;</span> {{ sku.status }}</span>
+                  </td>
+                  <td class="text-end" (click)="$event.stopPropagation()">
+                    <button class="btn btn-sm btn-outline-secondary m-1 px-3" (click)="openSku(sku)"><i class="bi bi-pencil"></i></button>
+                    <button class="btn btn-sm btn-outline-danger m-1 px-3" (click)="confirmSkuDelete(sku)"><i class="bi bi-trash"></i></button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    }
+
+    <!-- ── Images ── -->
+    @if (activeTab() === 'images') {
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h6 class="fw-semibold mb-0">Product Images</h6>
+        <button class="btn btn-dark btn-sm" disabled>
+          <i class="bi bi-upload me-1"></i>Upload Image
+        </button>
+      </div>
+
+      @if (loadingImages()) {
+        <div class="text-center py-4 text-muted">
+          <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>Loading…
+        </div>
+      } @else if (images().length === 0) {
+        <div class="text-center py-5 text-muted">
+          <i class="bi bi-images mb-2" style="font-size:2rem; display:block;"></i>
+          No images yet. Upload a product photo to get started.
+        </div>
+      } @else {
+        <div class="row g-3">
+          @for (img of images(); track img.imgId) {
+            <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+              <div class="card h-100" [class.border-primary]="img.isThumbnail === 'Y'">
+                <img [src]="img.imgUrl" [alt]="img.imgAlt || ''" class="card-img-top" style="height:120px; object-fit:cover;">
+                <div class="card-body p-2">
+                  @if (img.isThumbnail === 'Y') {
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle small d-block text-center mb-1">Thumbnail</span>
+                  }
+                  <div class="d-flex gap-1 justify-content-center">
+                    @if (img.isThumbnail !== 'Y') {
+                      <button class="btn btn-xs btn-outline-secondary" style="font-size:0.7rem; padding:2px 6px;" title="Set as thumbnail" (click)="setThumbnail(img)">
+                        <i class="bi bi-star"></i>
+                      </button>
+                    }
+                    <button class="btn btn-xs btn-outline-danger" style="font-size:0.7rem; padding:2px 6px;" title="Delete" (click)="deleteImage(img)">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    }
+
+    <!-- ── Categories ── -->
+    @if (activeTab() === 'categories') {
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h6 class="fw-semibold mb-0">Category Assignments</h6>
+        <button class="btn btn-dark btn-sm" (click)="saveCategories()" [disabled]="savingCategories()">
+          @if (savingCategories()) {
+            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving…
+          } @else {
+            <i class="bi bi-check-lg me-1"></i>Save
+          }
+        </button>
+      </div>
+
+      @if (loadingCategories()) {
+        <div class="text-center py-4 text-muted">
+          <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>Loading…
+        </div>
+      } @else if (allCategories().length === 0) {
+        <div class="text-center py-5 text-muted">
+          <i class="bi bi-folder2 mb-2" style="font-size:2rem; display:block;"></i>
+          No categories defined. <a [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'products', 'categories']">Create categories first.</a>
+        </div>
+      } @else {
+        <div class="card">
+          <div class="list-group list-group-flush">
+            @for (cat of buildCategoryTree(allCategories()); track cat.catId) {
+              <label class="list-group-item list-group-item-action d-flex align-items-center gap-3 py-2"
+                     [style.padding-left.px]="16 + (cat.level ?? 0) * 24">
+                <input
+                  type="checkbox"
+                  class="form-check-input mt-0"
+                  [checked]="assignedCatIds().has(cat.catId)"
+                  (change)="toggleCategory(cat.catId)"
+                />
+                <span class="flex-grow-1">{{ cat.catName }}</span>
+                @if (assignedCatIds().has(cat.catId)) {
+                  <div class="form-check form-check-inline mb-0">
+                    <input
+                      type="radio"
+                      class="form-check-input"
+                      name="primaryCat"
+                      [value]="cat.catId"
+                      [ngModel]="primaryCatId()"
+                      (ngModelChange)="primaryCatId.set($event)"
+                    />
+                    <label class="form-check-label small text-muted">Primary</label>
+                  </div>
+                }
+              </label>
+            }
+          </div>
+        </div>
+      }
+    }
+
+    <!-- ── Attributes ── -->
+    @if (activeTab() === 'attributes') {
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h6 class="fw-semibold mb-0">Product Attributes / Metafields</h6>
+        <button class="btn btn-dark btn-sm" (click)="startEditAttr(null)">
+          <i class="bi bi-plus-lg me-1"></i>Add Attribute
+        </button>
+      </div>
+
+      @if (loadingAttributes()) {
+        <div class="text-center py-4 text-muted">
+          <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>Loading…
+        </div>
+      } @else {
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0 table-stacked">
+            <thead>
+              <tr>
+                <th>Key</th>
+                <th>Value</th>
+                <th class="text-center">Type</th>
+                <th class="text-center">Visible</th>
+                <th class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (attr of attributes(); track attr.attrId) {
+                @if (editingAttr()?.attrId === attr.attrId) {
+                  <tr class="table-active">
+                    <td><input type="text" class="form-control form-control-sm" [ngModel]="attrForm().attrKey" (ngModelChange)="attrForm.update(f => ({...f, attrKey: $event}))" /></td>
+                    <td><input type="text" class="form-control form-control-sm" [ngModel]="attrForm().attrValue" (ngModelChange)="attrForm.update(f => ({...f, attrValue: $event}))" /></td>
+                    <td>
+                      <select class="form-select form-select-sm" [ngModel]="attrForm().attrType" (ngModelChange)="attrForm.update(f => ({...f, attrType: $event}))">
+                        <option value="TEXT">Text</option>
+                        <option value="NUMBER">Number</option>
+                        <option value="BOOLEAN">Boolean</option>
+                        <option value="DATE">Date</option>
+                        <option value="URL">URL</option>
+                        <option value="JSON">JSON</option>
+                      </select>
+                    </td>
+                    <td class="text-center">
+                      <input type="checkbox" class="form-check-input" [ngModel]="attrForm().isVisible === 'Y'" (ngModelChange)="attrForm.update(f => ({...f, isVisible: $event ? 'Y' : 'N'}))" />
+                    </td>
+                    <td class="text-end">
+                      <button class="btn btn-sm btn-dark me-1" (click)="saveAttr()" [disabled]="savingAttr()"><i class="bi bi-check-lg"></i></button>
+                      <button class="btn btn-sm btn-outline-secondary" (click)="cancelEditAttr()"><i class="bi bi-x-lg"></i></button>
+                    </td>
+                  </tr>
+                } @else {
+                  <tr>
+                    <td><span class="font-monospace small">{{ attr.attrKey }}</span></td>
+                    <td class="text-truncate" style="max-width:200px;">{{ attr.attrValue || '—' }}</td>
+                    <td class="text-center"><span class="badge bg-light text-dark border small">{{ attr.attrType }}</span></td>
+                    <td class="text-center">
+                      @if (attr.isVisible === 'Y') { <i class="bi bi-eye text-success"></i> }
+                      @else { <i class="bi bi-eye-slash text-muted"></i> }
+                    </td>
+                    <td class="text-end">
+                      <button class="btn btn-sm btn-outline-secondary m-1 px-3" (click)="startEditAttr(attr)"><i class="bi bi-pencil"></i></button>
+                      <button class="btn btn-sm btn-outline-danger m-1 px-3" (click)="deleteAttr(attr)"><i class="bi bi-trash"></i></button>
+                    </td>
+                  </tr>
+                }
+              }
+              @if (editingAttr() === null && attributes().length === 0) {
+                <tr>
+                  <td colspan="5" class="text-center py-4 text-muted">
+                    <i class="bi bi-tags me-2"></i>No attributes. Click "Add Attribute" to begin.
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <!-- New attribute row (when adding) -->
+        @if (editingAttr() === null && savingAttr() || editingAttr() === null) {
+          <!-- Add row appears as an inline card below the table when triggered by startEditAttr(null) -->
+          <!-- Handled by checking if form values are set via the button click — simplified to a card -->
+        }
+
+      }
+    }
+
+    <!-- ── Cross-refs ── -->
+    @if (activeTab() === 'xrefs') {
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h6 class="fw-semibold mb-0">Platform Cross-References</h6>
+      </div>
+
+      <!-- Add xref form -->
+      <div class="card mb-4">
+        <div class="card-body">
+          <h6 class="card-title fw-semibold mb-3 small text-muted text-uppercase">Link to External Platform</h6>
+          <div class="row g-2 align-items-end">
+            <div class="col-12 col-sm-3">
+              <label class="form-label small">Platform</label>
+              <input type="text" class="form-control form-control-sm" placeholder="SHOPIFY, WOO…"
+                     [ngModel]="xrefForm().platformCd" (ngModelChange)="xrefForm.update(f => ({...f, platformCd: $event}))" />
+            </div>
+            <div class="col-12 col-sm-3">
+              <label class="form-label small">External Product ID</label>
+              <input type="text" class="form-control form-control-sm"
+                     [ngModel]="xrefForm().extProductId" (ngModelChange)="xrefForm.update(f => ({...f, extProductId: $event}))" />
+            </div>
+            <div class="col-12 col-sm-3">
+              <label class="form-label small">External URL</label>
+              <input type="text" class="form-control form-control-sm"
+                     [ngModel]="xrefForm().extUrl" (ngModelChange)="xrefForm.update(f => ({...f, extUrl: $event}))" />
+            </div>
+            <div class="col-12 col-sm-3">
+              <button class="btn btn-dark btn-sm w-100" (click)="addXref()" [disabled]="savingXref() || !xrefForm().platformCd.trim()">
+                @if (savingXref()) {
+                  <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                } @else {
+                  <i class="bi bi-plus-lg me-1"></i>
+                }
+                Add Link
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      @if (loadingXrefs()) {
+        <div class="text-center py-4 text-muted">
+          <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>Loading…
+        </div>
+      } @else if (xrefs().length === 0) {
+        <div class="text-center py-4 text-muted">
+          <i class="bi bi-link-45deg me-2"></i>No external links yet.
+        </div>
+      } @else {
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0 table-stacked">
+            <thead>
+              <tr>
+                <th>Platform</th>
+                <th>External Product ID</th>
+                <th>External URL</th>
+                <th class="text-center">Sync Status</th>
+                <th class="text-center">Last Sync</th>
+                <th class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (xref of xrefs(); track xref.xrefId) {
+                <tr>
+                  <td><span class="badge bg-light text-dark border">{{ xref.platformCd }}</span></td>
+                  <td><span class="font-monospace small">{{ xref.extProductId || '—' }}</span></td>
+                  <td>
+                    @if (xref.extUrl) {
+                      <a [href]="xref.extUrl" target="_blank" class="small text-truncate d-inline-block" style="max-width:200px;">{{ xref.extUrl }}</a>
+                    } @else { — }
+                  </td>
+                  <td class="text-center">
+                    <span class="badge bg-light text-dark border small">{{ xref.syncStatus || '—' }}</span>
+                  </td>
+                  <td class="text-center small text-muted">{{ xref.lastSyncTs || '—' }}</td>
+                  <td class="text-end">
+                    <button class="btn btn-sm btn-outline-danger m-1 px-3" (click)="deleteXref(xref)"><i class="bi bi-trash"></i></button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    }
+
+  </div><!-- /tab panels -->
+
+</section>
+
+<!-- SKU Delete Modal -->
+@if (showSkuDeleteModal()) {
+  <div class="modal-backdrop fade show"></div>
+  <div class="modal d-block" tabindex="-1" role="dialog" aria-modal="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i>Delete SKU</h5>
+          <button class="btn-close" (click)="showSkuDeleteModal.set(false)" [disabled]="deletingSkus()"></button>
+        </div>
+        <div class="modal-body pt-2">
+          @if (skuDeleteTarget(); as sku) {
+            <p class="mb-0">Delete SKU <strong>{{ sku.skuCode }}</strong>? This cannot be undone.</p>
+          }
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button class="btn btn-outline-secondary" (click)="showSkuDeleteModal.set(false)" [disabled]="deletingSkus()">Cancel</button>
+          <button class="btn btn-danger" (click)="deleteSkuConfirmed()" [disabled]="deletingSkus()">
+            @if (deletingSkus()) {
+              <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Deleting…
+            } @else {
+              <i class="bi bi-trash me-2"></i>Delete
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

@@ -1,0 +1,166 @@
+<section class="page-shell">
+
+  <div class="page-shell-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div>
+      <h1 class="page-title">{{ isEdit ? 'Edit Product' : 'New Product' }}</h1>
+      <p class="page-subtitle">{{ isEdit ? 'Update product information.' : 'Add a new product to your catalog.' }}</p>
+    </div>
+    <button type="button" class="btn btn-outline-secondary" (click)="cancel()">
+      <i class="bi bi-arrow-left me-2"></i>Back
+    </button>
+  </div>
+
+  @if (error()) {
+    <div class="alert alert-danger d-flex align-items-center gap-2 mb-3" role="alert">
+      <i class="bi bi-exclamation-triangle-fill"></i>
+      <span>{{ error() }}</span>
+      <button type="button" class="btn-close ms-auto" (click)="error.set(null)"></button>
+    </div>
+  }
+
+  <form #productForm="ngForm" (ngSubmit)="save()" novalidate>
+    <div class="row g-4">
+
+      <!-- Left column -->
+      <div class="col-12 col-lg-8">
+
+        <!-- Basic info -->
+        <div class="card mb-4">
+          <div class="card-body">
+            <h6 class="card-title fw-semibold mb-3">Basic Information</h6>
+
+            <div class="mb-3">
+              <label class="form-label fw-medium">Title <span class="text-danger">*</span></label>
+              <input
+                type="text"
+                class="form-control"
+                name="title"
+                [ngModel]="formData.title"
+                (ngModelChange)="onTitleChange($event)"
+                required
+                #titleCtrl="ngModel"
+                [class.is-invalid]="titleCtrl.invalid && titleCtrl.touched"
+              />
+              @if (titleCtrl.invalid && titleCtrl.touched) {
+                <div class="invalid-feedback">Title is required.</div>
+              }
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-medium">Handle <span class="text-danger">*</span></label>
+              <input
+                type="text"
+                class="form-control font-monospace"
+                name="handle"
+                [(ngModel)]="formData.handle"
+                required
+                #handleCtrl="ngModel"
+                [class.is-invalid]="handleCtrl.invalid && handleCtrl.touched"
+                placeholder="url-friendly-slug"
+              />
+              <div class="form-text">Used in URLs. Lowercase letters, numbers, and hyphens only.</div>
+              @if (handleCtrl.invalid && handleCtrl.touched) {
+                <div class="invalid-feedback">Handle is required.</div>
+              }
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-medium">Description</label>
+              <textarea
+                class="form-control"
+                name="descr"
+                [(ngModel)]="formData.descr"
+                rows="5"
+                placeholder="Describe the product…"
+              ></textarea>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-medium">Vendor</label>
+              <input type="text" class="form-control" name="vendor" [(ngModel)]="formData.vendor" placeholder="Manufacturer or vendor name" />
+            </div>
+
+            <div class="mb-0">
+              <label class="form-label fw-medium">Tags</label>
+              <input type="text" class="form-control" name="tags" [(ngModel)]="formData.tags" placeholder="comma, separated, tags" />
+              <div class="form-text">Separate tags with commas.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SEO -->
+        <div class="card mb-4">
+          <div class="card-body">
+            <h6 class="card-title fw-semibold mb-3">SEO</h6>
+            <div class="mb-3">
+              <label class="form-label fw-medium">Page Title</label>
+              <input type="text" class="form-control" name="pageTitle" [(ngModel)]="formData.pageTitle" placeholder="Leave blank to use product title" />
+            </div>
+            <div class="mb-0">
+              <label class="form-label fw-medium">Meta Description</label>
+              <textarea class="form-control" name="seoDescr" [(ngModel)]="formData.seoDescr" rows="3" placeholder="Brief description for search engines (150–160 characters)"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="card mb-4">
+          <div class="card-body">
+            <h6 class="card-title fw-semibold mb-3">Internal Notes</h6>
+            <textarea class="form-control" name="notes" [(ngModel)]="formData.notes" rows="3" placeholder="Internal notes (not visible to customers)"></textarea>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right column -->
+      <div class="col-12 col-lg-4">
+
+        <!-- Status -->
+        <div class="card mb-4">
+          <div class="card-body">
+            <h6 class="card-title fw-semibold mb-3">Status</h6>
+            <select class="form-select" name="status" [(ngModel)]="formData.status">
+              <option value="DRAFT">Draft</option>
+              <option value="ACTIVE">Active</option>
+              <option value="ARCHIVED">Archived</option>
+            </select>
+            <div class="form-text mt-2">
+              @if (formData.status === 'DRAFT') { Not visible in storefront. }
+              @else if (formData.status === 'ACTIVE') { Visible and available for purchase. }
+              @else { Hidden from storefront but retained in catalog. }
+            </div>
+          </div>
+        </div>
+
+        <!-- Brand -->
+        <div class="card mb-4">
+          <div class="card-body">
+            <h6 class="card-title fw-semibold mb-3">Brand</h6>
+            <select class="form-select" name="brandId" [(ngModel)]="formData.brandId">
+              <option [ngValue]="null">— No brand —</option>
+              @for (brand of brands(); track brand.brandId) {
+                <option [ngValue]="brand.brandId">{{ brand.brandName }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="d-flex gap-2 mt-2">
+      <button type="submit" class="btn btn-dark" [disabled]="saving()">
+        @if (saving()) {
+          <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving…
+        } @else {
+          <i class="bi bi-check-lg me-2"></i>{{ isEdit ? 'Save Changes' : 'Create Product' }}
+        }
+      </button>
+      <button type="button" class="btn btn-outline-secondary" (click)="cancel()" [disabled]="saving()">Cancel</button>
+    </div>
+
+  </form>
+
+</section>

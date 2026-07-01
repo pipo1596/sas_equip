@@ -126,7 +126,7 @@
                [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'settings', 'legal']"
                routerLinkActive="active">
               <i class="bi bi-file-earmark-text nav-icon"></i>
-              <span>Legal Content</span>
+              <span>Policies</span>
             </a>
           </li>
 
@@ -159,6 +159,22 @@
                routerLinkActive="active">
               <i class="bi bi-box-seam nav-icon"></i>
               <span>Products</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="sidebar-nav-link sidebar-nav-sublink"
+               [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'products', 'brands']"
+               routerLinkActive="active">
+              <i class="bi bi-award nav-icon"></i>
+              <span>Brands</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="sidebar-nav-link sidebar-nav-sublink"
+               [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'products', 'categories']"
+               routerLinkActive="active">
+              <i class="bi bi-folder2 nav-icon"></i>
+              <span>Categories</span>
             </a>
           </li>
 

@@ -1,0 +1,163 @@
+<section class="page-shell">
+
+  <div class="page-shell-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div>
+      <h1 class="page-title">{{ isEdit ? 'Edit Brand' : 'New Brand' }}</h1>
+    </div>
+    <button type="button" class="btn btn-outline-secondary" (click)="cancel()">
+      <i class="bi bi-arrow-left me-2"></i>Back to Brands
+    </button>
+  </div>
+
+  @if (error()) {
+    <div class="alert alert-danger d-flex align-items-center gap-2 mb-3">
+      <i class="bi bi-exclamation-triangle-fill"></i><span>{{ error() }}</span>
+      <button class="btn-close ms-auto" (click)="error.set(null)"></button>
+    </div>
+  }
+
+  <form #brandForm="ngForm" (ngSubmit)="save()" novalidate>
+    <div class="row g-4">
+
+      <div class="col-12 col-lg-8">
+
+        <div class="card mb-4">
+          <div class="card-body">
+            <h6 class="card-title fw-semibold mb-3">Brand Information</h6>
+            <div class="mb-3">
+              <label class="form-label fw-medium">Brand Name <span class="text-danger">*</span></label>
+              <input type="text" class="form-control"
+                     name="brandName"
+                     [ngModel]="formData.brandName"
+                     (ngModelChange)="onNameChange($event)"
+                     required
+                     #nameCtrl="ngModel"
+                     [class.is-invalid]="nameCtrl.invalid && nameCtrl.touched" />
+              @if (nameCtrl.invalid && nameCtrl.touched) {
+                <div class="invalid-feedback">Brand name is required.</div>
+              }
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-medium d-flex align-items-center gap-2">
+                Slug
+                @if (!isEdit && slugAutoSync) {
+                  <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle fw-normal" style="font-size:0.65rem;">auto</span>
+                }
+              </label>
+              <input type="text" class="form-control font-monospace"
+                     name="brandSlug"
+                     [ngModel]="formData.brandSlug"
+                     (ngModelChange)="onSlugChange($event)"
+                     placeholder="url-friendly-slug"
+                     required
+                     #slugCtrl="ngModel"
+                     [class.is-invalid]="slugCtrl.invalid && slugCtrl.touched" />
+              @if (slugCtrl.invalid && slugCtrl.touched) {
+                <div class="invalid-feedback">Slug is required.</div>
+              }
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-medium">Description</label>
+              <textarea class="form-control" name="brandDescr" [(ngModel)]="formData.brandDescr" rows="3"></textarea>
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-medium">Logo</label>
+
+              @if (uploadError()) {
+                <div class="alert alert-danger py-2 px-3 mb-2 small d-flex align-items-center gap-2">
+                  <i class="bi bi-exclamation-triangle-fill"></i>{{ uploadError() }}
+                  <button type="button" class="btn-close btn-close-sm ms-auto" (click)="uploadError.set(null)"></button>
+                </div>
+              }
+
+              <div class="logo-upload-zone" [class.logo-upload-zone--has-image]="formData.logoUrl"
+                   (click)="!formData.logoUrl && logoFileInput.click()">
+
+                @if (uploadingLogo()) {
+                  <div class="logo-upload-spinner">
+                    <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
+                    <span class="text-muted small ms-2">Uploading…</span>
+                  </div>
+                } @else if (formData.logoUrl) {
+                  <img [src]="formData.logoUrl" alt="Brand logo" class="logo-upload-preview" />
+                  <div class="logo-upload-actions">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" (click)="$event.stopPropagation(); logoFileInput.click()">
+                      <i class="bi bi-arrow-repeat me-1"></i>Replace
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-danger" (click)="$event.stopPropagation(); removeLogo()">
+                      <i class="bi bi-trash me-1"></i>Remove
+                    </button>
+                  </div>
+                } @else {
+                  <i class="bi bi-image text-muted" style="font-size:1.75rem;"></i>
+                  <span class="text-muted small mt-1">Click to upload logo</span>
+                  <span class="text-muted" style="font-size:0.7rem;">PNG, JPG, SVG · max 2 MB</span>
+                }
+              </div>
+
+              <input #logoFileInput type="file" accept="image/*" style="display:none"
+                     (change)="onLogoSelected($event)" />
+            </div>
+            <div class="mb-0">
+              <label class="form-label fw-medium">Website URL</label>
+              <input type="url" class="form-control" name="websiteUrl" [(ngModel)]="formData.websiteUrl" placeholder="https://…" />
+            </div>
+          </div>
+        </div>
+
+        <div class="card mb-4">
+          <div class="card-body">
+            <h6 class="card-title fw-semibold mb-3">Integration IDs</h6>
+            <div class="row g-3">
+              <div class="col-12 col-sm-4">
+                <label class="form-label fw-medium">Supplier Code</label>
+                <input type="text" class="form-control font-monospace"
+                       name="supplierCode" [(ngModel)]="formData.supplierCode"
+                       placeholder="e.g. SPLR-001" />
+              </div>
+              <div class="col-12 col-sm-4">
+                <label class="form-label fw-medium">Manufacturer ID</label>
+                <input type="text" class="form-control font-monospace"
+                       name="manufacturerId" [(ngModel)]="formData.manufacturerId"
+                       placeholder="e.g. MFR-XYZ" />
+              </div>
+              <div class="col-12 col-sm-4">
+                <label class="form-label fw-medium">BigCommerce Brand ID</label>
+                <input type="number" class="form-control"
+                       name="bcBrandId" [(ngModel)]="formData.bcBrandId"
+                       placeholder="numeric ID" min="1" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="col-12 col-lg-4">
+        <div class="card mb-4">
+          <div class="card-body">
+            <h6 class="card-title fw-semibold mb-3">Status</h6>
+            <select class="form-select" name="status" [(ngModel)]="formData.status">
+              <option value="ACTIVE">Active</option>
+              <option value="INACTIVE">Inactive</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="d-flex gap-2 mt-2">
+      <button type="submit" class="btn btn-dark" [disabled]="saving()">
+        @if (saving()) {
+          <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving…
+        } @else {
+          <i class="bi bi-check-lg me-2"></i>{{ isEdit ? 'Save Changes' : 'Create Brand' }}
+        }
+      </button>
+      <button type="button" class="btn btn-outline-secondary" (click)="cancel()" [disabled]="saving()">Cancel</button>
+    </div>
+
+  </form>
+
+</section>

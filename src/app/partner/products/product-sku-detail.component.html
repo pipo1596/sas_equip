@@ -1,0 +1,453 @@
+<section class="page-shell">
+
+  <!-- Header -->
+  <div class="page-shell-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div class="d-flex align-items-center gap-3">
+      <button type="button" class="btn btn-outline-secondary btn-sm" (click)="backToProduct()">
+        <i class="bi bi-arrow-left"></i>
+      </button>
+      <div>
+        <div class="text-muted small mb-1">
+          <span style="opacity:0.7;">{{ product?.title || 'Product' }}</span>
+          <i class="bi bi-chevron-right mx-1" style="font-size:0.65rem;"></i>
+          SKU
+        </div>
+        <h1 class="page-title mb-0">{{ isEdit ? detailsForm.skuCode : 'New SKU' }}</h1>
+      </div>
+    </div>
+  </div>
+
+  @if (saveError()) {
+    <div class="alert alert-danger d-flex align-items-center gap-2 mb-3">
+      <i class="bi bi-exclamation-triangle-fill"></i><span>{{ saveError() }}</span>
+      <button class="btn-close ms-auto" (click)="saveError.set(null)"></button>
+    </div>
+  }
+  @if (saveSuccess()) {
+    <div class="alert alert-success d-flex align-items-center gap-2 mb-3">
+      <i class="bi bi-check-circle-fill"></i><span>SKU saved.</span>
+    </div>
+  }
+
+  <!-- Tab nav -->
+  <ul class="nav nav-tabs mb-0" style="border-bottom: 2px solid #dee2e6;">
+    @for (tab of ([
+      {id:'details', label:'Details', icon:'bi-upc-scan'},
+      {id:'options', label:'Options', icon:'bi-sliders'},
+      {id:'pricing', label:'Pricing', icon:'bi-currency-dollar'},
+      {id:'logistics', label:'Logistics', icon:'bi-truck'},
+      {id:'inventory', label:'Inventory', icon:'bi-box-seam'}
+    ]); track tab.id) {
+      <li class="nav-item">
+        <button class="nav-link" [class.active]="activeTab() === tab.id" (click)="setTab($any(tab.id))">
+          <i class="bi {{ tab.icon }} me-1"></i>{{ tab.label }}
+        </button>
+      </li>
+    }
+  </ul>
+
+  <div class="pt-4">
+
+    <!-- ── Details ── -->
+    @if (activeTab() === 'details') {
+      <div class="row g-4">
+        <div class="col-12 col-lg-8">
+          <div class="card mb-4">
+            <div class="card-body">
+              <h6 class="card-title fw-semibold mb-3">SKU Information</h6>
+              <div class="row g-3">
+                <div class="col-12 col-sm-6">
+                  <label class="form-label fw-medium">SKU Code <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control font-monospace" [(ngModel)]="detailsForm.skuCode" required />
+                </div>
+                <div class="col-12 col-sm-6">
+                  <label class="form-label fw-medium">UPC / Barcode</label>
+                  <input type="text" class="form-control" [(ngModel)]="detailsForm.upc" />
+                </div>
+                <div class="col-12">
+                  <label class="form-label fw-medium">Title / Variant Name</label>
+                  <input type="text" class="form-control" [(ngModel)]="detailsForm.skuTitle" placeholder="e.g. Red / Large" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card mb-4">
+            <div class="card-body">
+              <h6 class="card-title fw-semibold mb-3">Pricing</h6>
+              <div class="row g-3">
+                <div class="col-12 col-sm-4">
+                  <label class="form-label fw-medium">Base Price</label>
+                  <div class="input-group">
+                    <span class="input-group-text">$</span>
+                    <input type="number" class="form-control" [(ngModel)]="detailsForm.basePrice" min="0" step="0.01" />
+                  </div>
+                </div>
+                <div class="col-12 col-sm-4">
+                  <label class="form-label fw-medium">Compare-at Price</label>
+                  <div class="input-group">
+                    <span class="input-group-text">$</span>
+                    <input type="number" class="form-control" [(ngModel)]="detailsForm.comparePrice" min="0" step="0.01" />
+                  </div>
+                </div>
+                <div class="col-12 col-sm-4">
+                  <label class="form-label fw-medium">Cost Price</label>
+                  <div class="input-group">
+                    <span class="input-group-text">$</span>
+                    <input type="number" class="form-control" [(ngModel)]="detailsForm.costPrice" min="0" step="0.01" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-lg-4">
+          <div class="card mb-4">
+            <div class="card-body">
+              <h6 class="card-title fw-semibold mb-3">Status</h6>
+              <select class="form-select" [(ngModel)]="detailsForm.status">
+                <option value="ACTIVE">Active</option>
+                <option value="INACTIVE">Inactive</option>
+                <option value="DISCONTINUED">Discontinued</option>
+              </select>
+            </div>
+          </div>
+          <div class="card mb-4">
+            <div class="card-body">
+              <h6 class="card-title fw-semibold mb-3">Sort Order</h6>
+              <input type="number" class="form-control" [(ngModel)]="detailsForm.sortOrder" min="0" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn btn-dark" (click)="save()" [disabled]="saving()">
+        @if (saving()) {
+          <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving…
+        } @else {
+          <i class="bi bi-check-lg me-2"></i>{{ isEdit ? 'Save Changes' : 'Create SKU' }}
+        }
+      </button>
+    }
+
+    <!-- ── Options ── -->
+    @if (activeTab() === 'options') {
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h6 class="fw-semibold mb-0">Variant Options</h6>
+        <div class="d-flex gap-2">
+          <button class="btn btn-outline-secondary btn-sm" (click)="addOption()">
+            <i class="bi bi-plus-lg me-1"></i>Add Row
+          </button>
+          <button class="btn btn-dark btn-sm" (click)="saveOptions()" [disabled]="savingOptions()">
+            @if (savingOptions()) {
+              <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            } @else {
+              <i class="bi bi-check-lg me-1"></i>
+            }
+            Save Options
+          </button>
+        </div>
+      </div>
+
+      @if (!isEdit) {
+        <div class="alert alert-info">Save the SKU details first before adding options.</div>
+      } @else if (options().length === 0) {
+        <div class="text-center py-5 text-muted">
+          <i class="bi bi-sliders mb-2" style="font-size:2rem; display:block;"></i>
+          No options yet. Click "Add Row" to define size, color, etc.
+        </div>
+      } @else {
+        <div class="card">
+          <div class="table-responsive">
+            <table class="table table-borderless align-middle mb-0">
+              <thead class="border-bottom">
+                <tr>
+                  <th style="width:40%;">Option Name</th>
+                  <th>Value</th>
+                  <th style="width:60px;"></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (opt of options(); track $index; let i = $index) {
+                  <tr>
+                    <td>
+                      <select class="form-select form-select-sm" [(ngModel)]="opt.optName">
+                        @for (name of optionNames; track name) {
+                          <option [value]="name">{{ name }}</option>
+                        }
+                      </select>
+                    </td>
+                    <td>
+                      <input type="text" class="form-control form-control-sm" [(ngModel)]="opt.optValue" placeholder="e.g. Large, Red, 10W" />
+                    </td>
+                    <td>
+                      <button class="btn btn-sm btn-outline-danger" (click)="removeOption(i)">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+    }
+
+    <!-- ── Pricing ── -->
+    @if (activeTab() === 'pricing') {
+      <h6 class="fw-semibold mb-3">Channel / Market Price Overrides</h6>
+      <p class="text-muted small mb-3">The base price is set in the Details tab. Use this table to override pricing per channel, market, or currency.</p>
+
+      <div class="card mb-4">
+        <div class="card-body">
+          <h6 class="card-title fw-semibold mb-3 small text-muted text-uppercase">Add Override</h6>
+          <div class="row g-2 align-items-end">
+            <div class="col-6 col-sm-2">
+              <label class="form-label small">Currency</label>
+              <input type="text" class="form-control form-control-sm" maxlength="3" placeholder="USD"
+                     [ngModel]="pricingForm().currencyCd" (ngModelChange)="pricingForm.update(f => ({...f, currencyCd: $event}))" />
+            </div>
+            <div class="col-6 col-sm-2">
+              <label class="form-label small">Price</label>
+              <input type="number" class="form-control form-control-sm" min="0" step="0.01"
+                     [ngModel]="pricingForm().priceAmount" (ngModelChange)="pricingForm.update(f => ({...f, priceAmount: +$event}))" />
+            </div>
+            <div class="col-6 col-sm-2">
+              <label class="form-label small">Compare-at</label>
+              <input type="number" class="form-control form-control-sm" min="0" step="0.01"
+                     [ngModel]="pricingForm().compareAmount" (ngModelChange)="pricingForm.update(f => ({...f, compareAmount: $event ? +$event : null}))" />
+            </div>
+            <div class="col-6 col-sm-2">
+              <label class="form-label small">Active</label>
+              <select class="form-select form-select-sm" [ngModel]="pricingForm().isActive" (ngModelChange)="pricingForm.update(f => ({...f, isActive: $event}))">
+                <option value="Y">Yes</option>
+                <option value="N">No</option>
+              </select>
+            </div>
+            <div class="col-12 col-sm-4">
+              <button class="btn btn-dark btn-sm w-100" (click)="addPricingRow()" [disabled]="savingPricing() || !isEdit">
+                @if (savingPricing()) {
+                  <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                } @else { <i class="bi bi-plus-lg me-1"></i> }
+                Add
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      @if (loadingPricing()) {
+        <div class="text-center py-3 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>Loading…</div>
+      } @else if (pricing().length === 0) {
+        <div class="text-center py-4 text-muted"><i class="bi bi-currency-dollar me-2"></i>No overrides. Base price applies to all channels.</div>
+      } @else {
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0 table-stacked">
+            <thead>
+              <tr>
+                <th>Currency</th>
+                <th class="text-end">Price</th>
+                <th class="text-end">Compare-at</th>
+                <th class="text-center">Active</th>
+                <th class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (p of pricing(); track p.priceId) {
+                <tr>
+                  <td><span class="badge bg-light text-dark border">{{ p.currencyCd }}</span></td>
+                  <td class="text-end fw-medium">{{ p.priceAmount | number:'1.2-2' }}</td>
+                  <td class="text-end text-muted">{{ p.compareAmount != null ? (p.compareAmount | number:'1.2-2') : '—' }}</td>
+                  <td class="text-center">
+                    @if (p.isActive === 'Y') { <i class="bi bi-check-circle-fill text-success"></i> }
+                    @else { <i class="bi bi-x-circle text-muted"></i> }
+                  </td>
+                  <td class="text-end">
+                    <button class="btn btn-sm btn-outline-danger m-1 px-3" (click)="deletePricingRow(p)"><i class="bi bi-trash"></i></button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    }
+
+    <!-- ── Logistics ── -->
+    @if (activeTab() === 'logistics') {
+      <div class="row g-4">
+        <div class="col-12 col-lg-8">
+          <div class="card mb-4">
+            <div class="card-body">
+              <h6 class="card-title fw-semibold mb-3">Weight</h6>
+              <div class="row g-3">
+                <div class="col-8">
+                  <label class="form-label fw-medium">Weight</label>
+                  <input type="number" class="form-control" [(ngModel)]="detailsForm.weight" min="0" step="0.001" />
+                </div>
+                <div class="col-4">
+                  <label class="form-label fw-medium">Unit</label>
+                  <select class="form-select" [(ngModel)]="detailsForm.weightUnit">
+                    <option value="LB">lb</option>
+                    <option value="OZ">oz</option>
+                    <option value="KG">kg</option>
+                    <option value="G">g</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card mb-4">
+            <div class="card-body">
+              <h6 class="card-title fw-semibold mb-3">Dimensions</h6>
+              <div class="row g-3">
+                <div class="col-6 col-sm-3">
+                  <label class="form-label fw-medium">Length</label>
+                  <input type="number" class="form-control" [(ngModel)]="detailsForm.length" min="0" step="0.01" />
+                </div>
+                <div class="col-6 col-sm-3">
+                  <label class="form-label fw-medium">Width</label>
+                  <input type="number" class="form-control" [(ngModel)]="detailsForm.width" min="0" step="0.01" />
+                </div>
+                <div class="col-6 col-sm-3">
+                  <label class="form-label fw-medium">Height</label>
+                  <input type="number" class="form-control" [(ngModel)]="detailsForm.height" min="0" step="0.01" />
+                </div>
+                <div class="col-6 col-sm-3">
+                  <label class="form-label fw-medium">Unit</label>
+                  <select class="form-select" [(ngModel)]="detailsForm.dimUnit">
+                    <option value="IN">in</option>
+                    <option value="CM">cm</option>
+                    <option value="MM">mm</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card mb-4">
+            <div class="card-body">
+              <h6 class="card-title fw-semibold mb-3">Compliance</h6>
+              <div class="row g-3">
+                <div class="col-12 col-sm-6">
+                  <label class="form-label fw-medium">Country of Origin</label>
+                  <input type="text" class="form-control" [(ngModel)]="detailsForm.countryOrigin" placeholder="US" maxlength="2" />
+                </div>
+                <div class="col-12 col-sm-6">
+                  <label class="form-label fw-medium">HTS Code</label>
+                  <input type="text" class="form-control font-monospace" [(ngModel)]="detailsForm.htsCode" placeholder="6203.42.4011" />
+                </div>
+                <div class="col-12 col-sm-6">
+                  <label class="form-label fw-medium">Hazmat</label>
+                  <select class="form-select" [(ngModel)]="detailsForm.hazmatFlag">
+                    <option value="N">No</option>
+                    <option value="Y">Yes</option>
+                  </select>
+                </div>
+                <div class="col-12 col-sm-6">
+                  <label class="form-label fw-medium">Fulfillment Type</label>
+                  <select class="form-select" [(ngModel)]="detailsForm.fulfillmentType">
+                    <option value="SHIP">Ship</option>
+                    <option value="PICKUP">Pickup</option>
+                    <option value="DIGITAL">Digital</option>
+                    <option value="SERVICE">Service</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card mb-4">
+            <div class="card-body">
+              <h6 class="card-title fw-semibold mb-3">Backorder Settings</h6>
+              <div class="row g-3 align-items-center">
+                <div class="col-12 col-sm-6">
+                  <label class="form-label fw-medium">Allow Backorders</label>
+                  <select class="form-select" [(ngModel)]="detailsForm.isBackorderable">
+                    <option value="N">No</option>
+                    <option value="Y">Yes</option>
+                  </select>
+                </div>
+                @if (detailsForm.isBackorderable === 'Y') {
+                  <div class="col-12 col-sm-6">
+                    <label class="form-label fw-medium">Max Backorder Qty</label>
+                    <input type="number" class="form-control" [(ngModel)]="detailsForm.maxBackorderQty" min="0" />
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <button class="btn btn-dark" (click)="save()" [disabled]="saving()">
+        @if (saving()) {
+          <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving…
+        } @else {
+          <i class="bi bi-check-lg me-2"></i>Save Logistics
+        }
+      </button>
+    }
+
+    <!-- ── Inventory ── -->
+    @if (activeTab() === 'inventory') {
+      <h6 class="fw-semibold mb-3">Stock by Warehouse</h6>
+
+      @if (!isEdit) {
+        <div class="alert alert-info">Save the SKU first before managing inventory.</div>
+      } @else if (loadingInventory()) {
+        <div class="text-center py-3 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>Loading…</div>
+      } @else if (inventory().length === 0) {
+        <div class="text-center py-5 text-muted">
+          <i class="bi bi-box-seam mb-2" style="font-size:2rem; display:block;"></i>
+          No warehouse inventory records found.
+        </div>
+      } @else {
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0 table-stacked">
+            <thead>
+              <tr>
+                <th>Warehouse</th>
+                <th class="text-center">On Hand</th>
+                <th class="text-center">Reserved</th>
+                <th class="text-center">Available</th>
+                <th class="text-center">Reorder Point</th>
+                <th class="text-center">Track Inv.</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (inv of inventory(); track inv.invId) {
+                <tr>
+                  <td>{{ inv.warehouseName || 'Warehouse #' + inv.warehouseId }}</td>
+                  <td class="text-center">
+                    <input
+                      type="number"
+                      class="form-control form-control-sm text-center"
+                      style="width:80px; margin:0 auto;"
+                      [ngModel]="inv.qtyOnHand"
+                      (change)="updateInventoryQty(inv, +$any($event.target).value)"
+                      min="0"
+                    />
+                  </td>
+                  <td class="text-center text-muted">{{ inv.qtyReserved }}</td>
+                  <td class="text-center fw-medium">{{ inv.qtyAvailable }}</td>
+                  <td class="text-center text-muted">{{ inv.reorderPoint ?? '—' }}</td>
+                  <td class="text-center">
+                    @if (inv.trackInventory === 'Y') { <i class="bi bi-check-circle-fill text-success"></i> }
+                    @else { <i class="bi bi-x-circle text-muted"></i> }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    }
+
+  </div><!-- /tab panels -->
+
+</section>

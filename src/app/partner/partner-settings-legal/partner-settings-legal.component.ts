@@ -62,7 +62,7 @@ export class PartnerSettingsLegalComponent implements OnInit {
         retnsinfo:  s.retnsinfo  ?? '',
       };
     } catch (err) {
-      this.loadError.set(err instanceof Error ? err.message : 'Failed to load legal content.');
+      this.loadError.set(err instanceof Error ? err.message : 'Failed to load policies.');
     } finally {
       this.loading.set(false);
     }
@@ -98,7 +98,7 @@ export class PartnerSettingsLegalComponent implements OnInit {
       this.saveSuccess.set(true);
       setTimeout(() => this.saveSuccess.set(false), 3000);
     } catch (err) {
-      this.saveError.set(err instanceof Error ? err.message : 'Failed to save legal content.');
+      this.saveError.set(err instanceof Error ? err.message : 'Failed to save policies.');
     } finally {
       this.saving.set(false);
     }

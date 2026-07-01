@@ -39,7 +39,7 @@
             </div>
             <div class="mb-3">
               <label class="form-label fw-medium d-flex align-items-center gap-2">
-                Slug
+                Slug <span class="text-danger">*</span>
                 @if (!isEdit && slugAutoSync) {
                   <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle fw-normal" style="font-size:0.65rem;">auto</span>
                 }
@@ -59,44 +59,6 @@
             <div class="mb-3">
               <label class="form-label fw-medium">Description</label>
               <textarea class="form-control" name="brandDescr" [(ngModel)]="formData.brandDescr" rows="3"></textarea>
-            </div>
-            <div class="mb-3">
-              <label class="form-label fw-medium">Logo</label>
-
-              @if (uploadError()) {
-                <div class="alert alert-danger py-2 px-3 mb-2 small d-flex align-items-center gap-2">
-                  <i class="bi bi-exclamation-triangle-fill"></i>{{ uploadError() }}
-                  <button type="button" class="btn-close btn-close-sm ms-auto" (click)="uploadError.set(null)"></button>
-                </div>
-              }
-
-              <div class="logo-upload-zone" [class.logo-upload-zone--has-image]="formData.logoUrl"
-                   (click)="!formData.logoUrl && logoFileInput.click()">
-
-                @if (uploadingLogo()) {
-                  <div class="logo-upload-spinner">
-                    <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
-                    <span class="text-muted small ms-2">Uploading…</span>
-                  </div>
-                } @else if (formData.logoUrl) {
-                  <img [src]="formData.logoUrl" alt="Brand logo" class="logo-upload-preview" />
-                  <div class="logo-upload-actions">
-                    <button type="button" class="btn btn-sm btn-outline-secondary" (click)="$event.stopPropagation(); logoFileInput.click()">
-                      <i class="bi bi-arrow-repeat me-1"></i>Replace
-                    </button>
-                    <button type="button" class="btn btn-sm btn-outline-danger" (click)="$event.stopPropagation(); removeLogo()">
-                      <i class="bi bi-trash me-1"></i>Remove
-                    </button>
-                  </div>
-                } @else {
-                  <i class="bi bi-image text-muted" style="font-size:1.75rem;"></i>
-                  <span class="text-muted small mt-1">Click to upload logo</span>
-                  <span class="text-muted" style="font-size:0.7rem;">PNG, JPG, SVG · max 2 MB</span>
-                }
-              </div>
-
-              <input #logoFileInput type="file" accept="image/*" style="display:none"
-                     (change)="onLogoSelected($event)" />
             </div>
             <div class="mb-0">
               <label class="form-label fw-medium">Website URL</label>
@@ -134,6 +96,7 @@
       </div>
 
       <div class="col-12 col-lg-4">
+
         <div class="card mb-4">
           <div class="card-body">
             <h6 class="card-title fw-semibold mb-3">Status</h6>
@@ -143,11 +106,52 @@
             </select>
           </div>
         </div>
+
+        <div class="card mb-4">
+          <div class="card-body">
+            <h6 class="card-title fw-semibold mb-3">Logo</h6>
+
+            @if (uploadError()) {
+              <div class="alert alert-danger py-2 px-3 mb-2 small d-flex align-items-center gap-2">
+                <i class="bi bi-exclamation-triangle-fill"></i>{{ uploadError() }}
+                <button type="button" class="btn-close btn-close-sm ms-auto" (click)="uploadError.set(null)"></button>
+              </div>
+            }
+
+            <div class="logo-upload-zone" [class.logo-upload-zone--has-image]="formData.logoUrl"
+                 (click)="!formData.logoUrl && logoFileInput.click()">
+              @if (uploadingLogo()) {
+                <div class="logo-upload-spinner">
+                  <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
+                  <span class="text-muted small ms-2">Uploading…</span>
+                </div>
+              } @else if (formData.logoUrl) {
+                <img [src]="formData.logoUrl" alt="Brand logo" class="logo-upload-preview" />
+                <div class="logo-upload-actions">
+                  <button type="button" class="btn btn-sm btn-outline-secondary" (click)="$event.stopPropagation(); logoFileInput.click()">
+                    <i class="bi bi-arrow-repeat me-1"></i>Replace
+                  </button>
+                  <button type="button" class="btn btn-sm btn-outline-danger" (click)="$event.stopPropagation(); removeLogo()">
+                    <i class="bi bi-trash me-1"></i>Remove
+                  </button>
+                </div>
+              } @else {
+                <i class="bi bi-image text-muted" style="font-size:1.75rem;"></i>
+                <span class="text-muted small mt-1">Click to upload logo</span>
+                <span class="text-muted" style="font-size:0.7rem;">PNG, JPG, SVG · max 2 MB</span>
+              }
+            </div>
+
+            <input #logoFileInput type="file" accept="image/*" style="display:none"
+                   (change)="onLogoSelected($event)" />
+          </div>
+        </div>
+
       </div>
 
     </div>
 
-    <div class="d-flex gap-2 mt-2">
+    <div class="d-flex justify-content-end gap-2 mt-2">
       <button type="submit" class="btn btn-dark" [disabled]="saving()">
         @if (saving()) {
           <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving…

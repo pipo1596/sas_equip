@@ -39,6 +39,8 @@ export class ProductDetailComponent implements OnInit {
   readonly saving = signal(false);
   readonly saveError = signal<string | null>(null);
   readonly saveSuccess = signal(false);
+  readonly titleMissing = signal(false);
+  readonly handleMissing = signal(false);
 
   // ── Tab state ─────────────────────────────────────────────────────────────
   readonly activeTab = signal<ProductTab>('overview');
@@ -196,6 +198,14 @@ export class ProductDetailComponent implements OnInit {
   // ── Overview save ─────────────────────────────────────────────────────────
 
   async saveOverview(): Promise<void> {
+    const titleOk = !!this.overviewForm.title?.trim();
+    const handleOk = !!this.overviewForm.handle?.trim();
+    this.titleMissing.set(!titleOk);
+    this.handleMissing.set(!handleOk);
+    if (!titleOk || !handleOk) {
+      setTimeout(() => document.querySelector<HTMLElement>('.is-invalid')?.focus());
+      return;
+    }
     const tpId = this.tpId;
     const id = this.productPk();
     if (!tpId || !id) return;

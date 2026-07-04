@@ -2,7 +2,6 @@ import { Routes } from '@angular/router';
 import { AuthGuard } from './auth/auth.guard';
 import { GuestGuard } from './auth/guest.guard';
 import { ShellComponent } from './shell/shell.component';
-import { PartnerShellComponent } from './partner/partner-shell/partner-shell.component';
 import { partnerModeGuard } from './partner/partner-mode.guard';
 
 export const routes: Routes = [
@@ -10,10 +9,10 @@ export const routes: Routes = [
   { path: 'mfa', canMatch: [GuestGuard], canActivate: [GuestGuard], loadComponent: () => import('./auth/mfa/mfa.component').then((m) => m.MfaComponent) },
   {
     path: 'partner',
-    component: PartnerShellComponent,
+    loadComponent: () => import('./partner/partner-shell/partner-shell.component').then(m => m.PartnerShellComponent),
     canMatch: [AuthGuard],
     canActivate: [AuthGuard],
-    loadChildren: () => import('./partner/partner.module').then((m) => m.PartnerModule),
+    loadChildren: () => import('./partner/partner.routes').then(m => m.PARTNER_ROUTES),
   },
   {
     path: '',

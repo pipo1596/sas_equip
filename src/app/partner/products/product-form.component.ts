@@ -127,6 +127,7 @@ export class ProductFormComponent implements OnInit {
   async save(): Promise<void> {
     if (this.productForm.invalid) {
       this.productForm.form.markAllAsTouched();
+      setTimeout(() => document.querySelector<HTMLElement>('.is-invalid')?.focus());
       return;
     }
     const tpId = this.tpId;

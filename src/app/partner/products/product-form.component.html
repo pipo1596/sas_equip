@@ -10,13 +10,6 @@
     </button>
   </div>
 
-  @if (error()) {
-    <div class="alert alert-danger d-flex align-items-center gap-2 mb-3" role="alert">
-      <i class="bi bi-exclamation-triangle-fill"></i>
-      <span>{{ error() }}</span>
-      <button type="button" class="btn-close ms-auto" (click)="error.set(null)"></button>
-    </div>
-  }
 
   <form #productForm="ngForm" (ngSubmit)="save()" novalidate>
     <div class="row g-4">
@@ -31,7 +24,8 @@
             <div class="mb-3">
               <label class="form-label fw-medium">Product ID <span class="text-danger">*</span></label>
               <input type="text" class="form-control font-monospace" name="productId"
-                     [(ngModel)]="formData.productId"
+                     [ngModel]="formData.productId"
+                     (ngModelChange)="formData.productId = $event.toUpperCase()"
                      required #productIdCtrl="ngModel"
                      [class.is-invalid]="productIdCtrl.invalid && productIdCtrl.touched"
                      [disabled]="isEdit"
@@ -176,7 +170,13 @@
       </div>
     </div>
 
-    <div class="d-flex justify-content-end gap-2 mt-2">
+    <div class="d-flex align-items-center justify-content-end gap-2 mt-2">
+      @if (error()) {
+        <div class="alert alert-danger d-flex align-items-center gap-2 mb-0 py-2 px-3" role="alert">
+          <i class="bi bi-exclamation-triangle-fill"></i>
+          <span>{{ error() }}</span>
+        </div>
+      }
       <button type="button" class="btn btn-outline-secondary" (click)="cancel()" [disabled]="saving()">Cancel</button>
       <button type="submit" class="btn btn-dark" [disabled]="saving()">
         @if (saving()) {

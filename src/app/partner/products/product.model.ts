@@ -1,18 +1,35 @@
 export interface Product {
-  productId: number;
+  productPk: number;
+  productId: string;
   tpId: number;
   brandId: number | null;
   brandName?: string | null;
   handle: string;
   title: string;
   descr: string | null;
+  longDescr: string | null;
+  features: string | null;
+  construction: string | null;
   vendor: string | null;
+  productType: string | null;
+  status: 'DRAFT' | 'ACTIVE' | 'ARCHIVED';
+  published: 'Y' | 'N';
+  giftCard: 'Y' | 'N';
+  productCond: string | null;
+  allowBackorder: 'Y' | 'N';
+  assignEmbel: 'Y' | 'N';
+  isVasable: 'Y' | 'N';
   tags: string | null;
   pageTitle: string | null;
   seoDescr: string | null;
-  status: 'DRAFT' | 'ACTIVE' | 'ARCHIVED';
-  publishedAt: string | null;
-  notes: string | null;
+  orderNote: string | null;
+  techSpec: string | null;
+  techSpecImg: string | null;
+  taxCode: string | null;
+  erpProdCode: string | null;
+  mfrProdCode: string | null;
+  manufacturerId: string | null;
+  supplierCode: string | null;
   skuCount?: number;
   thumbnailUrl?: string | null;
   primaryCategoryName?: string | null;
@@ -24,21 +41,39 @@ export interface Product {
 }
 
 export interface ProductForm {
+  productId: string;
   brandId: number | null;
   handle: string;
   title: string;
   descr: string;
+  longDescr: string;
+  features: string;
+  construction: string;
   vendor: string;
+  productType: string;
+  status: 'DRAFT' | 'ACTIVE' | 'ARCHIVED';
+  published: 'Y' | 'N';
+  giftCard: 'Y' | 'N';
+  productCond: string;
+  allowBackorder: 'Y' | 'N';
+  assignEmbel: 'Y' | 'N';
+  isVasable: 'Y' | 'N';
   tags: string;
   pageTitle: string;
   seoDescr: string;
-  status: 'DRAFT' | 'ACTIVE' | 'ARCHIVED';
-  notes: string;
+  orderNote: string;
+  techSpec: string;
+  techSpecImg: string;
+  taxCode: string;
+  erpProdCode: string;
+  mfrProdCode: string;
+  manufacturerId: string;
+  supplierCode: string;
 }
 
 export interface ProductSku {
   skuId: number;
-  productId: number;
+  productPk: number;
   tpId: number;
   skuCode: string;
   skuTitle: string | null;
@@ -91,7 +126,7 @@ export interface ProductSkuForm {
 export interface ProductOption {
   optId?: number;
   skuId: number;
-  productId: number;
+  productPk: number;
   tpId: number;
   optName: string;
   optValue: string;
@@ -101,7 +136,7 @@ export interface ProductOption {
 
 export interface ProductImage {
   imgId: number;
-  productId: number;
+  productPk: number;
   skuId: number | null;
   tpId: number;
   imgUrl: string;
@@ -114,7 +149,7 @@ export interface ProductImage {
 
 export interface ProductAttribute {
   attrId: number;
-  productId: number;
+  productPk: number;
   skuId: number | null;
   tpId: number;
   attrKey: string;
@@ -160,7 +195,7 @@ export interface ProductPricing {
 }
 
 export interface ProductCategoryAssignment {
-  productId: number;
+  productPk: number;
   catId: number;
   tpId: number;
   isPrimary: 'Y' | 'N';
@@ -172,7 +207,7 @@ export interface ProductCategoryAssignment {
 
 export interface ProductXref {
   xrefId: number;
-  productId: number;
+  productPk: number;
   skuId: number | null;
   tpId: number;
   platformCd: string;

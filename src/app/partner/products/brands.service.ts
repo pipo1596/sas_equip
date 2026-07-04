@@ -12,6 +12,11 @@ export class BrandsService {
     return data as unknown as BrandsPage;
   }
 
+  async get(tpId: number, brandId: number): Promise<Brand> {
+    const data = await this.post({ action: '*GET', tpId, brandId });
+    return data['brand'] as unknown as Brand;
+  }
+
   async listAll(tpId: number): Promise<Brand[]> {
     const data = await this.post({ action: '*LIST_ALL', tpId });
     return data['data'] as unknown as Brand[];

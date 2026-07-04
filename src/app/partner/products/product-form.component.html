@@ -24,71 +24,71 @@
       <!-- Left column -->
       <div class="col-12 col-lg-8">
 
-        <!-- Basic info -->
         <div class="card mb-4">
           <div class="card-body">
             <h6 class="card-title fw-semibold mb-3">Basic Information</h6>
+            
+            <div class="mb-3">
+              <label class="form-label fw-medium">Product ID <span class="text-danger">*</span></label>
+              <input type="text" class="form-control font-monospace" name="productId"
+                     [(ngModel)]="formData.productId"
+                     required #productIdCtrl="ngModel"
+                     [class.is-invalid]="productIdCtrl.invalid && productIdCtrl.touched"
+                     [disabled]="isEdit"
+                     placeholder="e.g. POLO-001, HEADWEAR-2024" />
+              <div class="form-text">Unique product code assigned by your team. Cannot be changed after creation.</div>
+              @if (productIdCtrl.invalid && productIdCtrl.touched) {
+                <div class="invalid-feedback">Product ID is required.</div>
+              }
+            </div>
 
             <div class="mb-3">
               <label class="form-label fw-medium">Title <span class="text-danger">*</span></label>
-              <input
-                type="text"
-                class="form-control"
-                name="title"
-                [ngModel]="formData.title"
-                (ngModelChange)="onTitleChange($event)"
-                required
-                #titleCtrl="ngModel"
-                [class.is-invalid]="titleCtrl.invalid && titleCtrl.touched"
-              />
+              <input type="text" class="form-control" name="title"
+                     [ngModel]="formData.title" (ngModelChange)="onTitleChange($event)"
+                     required #titleCtrl="ngModel"
+                     [class.is-invalid]="titleCtrl.invalid && titleCtrl.touched" />
               @if (titleCtrl.invalid && titleCtrl.touched) {
                 <div class="invalid-feedback">Title is required.</div>
               }
             </div>
 
             <div class="mb-3">
-              <label class="form-label fw-medium">Handle <span class="text-danger">*</span></label>
-              <input
-                type="text"
-                class="form-control font-monospace"
-                name="handle"
-                [(ngModel)]="formData.handle"
-                required
-                #handleCtrl="ngModel"
-                [class.is-invalid]="handleCtrl.invalid && handleCtrl.touched"
-                placeholder="url-friendly-slug"
-              />
+              <label class="form-label fw-medium">
+                Handle <span class="text-danger">*</span>
+                @if (!isEdit && handleAutoSync) {
+                  <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle fw-normal ms-1" style="font-size:0.65rem;">auto</span>
+                }
+              </label>
+              <input type="text" class="form-control font-monospace" name="handle"
+                     [ngModel]="formData.handle" (ngModelChange)="onHandleChange($event)"
+                     required #handleCtrl="ngModel"
+                     [class.is-invalid]="handleCtrl.invalid && handleCtrl.touched"
+                     placeholder="url-friendly-slug" />
               <div class="form-text">Used in URLs. Lowercase letters, numbers, and hyphens only.</div>
               @if (handleCtrl.invalid && handleCtrl.touched) {
                 <div class="invalid-feedback">Handle is required.</div>
               }
             </div>
 
-            <div class="mb-3">
-              <label class="form-label fw-medium">Description</label>
-              <textarea
-                class="form-control"
-                name="descr"
-                [(ngModel)]="formData.descr"
-                rows="5"
-                placeholder="Describe the product…"
-              ></textarea>
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label fw-medium">Vendor</label>
-              <input type="text" class="form-control" name="vendor" [(ngModel)]="formData.vendor" placeholder="Manufacturer or vendor name" />
+            <div class="row g-3 mb-3">
+              <div class="col-12 col-sm-6">
+                <label class="form-label fw-medium">Vendor</label>
+                <input type="text" class="form-control" name="vendor" [(ngModel)]="formData.vendor" placeholder="Manufacturer or vendor name" />
+              </div>
+              <div class="col-12 col-sm-6">
+                <label class="form-label fw-medium">Product Type</label>
+                <input type="text" class="form-control" name="productType" [(ngModel)]="formData.productType" placeholder="e.g. Apparel, Footwear" />
+              </div>
             </div>
 
             <div class="mb-0">
-              <label class="form-label fw-medium">Tags</label>
-              <input type="text" class="form-control" name="tags" [(ngModel)]="formData.tags" placeholder="comma, separated, tags" />
-              <div class="form-text">Separate tags with commas.</div>
+              <label class="form-label fw-medium">Short Description</label>
+              <textarea class="form-control" name="descr" [(ngModel)]="formData.descr" rows="3" placeholder="Brief product description (max 255 chars)"></textarea>
             </div>
           </div>
         </div>
 
-        <!-- SEO -->
         <div class="card mb-4">
           <div class="card-body">
             <h6 class="card-title fw-semibold mb-3">SEO</h6>
@@ -96,18 +96,14 @@
               <label class="form-label fw-medium">Page Title</label>
               <input type="text" class="form-control" name="pageTitle" [(ngModel)]="formData.pageTitle" placeholder="Leave blank to use product title" />
             </div>
-            <div class="mb-0">
+            <div class="mb-3">
               <label class="form-label fw-medium">Meta Description</label>
               <textarea class="form-control" name="seoDescr" [(ngModel)]="formData.seoDescr" rows="3" placeholder="Brief description for search engines (150–160 characters)"></textarea>
             </div>
-          </div>
-        </div>
-
-        <!-- Notes -->
-        <div class="card mb-4">
-          <div class="card-body">
-            <h6 class="card-title fw-semibold mb-3">Internal Notes</h6>
-            <textarea class="form-control" name="notes" [(ngModel)]="formData.notes" rows="3" placeholder="Internal notes (not visible to customers)"></textarea>
+            <div class="mb-0">
+              <label class="form-label fw-medium">Tags</label>
+              <input type="text" class="form-control" name="tags" [(ngModel)]="formData.tags" placeholder="comma, separated, tags" />
+            </div>
           </div>
         </div>
 
@@ -116,24 +112,23 @@
       <!-- Right column -->
       <div class="col-12 col-lg-4">
 
-        <!-- Status -->
         <div class="card mb-4">
           <div class="card-body">
             <h6 class="card-title fw-semibold mb-3">Status</h6>
-            <select class="form-select" name="status" [(ngModel)]="formData.status">
+            <select class="form-select mb-3" name="status" [(ngModel)]="formData.status">
               <option value="DRAFT">Draft</option>
               <option value="ACTIVE">Active</option>
               <option value="ARCHIVED">Archived</option>
             </select>
-            <div class="form-text mt-2">
-              @if (formData.status === 'DRAFT') { Not visible in storefront. }
-              @else if (formData.status === 'ACTIVE') { Visible and available for purchase. }
-              @else { Hidden from storefront but retained in catalog. }
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="publishedSwitch" name="published"
+                     [ngModel]="formData.published === 'Y'"
+                     (ngModelChange)="formData.published = $event ? 'Y' : 'N'" />
+              <label class="form-check-label" for="publishedSwitch">Published to storefront</label>
             </div>
           </div>
         </div>
 
-        <!-- Brand -->
         <div class="card mb-4">
           <div class="card-body">
             <h6 class="card-title fw-semibold mb-3">Brand</h6>
@@ -146,11 +141,43 @@
           </div>
         </div>
 
+        <div class="card mb-4">
+          <div class="card-body">
+            <h6 class="card-title fw-semibold mb-3">Flags</h6>
+            <div class="d-flex flex-column gap-2">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="giftCardSwitch" name="giftCard"
+                       [ngModel]="formData.giftCard === 'Y'"
+                       (ngModelChange)="formData.giftCard = $event ? 'Y' : 'N'" />
+                <label class="form-check-label" for="giftCardSwitch">Gift Card</label>
+              </div>
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="backorderSwitch" name="allowBackorder"
+                       [ngModel]="formData.allowBackorder === 'Y'"
+                       (ngModelChange)="formData.allowBackorder = $event ? 'Y' : 'N'" />
+                <label class="form-check-label" for="backorderSwitch">Allow Backorder</label>
+              </div>
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="embelSwitch" name="assignEmbel"
+                       [ngModel]="formData.assignEmbel === 'Y'"
+                       (ngModelChange)="formData.assignEmbel = $event ? 'Y' : 'N'" />
+                <label class="form-check-label" for="embelSwitch">Assign Embellishment</label>
+              </div>
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="vasableSwitch" name="isVasable"
+                       [ngModel]="formData.isVasable === 'Y'"
+                       (ngModelChange)="formData.isVasable = $event ? 'Y' : 'N'" />
+                <label class="form-check-label" for="vasableSwitch">Is Vasable</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
 
-    <!-- Actions -->
-    <div class="d-flex gap-2 mt-2">
+    <div class="d-flex justify-content-end gap-2 mt-2">
+      <button type="button" class="btn btn-outline-secondary" (click)="cancel()" [disabled]="saving()">Cancel</button>
       <button type="submit" class="btn btn-dark" [disabled]="saving()">
         @if (saving()) {
           <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving…
@@ -158,7 +185,6 @@
           <i class="bi bi-check-lg me-2"></i>{{ isEdit ? 'Save Changes' : 'Create Product' }}
         }
       </button>
-      <button type="button" class="btn btn-outline-secondary" (click)="cancel()" [disabled]="saving()">Cancel</button>
     </div>
 
   </form>

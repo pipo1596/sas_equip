@@ -114,10 +114,7 @@
     }
   </div>
 
-  <!-- Record count -->
-  @if (!loading() && total() > 0) {
-    <p class="small text-muted mb-2">{{ startRecord() }}–{{ endRecord() }} of {{ total() | number }} products</p>
-  }
+
 
   <!-- Table -->
   <div class="table-responsive">
@@ -156,17 +153,17 @@
             </td>
           </tr>
         } @else {
-          @for (product of products(); track product.productId) {
+          @for (product of products(); track product.productPk) {
             <tr style="cursor:pointer;" (click)="openProduct(product)">
               <td data-label="Product">
                 <div class="d-flex align-items-center gap-3">
-                  <span class="product-abbr-tile flex-shrink-0" [ngStyle]="abbrStyle(product.productId)">
+                  <span class="product-abbr-tile flex-shrink-0" [ngStyle]="abbrStyle(product.productPk)">
                     {{ productAbbr(product.title) }}
                   </span>
                   <div>
                     <div class="fw-semibold">{{ product.title }}</div>
                     <div class="text-muted small font-monospace">
-                      {{ productCode(product.productId) }}
+                      {{ product.productId }}
                       @if (product.primaryCategoryName) {
                         <span class="text-muted"> · {{ product.primaryCategoryName }}</span>
                       }

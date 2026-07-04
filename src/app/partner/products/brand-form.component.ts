@@ -57,26 +57,42 @@ export class BrandFormComponent implements OnInit {
     this.slugAutoSync = false;
   }
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     const idParam = this.route.snapshot.paramMap.get('brandId');
-    if (idParam) {
-      this.isEdit = true;
-      this.brandId = Number(idParam);
-      const brand = (window.history.state as { brand?: Brand }).brand;
-      if (brand && brand.brandId === this.brandId) {
-        this.formData = {
-          brandName:      brand.brandName ?? '',
-          brandSlug:      brand.brandSlug ?? '',
-          brandDescr:     brand.brandDescr ?? '',
-          logoUrl:        brand.logoUrl ?? '',
-          websiteUrl:     brand.websiteUrl ?? '',
-          status:         brand.status ?? 'ACTIVE',
-          supplierCode:   brand.supplierCode ?? '',
-          manufacturerId: brand.manufacturerId ?? '',
-          bcBrandId:      brand.bcBrandId ?? null,
-        };
+    if (!idParam) return;
+
+    this.isEdit = true;
+    this.brandId = Number(idParam);
+    this.slugAutoSync = false;
+
+    const state = (window.history.state as { brand?: Brand }).brand;
+    if (state && Number(state.brandId) === this.brandId) {
+      this.prefill(state);
+    } else {
+      // history state missing or stale — fetch from API
+      const tpId = this.tpId;
+      if (!tpId) return;
+      try {
+        const brand = await this.service.get(tpId, this.brandId);
+        this.prefill(brand);
+      } catch {
+        this.error.set('Could not load brand data.');
       }
     }
+  }
+
+  private prefill(brand: Brand): void {
+    this.formData = {
+      brandName:      brand.brandName ?? '',
+      brandSlug:      brand.brandSlug ?? '',
+      brandDescr:     brand.brandDescr ?? '',
+      logoUrl:        brand.logoUrl ?? '',
+      websiteUrl:     brand.websiteUrl ?? '',
+      status:         brand.status ?? 'ACTIVE',
+      supplierCode:   brand.supplierCode ?? '',
+      manufacturerId: brand.manufacturerId ?? '',
+      bcBrandId:      brand.bcBrandId ?? null,
+    };
   }
 
   async onLogoSelected(event: Event): Promise<void> {
@@ -106,10 +122,7 @@ export class BrandFormComponent implements OnInit {
   }
 
   async save(): Promise<void> {
-    if (this.brandFormRef.invalid) {
-      this.brandFormRef.form.markAllAsTouched();
-      return;
-    }
+    
     const tpId = this.tpId;
     if (!tpId) return;
     this.saving.set(true);

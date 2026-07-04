@@ -76,24 +76,37 @@
       <div class="row g-4">
         <div class="col-12 col-lg-8">
 
+          <!-- Basic info -->
           <div class="card mb-4">
             <div class="card-body">
               <h6 class="card-title fw-semibold mb-3">Basic Information</h6>
               <div class="mb-3">
+                <label class="form-label fw-medium">Product ID</label>
+                <input type="text" class="form-control font-monospace" [(ngModel)]="overviewForm.productId" [disabled]="true" />
+                <div class="form-text">Unique product code. Read-only after creation.</div>
+              </div>
+              <div class="mb-3">
                 <label class="form-label fw-medium">Title</label>
                 <input type="text" class="form-control" [(ngModel)]="overviewForm.title" />
               </div>
+              
               <div class="mb-3">
                 <label class="form-label fw-medium">Handle</label>
                 <input type="text" class="form-control font-monospace" [(ngModel)]="overviewForm.handle" />
               </div>
-              <div class="mb-3">
-                <label class="form-label fw-medium">Description</label>
-                <textarea class="form-control" [(ngModel)]="overviewForm.descr" rows="5"></textarea>
+              <div class="row g-3 mb-3">
+                <div class="col-12 col-sm-6">
+                  <label class="form-label fw-medium">Vendor</label>
+                  <input type="text" class="form-control" [(ngModel)]="overviewForm.vendor" />
+                </div>
+                <div class="col-12 col-sm-6">
+                  <label class="form-label fw-medium">Product Type</label>
+                  <input type="text" class="form-control" [(ngModel)]="overviewForm.productType" placeholder="e.g. Apparel, Footwear" />
+                </div>
               </div>
               <div class="mb-3">
-                <label class="form-label fw-medium">Vendor</label>
-                <input type="text" class="form-control" [(ngModel)]="overviewForm.vendor" />
+                <label class="form-label fw-medium">Product Condition</label>
+                <input type="text" class="form-control" [(ngModel)]="overviewForm.productCond" placeholder="e.g. New, Refurbished" />
               </div>
               <div class="mb-0">
                 <label class="form-label fw-medium">Tags</label>
@@ -102,6 +115,30 @@
             </div>
           </div>
 
+          <!-- Descriptions -->
+          <div class="card mb-4">
+            <div class="card-body">
+              <h6 class="card-title fw-semibold mb-3">Descriptions</h6>
+              <div class="mb-3">
+                <label class="form-label fw-medium">Short Description</label>
+                <textarea class="form-control" [(ngModel)]="overviewForm.descr" rows="2" placeholder="Brief description (max 255 chars)"></textarea>
+              </div>
+              <div class="mb-3">
+                <label class="form-label fw-medium">Long Description</label>
+                <textarea class="form-control" [(ngModel)]="overviewForm.longDescr" rows="5"></textarea>
+              </div>
+              <div class="mb-3">
+                <label class="form-label fw-medium">Features</label>
+                <textarea class="form-control" [(ngModel)]="overviewForm.features" rows="4"></textarea>
+              </div>
+              <div class="mb-0">
+                <label class="form-label fw-medium">Construction</label>
+                <textarea class="form-control" [(ngModel)]="overviewForm.construction" rows="4"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- SEO -->
           <div class="card mb-4">
             <div class="card-body">
               <h6 class="card-title fw-semibold mb-3">SEO</h6>
@@ -116,10 +153,51 @@
             </div>
           </div>
 
+          <!-- Integration -->
           <div class="card mb-4">
             <div class="card-body">
-              <h6 class="card-title fw-semibold mb-3">Internal Notes</h6>
-              <textarea class="form-control" [(ngModel)]="overviewForm.notes" rows="3"></textarea>
+              <h6 class="card-title fw-semibold mb-3">Integration &amp; Tax</h6>
+              <div class="row g-3">
+                <div class="col-12 col-sm-6">
+                  <label class="form-label fw-medium">Tax Code</label>
+                  <input type="text" class="form-control font-monospace" [(ngModel)]="overviewForm.taxCode" />
+                </div>
+                <div class="col-12 col-sm-6">
+                  <label class="form-label fw-medium">ERP Product Code</label>
+                  <input type="text" class="form-control font-monospace" [(ngModel)]="overviewForm.erpProdCode" />
+                </div>
+                <div class="col-12 col-sm-6">
+                  <label class="form-label fw-medium">Mfr Product Code</label>
+                  <input type="text" class="form-control font-monospace" [(ngModel)]="overviewForm.mfrProdCode" />
+                </div>
+                <div class="col-12 col-sm-6">
+                  <label class="form-label fw-medium">Manufacturer ID</label>
+                  <input type="text" class="form-control font-monospace" [(ngModel)]="overviewForm.manufacturerId" />
+                </div>
+                <div class="col-12 col-sm-6">
+                  <label class="form-label fw-medium">Supplier Code</label>
+                  <input type="text" class="form-control font-monospace" [(ngModel)]="overviewForm.supplierCode" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Notes & docs -->
+          <div class="card mb-4">
+            <div class="card-body">
+              <h6 class="card-title fw-semibold mb-3">Notes &amp; Docs</h6>
+              <div class="mb-3">
+                <label class="form-label fw-medium">Order Note</label>
+                <textarea class="form-control" [(ngModel)]="overviewForm.orderNote" rows="3" placeholder="Shown on order confirmations"></textarea>
+              </div>
+              <div class="mb-3">
+                <label class="form-label fw-medium">Tech Spec</label>
+                <textarea class="form-control" [(ngModel)]="overviewForm.techSpec" rows="4"></textarea>
+              </div>
+              <div class="mb-0">
+                <label class="form-label fw-medium">Tech Spec Image URL</label>
+                <input type="url" class="form-control" [(ngModel)]="overviewForm.techSpecImg" placeholder="https://…" />
+              </div>
             </div>
           </div>
 
@@ -130,11 +208,17 @@
           <div class="card mb-4">
             <div class="card-body">
               <h6 class="card-title fw-semibold mb-3">Status</h6>
-              <select class="form-select" [(ngModel)]="overviewForm.status">
+              <select class="form-select mb-3" [(ngModel)]="overviewForm.status">
                 <option value="DRAFT">Draft</option>
                 <option value="ACTIVE">Active</option>
                 <option value="ARCHIVED">Archived</option>
               </select>
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="detailPublished"
+                       [ngModel]="overviewForm.published === 'Y'"
+                       (ngModelChange)="overviewForm.published = $event ? 'Y' : 'N'" />
+                <label class="form-check-label" for="detailPublished">Published to storefront</label>
+              </div>
             </div>
           </div>
 
@@ -150,6 +234,38 @@
             </div>
           </div>
 
+          <div class="card mb-4">
+            <div class="card-body">
+              <h6 class="card-title fw-semibold mb-3">Flags</h6>
+              <div class="d-flex flex-column gap-2">
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="detailGiftCard"
+                         [ngModel]="overviewForm.giftCard === 'Y'"
+                         (ngModelChange)="overviewForm.giftCard = $event ? 'Y' : 'N'" />
+                  <label class="form-check-label" for="detailGiftCard">Gift Card</label>
+                </div>
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="detailBackorder"
+                         [ngModel]="overviewForm.allowBackorder === 'Y'"
+                         (ngModelChange)="overviewForm.allowBackorder = $event ? 'Y' : 'N'" />
+                  <label class="form-check-label" for="detailBackorder">Allow Backorder</label>
+                </div>
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="detailEmbel"
+                         [ngModel]="overviewForm.assignEmbel === 'Y'"
+                         (ngModelChange)="overviewForm.assignEmbel = $event ? 'Y' : 'N'" />
+                  <label class="form-check-label" for="detailEmbel">Assign Embellishment</label>
+                </div>
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="detailVasable"
+                         [ngModel]="overviewForm.isVasable === 'Y'"
+                         (ngModelChange)="overviewForm.isVasable = $event ? 'Y' : 'N'" />
+                  <label class="form-check-label" for="detailVasable">Is Vasable</label>
+                </div>
+              </div>
+            </div>
+          </div>
+
           @if (thumbnail(); as thumb) {
             <div class="card mb-4">
               <div class="card-body">
@@ -162,7 +278,7 @@
         </div>
       </div>
 
-      <div class="d-flex gap-2">
+      <div class="d-flex justify-content-end gap-2">
         <button class="btn btn-dark" (click)="saveOverview()" [disabled]="saving()">
           @if (saving()) {
             <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving…

@@ -27,58 +27,26 @@ export class ProductFormComponent implements OnInit {
   readonly brands = signal<Brand[]>([]);
 
   isEdit = false;
-  productId: number | null = null;
+  productPk: number | null = null;
+  handleAutoSync = true;
 
   formData: ProductForm = {
+    productId: '',
     brandId: null,
-    handle: '',
-    title: '',
-    descr: '',
-    vendor: '',
-    tags: '',
-    pageTitle: '',
-    seoDescr: '',
-    status: 'DRAFT',
-    notes: '',
+    handle: '', title: '',
+    descr: '', longDescr: '', features: '', construction: '',
+    vendor: '', productType: '',
+    status: 'DRAFT', published: 'Y',
+    giftCard: 'N', productCond: '',
+    allowBackorder: 'N', assignEmbel: 'N', isVasable: 'N',
+    tags: '', pageTitle: '', seoDescr: '',
+    orderNote: '', techSpec: '', techSpecImg: '',
+    taxCode: '', erpProdCode: '', mfrProdCode: '',
+    manufacturerId: '', supplierCode: '',
   };
 
   protected get tpId(): number | undefined {
     return this.partnerMode.activePartner()?.tpId;
-  }
-
-  ngOnInit(): void {
-    const idParam = this.route.snapshot.paramMap.get('productId');
-    if (idParam) {
-      this.isEdit = true;
-      this.productId = Number(idParam);
-      const product = (window.history.state as { product?: Product }).product;
-      if (product && product.productId === this.productId) {
-        this.formData = {
-          brandId: product.brandId,
-          handle: product.handle ?? '',
-          title: product.title ?? '',
-          descr: product.descr ?? '',
-          vendor: product.vendor ?? '',
-          tags: product.tags ?? '',
-          pageTitle: product.pageTitle ?? '',
-          seoDescr: product.seoDescr ?? '',
-          status: product.status ?? 'DRAFT',
-          notes: product.notes ?? '',
-        };
-      }
-    }
-    this.loadBrands();
-  }
-
-  private async loadBrands(): Promise<void> {
-    const tpId = this.tpId;
-    if (!tpId) return;
-    try {
-      const brands = await this.brandsService.listAll(tpId);
-      this.brands.set(brands);
-    } catch {
-      // non-critical
-    }
   }
 
   slugify(title: string): string {
@@ -87,9 +55,69 @@ export class ProductFormComponent implements OnInit {
 
   onTitleChange(value: string): void {
     this.formData.title = value;
-    if (!this.isEdit && !this.formData.handle) {
+    if (!this.isEdit && this.handleAutoSync) {
       this.formData.handle = this.slugify(value);
     }
+  }
+
+  onHandleChange(value: string): void {
+    this.formData.handle = value;
+    this.handleAutoSync = false;
+  }
+
+  ngOnInit(): void {
+    const idParam = this.route.snapshot.paramMap.get('productId');
+    if (idParam) {
+      this.isEdit = true;
+      this.handleAutoSync = false;
+      this.productPk = Number(idParam);
+      const product = (window.history.state as { product?: Product }).product;
+      if (product && product.productPk === this.productPk) {
+        this.prefill(product);
+      }
+    }
+    this.loadBrands();
+  }
+
+  private prefill(p: Product): void {
+    this.formData = {
+      productId:     p.productId ?? '',
+      brandId:       p.brandId,
+      handle:        p.handle ?? '',
+      title:         p.title ?? '',
+      descr:         p.descr ?? '',
+      longDescr:     p.longDescr ?? '',
+      features:      p.features ?? '',
+      construction:  p.construction ?? '',
+      vendor:        p.vendor ?? '',
+      productType:   p.productType ?? '',
+      status:        p.status ?? 'DRAFT',
+      published:     p.published ?? 'Y',
+      giftCard:      p.giftCard ?? 'N',
+      productCond:   p.productCond ?? '',
+      allowBackorder: p.allowBackorder ?? 'N',
+      assignEmbel:   p.assignEmbel ?? 'N',
+      isVasable:     p.isVasable ?? 'N',
+      tags:          p.tags ?? '',
+      pageTitle:     p.pageTitle ?? '',
+      seoDescr:      p.seoDescr ?? '',
+      orderNote:     p.orderNote ?? '',
+      techSpec:      p.techSpec ?? '',
+      techSpecImg:   p.techSpecImg ?? '',
+      taxCode:       p.taxCode ?? '',
+      erpProdCode:   p.erpProdCode ?? '',
+      mfrProdCode:   p.mfrProdCode ?? '',
+      manufacturerId: p.manufacturerId ?? '',
+      supplierCode:  p.supplierCode ?? '',
+    };
+  }
+
+  private async loadBrands(): Promise<void> {
+    const tpId = this.tpId;
+    if (!tpId) return;
+    try {
+      this.brands.set(await this.brandsService.listAll(tpId));
+    } catch { /* non-critical */ }
   }
 
   cancel(): void {
@@ -103,16 +131,15 @@ export class ProductFormComponent implements OnInit {
     }
     const tpId = this.tpId;
     if (!tpId) return;
-
     this.saving.set(true);
     this.error.set(null);
     try {
-      if (this.isEdit && this.productId != null) {
-        await this.service.update(tpId, this.productId, this.formData);
-        this.router.navigate(['/partner', tpId, 'products', this.productId]);
+      if (this.isEdit && this.productPk != null) {
+        await this.service.update(tpId, this.productPk, this.formData);
+        this.router.navigate(['/partner', tpId, 'products', this.productPk]);
       } else {
         const created = await this.service.create(tpId, this.formData);
-        this.router.navigate(['/partner', tpId, 'products', created.productId]);
+        this.router.navigate(['/partner', tpId, 'products', created.productPk]);
       }
     } catch (err) {
       this.error.set(err instanceof Error ? err.message : 'Save failed. Please try again.');

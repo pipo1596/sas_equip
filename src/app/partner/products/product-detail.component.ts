@@ -33,7 +33,7 @@ export class ProductDetailComponent implements OnInit {
 
   // ── Core state ────────────────────────────────────────────────────────────
   readonly product = signal<Product | null>(null);
-  readonly productId = signal<number | null>(null);
+  readonly productPk = signal<number | null>(null);
   readonly loadingProduct = signal(false);
   readonly loadError = signal<string | null>(null);
   readonly saving = signal(false);
@@ -47,9 +47,17 @@ export class ProductDetailComponent implements OnInit {
   // ── Overview form ─────────────────────────────────────────────────────────
   readonly brands = signal<Brand[]>([]);
   overviewForm: ProductForm = {
-    brandId: null, handle: '', title: '', descr: '',
-    vendor: '', tags: '', pageTitle: '', seoDescr: '',
-    status: 'DRAFT', notes: '',
+    productId: '',
+    brandId: null, handle: '', title: '',
+    descr: '', longDescr: '', features: '', construction: '',
+    vendor: '', productType: '',
+    status: 'DRAFT', published: 'Y',
+    giftCard: 'N', productCond: '',
+    allowBackorder: 'N', assignEmbel: 'N', isVasable: 'N',
+    tags: '', pageTitle: '', seoDescr: '',
+    orderNote: '', techSpec: '', techSpecImg: '',
+    taxCode: '', erpProdCode: '', mfrProdCode: '',
+    manufacturerId: '', supplierCode: '',
   };
 
   // ── SKUs ──────────────────────────────────────────────────────────────────
@@ -94,10 +102,10 @@ export class ProductDetailComponent implements OnInit {
   ngOnInit(): void {
     const idParam = this.route.snapshot.paramMap.get('productId');
     if (!idParam) return;
-    this.productId.set(Number(idParam));
+    this.productPk.set(Number(idParam));
 
     const stateProduct = (window.history.state as { product?: Product }).product;
-    if (stateProduct && stateProduct.productId === Number(idParam)) {
+    if (stateProduct && stateProduct.productPk === Number(idParam)) {
       this.product.set(stateProduct);
       this.syncOverviewForm(stateProduct);
     } else {
@@ -108,7 +116,7 @@ export class ProductDetailComponent implements OnInit {
 
   private async fetchProduct(): Promise<void> {
     const tpId = this.tpId;
-    const id = this.productId();
+    const id = this.productPk();
     if (!tpId || !id) return;
     this.loadingProduct.set(true);
     this.loadError.set(null);
@@ -125,16 +133,34 @@ export class ProductDetailComponent implements OnInit {
 
   private syncOverviewForm(p: Product): void {
     this.overviewForm = {
-      brandId: p.brandId,
-      handle: p.handle ?? '',
-      title: p.title ?? '',
-      descr: p.descr ?? '',
-      vendor: p.vendor ?? '',
-      tags: p.tags ?? '',
-      pageTitle: p.pageTitle ?? '',
-      seoDescr: p.seoDescr ?? '',
-      status: p.status ?? 'DRAFT',
-      notes: p.notes ?? '',
+      productId:      p.productId ?? '',
+      brandId:        p.brandId,
+      handle:         p.handle ?? '',
+      title:          p.title ?? '',
+      descr:          p.descr ?? '',
+      longDescr:      p.longDescr ?? '',
+      features:       p.features ?? '',
+      construction:   p.construction ?? '',
+      vendor:         p.vendor ?? '',
+      productType:    p.productType ?? '',
+      status:         p.status ?? 'DRAFT',
+      published:      p.published ?? 'Y',
+      giftCard:       p.giftCard ?? 'N',
+      productCond:    p.productCond ?? '',
+      allowBackorder: p.allowBackorder ?? 'N',
+      assignEmbel:    p.assignEmbel ?? 'N',
+      isVasable:      p.isVasable ?? 'N',
+      tags:           p.tags ?? '',
+      pageTitle:      p.pageTitle ?? '',
+      seoDescr:       p.seoDescr ?? '',
+      orderNote:      p.orderNote ?? '',
+      techSpec:       p.techSpec ?? '',
+      techSpecImg:    p.techSpecImg ?? '',
+      taxCode:        p.taxCode ?? '',
+      erpProdCode:    p.erpProdCode ?? '',
+      mfrProdCode:    p.mfrProdCode ?? '',
+      manufacturerId: p.manufacturerId ?? '',
+      supplierCode:   p.supplierCode ?? '',
     };
   }
 
@@ -171,7 +197,7 @@ export class ProductDetailComponent implements OnInit {
 
   async saveOverview(): Promise<void> {
     const tpId = this.tpId;
-    const id = this.productId();
+    const id = this.productPk();
     if (!tpId || !id) return;
     this.saving.set(true);
     this.saveError.set(null);
@@ -192,7 +218,7 @@ export class ProductDetailComponent implements OnInit {
 
   private async loadSkus(): Promise<void> {
     const tpId = this.tpId;
-    const id = this.productId();
+    const id = this.productPk();
     if (!tpId || !id) return;
     this.loadingSkus.set(true);
     try {
@@ -203,13 +229,13 @@ export class ProductDetailComponent implements OnInit {
   }
 
   openSku(sku: ProductSku): void {
-    this.router.navigate(['/partner', this.tpId, 'products', this.productId(), 'skus', sku.skuId], {
+    this.router.navigate(['/partner', this.tpId, 'products', this.productPk(), 'skus', sku.skuId], {
       state: { sku, product: this.product() },
     });
   }
 
   newSku(): void {
-    this.router.navigate(['/partner', this.tpId, 'products', this.productId(), 'skus', 'new'], {
+    this.router.navigate(['/partner', this.tpId, 'products', this.productPk(), 'skus', 'new'], {
       state: { product: this.product() },
     });
   }
@@ -246,7 +272,7 @@ export class ProductDetailComponent implements OnInit {
 
   private async loadImages(): Promise<void> {
     const tpId = this.tpId;
-    const id = this.productId();
+    const id = this.productPk();
     if (!tpId || !id) return;
     this.loadingImages.set(true);
     try {
@@ -279,7 +305,7 @@ export class ProductDetailComponent implements OnInit {
 
   private async loadCategoriesTab(): Promise<void> {
     const tpId = this.tpId;
-    const id = this.productId();
+    const id = this.productPk();
     if (!tpId || !id) return;
     this.loadingCategories.set(true);
     try {
@@ -309,7 +335,7 @@ export class ProductDetailComponent implements OnInit {
 
   async saveCategories(): Promise<void> {
     const tpId = this.tpId;
-    const id = this.productId();
+    const id = this.productPk();
     if (!tpId || !id) return;
     this.savingCategories.set(true);
     try {
@@ -352,7 +378,7 @@ export class ProductDetailComponent implements OnInit {
 
   private async loadAttributes(): Promise<void> {
     const tpId = this.tpId;
-    const id = this.productId();
+    const id = this.productPk();
     if (!tpId || !id) return;
     this.loadingAttributes.set(true);
     try {
@@ -382,7 +408,7 @@ export class ProductDetailComponent implements OnInit {
 
   async saveAttr(): Promise<void> {
     const tpId = this.tpId;
-    const id = this.productId();
+    const id = this.productPk();
     const form = this.attrForm();
     if (!tpId || !id || !form.attrKey.trim()) return;
     this.savingAttr.set(true);
@@ -395,7 +421,7 @@ export class ProductDetailComponent implements OnInit {
         );
       } else {
         const created = await this.service.addAttribute(tpId, {
-          productId: id, skuId: null,
+          productPk: id, skuId: null,
           ...form, attrValue: form.attrValue, sortOrder: this.attributes().length,
         });
         this.attributes.update(list => [...list, created]);
@@ -418,7 +444,7 @@ export class ProductDetailComponent implements OnInit {
 
   private async loadXrefs(): Promise<void> {
     const tpId = this.tpId;
-    const id = this.productId();
+    const id = this.productPk();
     if (!tpId || !id) return;
     this.loadingXrefs.set(true);
     try {
@@ -429,7 +455,7 @@ export class ProductDetailComponent implements OnInit {
 
   async addXref(): Promise<void> {
     const tpId = this.tpId;
-    const id = this.productId();
+    const id = this.productPk();
     const form = this.xrefForm();
     if (!tpId || !id || !form.platformCd.trim()) return;
     this.savingXref.set(true);

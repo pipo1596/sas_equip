@@ -138,7 +138,7 @@ export class PartnerProductsComponent implements OnInit {
   }
 
   openProduct(product: Product): void {
-    this.router.navigate(['/partner', this.tpId, 'products', product.productId], {
+    this.router.navigate(['/partner', this.tpId, 'products', product.productPk], {
       state: { product },
     });
   }
@@ -159,7 +159,7 @@ export class PartnerProductsComponent implements OnInit {
     if (!target || !tpId) return;
     this.deleting.set(true);
     try {
-      await this.service.remove(tpId, target.productId);
+      await this.service.remove(tpId, target.productPk);
       this.showDeleteModal.set(false);
       this.deleteTarget.set(null);
       if (this.products().length === 1 && this.page() > 1) {
@@ -193,13 +193,9 @@ export class PartnerProductsComponent implements OnInit {
     return title.substring(0, 3).toUpperCase();
   }
 
-  abbrStyle(productId: number): Record<string, string> {
-    const c = this.abbrPalette[productId % this.abbrPalette.length];
+  abbrStyle(productPk: number): Record<string, string> {
+    const c = this.abbrPalette[productPk % this.abbrPalette.length];
     return { background: c.bg, color: c.color };
-  }
-
-  productCode(productId: number): string {
-    return 'PROD-' + String(productId).padStart(5, '0');
   }
 
   statusDotClass(status: string): string {

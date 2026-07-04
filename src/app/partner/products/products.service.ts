@@ -35,33 +35,33 @@ export class ProductsService {
     return (data['data'] ?? []) as unknown as string[];
   }
 
-  async get(tpId: number, productId: number): Promise<Product> {
-    const data = await this.post({ action: '*GET', tpId, productId });
-    return data['product'] as unknown as Product;
+  async get(tpId: number, productPk: number): Promise<Product> {
+    const data = await this.post({ action: '*GET', tpId, productPk });
+    return data as unknown as Product;
   }
 
   async create(tpId: number, form: ProductForm): Promise<Product> {
     const data = await this.post({ action: '*CREATE', tpId, ...form });
-    return data['product'] as unknown as Product;
+    return data as unknown as Product;
   }
 
-  async update(tpId: number, productId: number, form: ProductForm): Promise<void> {
-    await this.post({ action: '*UPDATE', tpId, productId, ...form });
+  async update(tpId: number, productPk: number, form: ProductForm): Promise<void> {
+    await this.post({ action: '*UPDATE', tpId, productPk, ...form });
   }
 
-  async remove(tpId: number, productId: number): Promise<void> {
-    await this.post({ action: '*DELETE', tpId, productId });
+  async remove(tpId: number, productPk: number): Promise<void> {
+    await this.post({ action: '*DELETE', tpId, productPk });
   }
 
   // ── Images ────────────────────────────────────────────────────────────────
 
-  async listImages(tpId: number, productId: number): Promise<ProductImage[]> {
-    const data = await this.post({ action: '*LIST_IMAGES', tpId, productId });
+  async listImages(tpId: number, productPk: number): Promise<ProductImage[]> {
+    const data = await this.post({ action: '*LIST_IMAGES', tpId, productPk });
     return data['data'] as unknown as ProductImage[];
   }
 
-  async addImage(tpId: number, productId: number, imgUrl: string, imgAlt: string, isThumbnail: 'Y' | 'N'): Promise<ProductImage> {
-    const data = await this.post({ action: '*ADD_IMAGE', tpId, productId, imgUrl, imgAlt, isThumbnail });
+  async addImage(tpId: number, productPk: number, imgUrl: string, imgAlt: string, isThumbnail: 'Y' | 'N'): Promise<ProductImage> {
+    const data = await this.post({ action: '*ADD_IMAGE', tpId, productPk, imgUrl, imgAlt, isThumbnail });
     return data['image'] as unknown as ProductImage;
   }
 
@@ -75,19 +75,19 @@ export class ProductsService {
 
   // ── Categories ────────────────────────────────────────────────────────────
 
-  async listProductCategories(tpId: number, productId: number): Promise<ProductCategoryAssignment[]> {
-    const data = await this.post({ action: '*LIST_CATS', tpId, productId });
+  async listProductCategories(tpId: number, productPk: number): Promise<ProductCategoryAssignment[]> {
+    const data = await this.post({ action: '*LIST_CATS', tpId, productPk });
     return data['data'] as unknown as ProductCategoryAssignment[];
   }
 
-  async setProductCategories(tpId: number, productId: number, assignments: Array<{ catId: number; isPrimary: 'Y' | 'N' }>): Promise<void> {
-    await this.post({ action: '*SET_CATS', tpId, productId, assignments });
+  async setProductCategories(tpId: number, productPk: number, assignments: Array<{ catId: number; isPrimary: 'Y' | 'N' }>): Promise<void> {
+    await this.post({ action: '*SET_CATS', tpId, productPk, assignments });
   }
 
   // ── Attributes ────────────────────────────────────────────────────────────
 
-  async listAttributes(tpId: number, productId: number): Promise<ProductAttribute[]> {
-    const data = await this.post({ action: '*LIST_ATTRS', tpId, productId });
+  async listAttributes(tpId: number, productPk: number): Promise<ProductAttribute[]> {
+    const data = await this.post({ action: '*LIST_ATTRS', tpId, productPk });
     return data['data'] as unknown as ProductAttribute[];
   }
 
@@ -106,13 +106,13 @@ export class ProductsService {
 
   // ── Cross-refs ────────────────────────────────────────────────────────────
 
-  async listXrefs(tpId: number, productId: number): Promise<ProductXref[]> {
-    const data = await this.post({ action: '*LIST_XREFS', tpId, productId });
+  async listXrefs(tpId: number, productPk: number): Promise<ProductXref[]> {
+    const data = await this.post({ action: '*LIST_XREFS', tpId, productPk });
     return data['data'] as unknown as ProductXref[];
   }
 
-  async addXref(tpId: number, productId: number, xref: Partial<ProductXref>): Promise<ProductXref> {
-    const data = await this.post({ action: '*ADD_XREF', tpId, productId, ...xref });
+  async addXref(tpId: number, productPk: number, xref: Partial<ProductXref>): Promise<ProductXref> {
+    const data = await this.post({ action: '*ADD_XREF', tpId, productPk, ...xref });
     return data['xref'] as unknown as ProductXref;
   }
 

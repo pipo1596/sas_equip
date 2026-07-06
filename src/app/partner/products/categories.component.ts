@@ -28,6 +28,8 @@ export class CategoriesComponent implements OnInit {
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
 
+  readonly expandedIds = signal<Set<number>>(new Set());
+
   readonly showDeleteModal = signal(false);
   readonly deleting = signal(false);
   readonly deleteTarget = signal<Category | null>(null);
@@ -48,7 +50,19 @@ export class CategoriesComponent implements OnInit {
     return this.partnerMode.activePartner()?.tpId;
   }
 
-  readonly flatTree = computed(() => this.buildFlatTree(this.categories()));
+  readonly hasChildrenSet = computed(() => {
+    const s = new Set<number>();
+    for (const cat of this.categories()) {
+      if (cat.parentCatId != null) s.add(cat.parentCatId);
+    }
+    return s;
+  });
+
+  readonly flatTree = computed(() =>
+    this.search()
+      ? this.buildFlatTree(this.categories(), null)
+      : this.buildFlatTree(this.categories(), this.expandedIds())
+  );
 
   ngOnInit(): void {
     this.loadCategories();
@@ -74,7 +88,15 @@ export class CategoriesComponent implements OnInit {
     }
   }
 
-  buildFlatTree(cats: Category[]): CategoryRow[] {
+  toggleExpand(catId: number): void {
+    this.expandedIds.update(set => {
+      const next = new Set(set);
+      next.has(catId) ? next.delete(catId) : next.add(catId);
+      return next;
+    });
+  }
+
+  buildFlatTree(cats: Category[], expandedIds: Set<number> | null): CategoryRow[] {
     const map = new Map<number, CategoryRow>(
       cats.map(c => [c.catId, { ...c, level: 0 }])
     );
@@ -122,8 +144,10 @@ export class CategoriesComponent implements OnInit {
       if (!node) return;
       visited.add(catId);
       result.push(node);
-      for (const child of map.values()) {
-        if (child.parentCatId === catId) visit(child.catId);
+      if (!expandedIds || expandedIds.has(catId)) {
+        for (const child of map.values()) {
+          if (child.parentCatId === catId) visit(child.catId);
+        }
       }
     };
 
@@ -132,9 +156,11 @@ export class CategoriesComponent implements OnInit {
         visit(cat.catId);
       }
     }
-    // Catch any orphans
+    // Show true orphans: parent exists in DB but is on a different page
     for (const cat of map.values()) {
-      if (!visited.has(cat.catId)) result.push(cat);
+      if (!visited.has(cat.catId) && cat.parentCatId != null && !map.has(cat.parentCatId)) {
+        result.push(cat);
+      }
     }
     return result;
   }

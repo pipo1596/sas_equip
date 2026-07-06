@@ -54,10 +54,16 @@
             <tr>
               <td [style.padding-left.px]="16 + cat.level * 20">
                 <div class="d-flex align-items-center gap-2">
-                  @if (cat.level > 0) {
-                    <i class="bi bi-arrow-return-right text-muted" style="font-size:0.75rem;"></i>
+                  @if (hasChildrenSet().has(cat.catId)) {
+                    <button type="button" class="btn btn-link p-0 text-muted lh-1" style="width:1rem;"
+                            (click)="toggleExpand(cat.catId)">
+                      <i [class]="expandedIds().has(cat.catId) ? 'bi bi-chevron-down' : 'bi bi-chevron-right'"
+                         style="font-size:0.7rem;"></i>
+                    </button>
+                  } @else if (cat.level > 0) {
+                    <i class="bi bi-arrow-return-right text-muted" style="font-size:0.75rem; width:1rem;"></i>
                   } @else {
-                    <i class="bi bi-folder2-open text-muted"></i>
+                    <i class="bi bi-folder2 text-muted" style="width:1rem;"></i>
                   }
                   <span class="fw-medium">{{ cat.catName }}</span>
                 </div>

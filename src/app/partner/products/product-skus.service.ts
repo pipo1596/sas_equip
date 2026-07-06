@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import {
-  ProductSku, ProductSkuForm, SkusPage,
+  ProductSku, ProductSkuForm,
   ProductOption, ProductImage, ProductAttribute,
   ProductInventory, ProductPricing,
 } from './product.model';
@@ -13,9 +13,9 @@ export class ProductSkusService {
 
   // ── SKU CRUD ──────────────────────────────────────────────────────────────
 
-  async list(tpId: number, productId: number, params: { page: number; pageSize: number }): Promise<SkusPage> {
-    const data = await this.post({ action: '*LIST', tpId, productId, ...params });
-    return data as unknown as SkusPage;
+  async list(tpId: number, productId: number): Promise<ProductSku[]> {
+    const data = await this.post({ action: '*LIST_ALL', tpId, productId });
+    return (data['data'] as unknown as ProductSku[]) ?? [];
   }
 
   async get(tpId: number, skuId: number): Promise<ProductSku> {

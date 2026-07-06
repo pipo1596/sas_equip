@@ -61,12 +61,24 @@
                   <input type="text" class="form-control font-monospace" [(ngModel)]="detailsForm.skuCode" required />
                 </div>
                 <div class="col-12 col-sm-6">
-                  <label class="form-label fw-medium">UPC / Barcode</label>
-                  <input type="text" class="form-control" [(ngModel)]="detailsForm.upc" />
+                  <label class="form-label fw-medium">UPC / EAN</label>
+                  <input type="text" class="form-control" [(ngModel)]="detailsForm.upcEan" />
                 </div>
-                <div class="col-12">
-                  <label class="form-label fw-medium">Title / Variant Name</label>
-                  <input type="text" class="form-control" [(ngModel)]="detailsForm.skuTitle" placeholder="e.g. Red / Large" />
+                <div class="col-12 col-sm-6">
+                  <label class="form-label fw-medium">Mfr SKU ID</label>
+                  <input type="text" class="form-control font-monospace" [(ngModel)]="detailsForm.mfrSkuId" />
+                </div>
+                <div class="col-12 col-sm-6">
+                  <label class="form-label fw-medium">Mfr Part Number</label>
+                  <input type="text" class="form-control font-monospace" [(ngModel)]="detailsForm.mfrPartNum" />
+                </div>
+                <div class="col-12 col-sm-6">
+                  <label class="form-label fw-medium">ERP SKU Code</label>
+                  <input type="text" class="form-control font-monospace" [(ngModel)]="detailsForm.erpSkuCode" />
+                </div>
+                <div class="col-12 col-sm-6">
+                  <label class="form-label fw-medium">SKU300</label>
+                  <input type="text" class="form-control font-monospace" [(ngModel)]="detailsForm.sku300" placeholder="Shopify metafield" />
                 </div>
               </div>
             </div>
@@ -77,25 +89,43 @@
               <h6 class="card-title fw-semibold mb-3">Pricing</h6>
               <div class="row g-3">
                 <div class="col-12 col-sm-4">
-                  <label class="form-label fw-medium">Base Price</label>
+                  <label class="form-label fw-medium">Price <span class="text-danger">*</span></label>
                   <div class="input-group">
                     <span class="input-group-text">$</span>
-                    <input type="number" class="form-control" [(ngModel)]="detailsForm.basePrice" min="0" step="0.01" />
+                    <input type="number" class="form-control" [(ngModel)]="detailsForm.price" min="0" step="0.0001" />
                   </div>
                 </div>
                 <div class="col-12 col-sm-4">
                   <label class="form-label fw-medium">Compare-at Price</label>
                   <div class="input-group">
                     <span class="input-group-text">$</span>
-                    <input type="number" class="form-control" [(ngModel)]="detailsForm.comparePrice" min="0" step="0.01" />
+                    <input type="number" class="form-control" [(ngModel)]="detailsForm.compareAtPrc" min="0" step="0.0001" />
                   </div>
                 </div>
                 <div class="col-12 col-sm-4">
-                  <label class="form-label fw-medium">Cost Price</label>
+                  <label class="form-label fw-medium">Cost per Item</label>
                   <div class="input-group">
                     <span class="input-group-text">$</span>
-                    <input type="number" class="form-control" [(ngModel)]="detailsForm.costPrice" min="0" step="0.01" />
+                    <input type="number" class="form-control" [(ngModel)]="detailsForm.costPerItem" min="0" step="0.0001" />
                   </div>
+                </div>
+                <div class="col-12 col-sm-4">
+                  <label class="form-label fw-medium">MSRP</label>
+                  <div class="input-group">
+                    <span class="input-group-text">$</span>
+                    <input type="number" class="form-control" [(ngModel)]="detailsForm.msrp" min="0" step="0.0001" />
+                  </div>
+                </div>
+                <div class="col-12 col-sm-4">
+                  <label class="form-label fw-medium">MAP Price</label>
+                  <div class="input-group">
+                    <span class="input-group-text">$</span>
+                    <input type="number" class="form-control" [(ngModel)]="detailsForm.mapPrice" min="0" step="0.0001" />
+                  </div>
+                </div>
+                <div class="col-12 col-sm-4">
+                  <label class="form-label fw-medium">Points</label>
+                  <input type="number" class="form-control" [(ngModel)]="detailsForm.points" min="0" />
                 </div>
               </div>
             </div>
@@ -105,18 +135,33 @@
         <div class="col-12 col-lg-4">
           <div class="card mb-4">
             <div class="card-body">
-              <h6 class="card-title fw-semibold mb-3">Status</h6>
-              <select class="form-select" [(ngModel)]="detailsForm.status">
-                <option value="ACTIVE">Active</option>
-                <option value="INACTIVE">Inactive</option>
-                <option value="DISCONTINUED">Discontinued</option>
-              </select>
+              <h6 class="card-title fw-semibold mb-3">Flags</h6>
+              <div class="d-flex flex-column gap-2">
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="isDefaultSwitch"
+                         [ngModel]="detailsForm.isDefault === 'Y'"
+                         (ngModelChange)="detailsForm.isDefault = $event ? 'Y' : 'N'" />
+                  <label class="form-check-label" for="isDefaultSwitch">Default SKU</label>
+                </div>
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="requiresShipSwitch"
+                         [ngModel]="detailsForm.requiresShip === 'Y'"
+                         (ngModelChange)="detailsForm.requiresShip = $event ? 'Y' : 'N'" />
+                  <label class="form-check-label" for="requiresShipSwitch">Requires Shipping</label>
+                </div>
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="isTaxableSwitch"
+                         [ngModel]="detailsForm.isTaxable === 'Y'"
+                         (ngModelChange)="detailsForm.isTaxable = $event ? 'Y' : 'N'" />
+                  <label class="form-check-label" for="isTaxableSwitch">Taxable</label>
+                </div>
+              </div>
             </div>
           </div>
           <div class="card mb-4">
             <div class="card-body">
-              <h6 class="card-title fw-semibold mb-3">Sort Order</h6>
-              <input type="number" class="form-control" [(ngModel)]="detailsForm.sortOrder" min="0" />
+              <h6 class="card-title fw-semibold mb-3">Variant Image</h6>
+              <input type="url" class="form-control" [(ngModel)]="detailsForm.variantImgUrl" placeholder="https://…" />
             </div>
           </div>
         </div>
@@ -318,10 +363,10 @@
                 </div>
                 <div class="col-6 col-sm-3">
                   <label class="form-label fw-medium">Unit</label>
-                  <select class="form-select" [(ngModel)]="detailsForm.dimUnit">
-                    <option value="IN">in</option>
-                    <option value="CM">cm</option>
-                    <option value="MM">mm</option>
+                  <select class="form-select" [(ngModel)]="detailsForm.dimensionUnit">
+                    <option value="in">in</option>
+                    <option value="cm">cm</option>
+                    <option value="mm">mm</option>
                   </select>
                 </div>
               </div>
@@ -334,27 +379,19 @@
               <div class="row g-3">
                 <div class="col-12 col-sm-6">
                   <label class="form-label fw-medium">Country of Origin</label>
-                  <input type="text" class="form-control" [(ngModel)]="detailsForm.countryOrigin" placeholder="US" maxlength="2" />
+                  <input type="text" class="form-control" [(ngModel)]="detailsForm.countryOfOrig" placeholder="US" maxlength="2" />
                 </div>
                 <div class="col-12 col-sm-6">
                   <label class="form-label fw-medium">HTS Code</label>
                   <input type="text" class="form-control font-monospace" [(ngModel)]="detailsForm.htsCode" placeholder="6203.42.4011" />
                 </div>
                 <div class="col-12 col-sm-6">
-                  <label class="form-label fw-medium">Hazmat</label>
-                  <select class="form-select" [(ngModel)]="detailsForm.hazmatFlag">
-                    <option value="N">No</option>
-                    <option value="Y">Yes</option>
-                  </select>
+                  <label class="form-label fw-medium">Hazmat Code</label>
+                  <input type="text" class="form-control font-monospace" [(ngModel)]="detailsForm.hazmatCode" placeholder="UN1234" />
                 </div>
                 <div class="col-12 col-sm-6">
-                  <label class="form-label fw-medium">Fulfillment Type</label>
-                  <select class="form-select" [(ngModel)]="detailsForm.fulfillmentType">
-                    <option value="SHIP">Ship</option>
-                    <option value="PICKUP">Pickup</option>
-                    <option value="DIGITAL">Digital</option>
-                    <option value="SERVICE">Service</option>
-                  </select>
+                  <label class="form-label fw-medium">Restricted States</label>
+                  <input type="text" class="form-control" [(ngModel)]="detailsForm.restrictedSt" placeholder="CA,NY" />
                 </div>
               </div>
             </div>
@@ -362,21 +399,27 @@
 
           <div class="card mb-4">
             <div class="card-body">
-              <h6 class="card-title fw-semibold mb-3">Backorder Settings</h6>
-              <div class="row g-3 align-items-center">
+              <h6 class="card-title fw-semibold mb-3">Fulfillment</h6>
+              <div class="row g-3">
                 <div class="col-12 col-sm-6">
-                  <label class="form-label fw-medium">Allow Backorders</label>
-                  <select class="form-select" [(ngModel)]="detailsForm.isBackorderable">
-                    <option value="N">No</option>
-                    <option value="Y">Yes</option>
+                  <label class="form-label fw-medium">Fulfillment Service</label>
+                  <input type="text" class="form-control" [(ngModel)]="detailsForm.fulfillSvc" placeholder="e.g. amazon_marketplace" />
+                </div>
+                <div class="col-12 col-sm-6">
+                  <label class="form-label fw-medium">Unit of Measure (UOM)</label>
+                  <input type="text" class="form-control font-monospace" [(ngModel)]="detailsForm.uom" placeholder="EA" maxlength="10" />
+                </div>
+                <div class="col-12 col-sm-6">
+                  <label class="form-label fw-medium">Inventory Tracker</label>
+                  <input type="text" class="form-control" [(ngModel)]="detailsForm.invTracker" placeholder="shopify" />
+                </div>
+                <div class="col-12 col-sm-6">
+                  <label class="form-label fw-medium">Inventory Policy</label>
+                  <select class="form-select" [(ngModel)]="detailsForm.invPolicy">
+                    <option value="deny">Deny (stop selling when OOS)</option>
+                    <option value="continue">Continue (allow oversell)</option>
                   </select>
                 </div>
-                @if (detailsForm.isBackorderable === 'Y') {
-                  <div class="col-12 col-sm-6">
-                    <label class="form-label fw-medium">Max Backorder Qty</label>
-                    <input type="number" class="form-control" [(ngModel)]="detailsForm.maxBackorderQty" min="0" />
-                  </div>
-                }
               </div>
             </div>
           </div>

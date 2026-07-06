@@ -45,9 +45,6 @@
           (click)="setTab($any(tab.id))"
         >
           <i class="bi {{ tab.icon }} me-1"></i>{{ tab.label }}
-          @if (tab.id === 'skus' && skus().length > 0) {
-            <span class="badge bg-light text-dark border ms-1" style="font-size:0.65rem;">{{ skus().length }}</span>
-          }
           @if (tab.id === 'images' && images().length > 0) {
             <span class="badge bg-light text-dark border ms-1" style="font-size:0.65rem;">{{ images().length }}</span>
           }
@@ -326,9 +323,9 @@
             <thead>
               <tr>
                 <th>SKU Code</th>
-                <th>Title / Options</th>
-                <th class="text-end">Base Price</th>
-                <th class="text-center">Status</th>
+                <th>Options</th>
+                <th class="text-end">Price</th>
+                <th class="text-center">Default</th>
                 <th class="text-end">Actions</th>
               </tr>
             </thead>
@@ -337,22 +334,27 @@
                 <tr style="cursor:pointer;" (click)="openSku(sku)">
                   <td><span class="font-monospace small">{{ sku.skuCode }}</span></td>
                   <td>
-                    <div>{{ sku.skuTitle || '—' }}</div>
                     @if (sku.options && sku.options.length > 0) {
-                      <div class="d-flex flex-wrap gap-1 mt-1">
+                      <div class="d-flex flex-wrap gap-1">
                         @for (opt of sku.options; track opt.optId) {
                           <span class="badge bg-light text-dark border small">{{ opt.optName }}: {{ opt.optValue }}</span>
                         }
                       </div>
+                    } @else {
+                      <span class="text-muted">—</span>
                     }
                   </td>
                   <td class="text-end">
-                    @if (sku.basePrice != null) {
-                      {{ sku.basePrice | number:'1.2-2' }}
+                    @if (sku.price != null) {
+                      {{ sku.price | number:'1.2-2' }}
                     } @else { — }
                   </td>
                   <td class="text-center">
-                    <span [class]="skuStatusBadge(sku.status)"><span style="font-size:0.5rem;">&#9679;</span> {{ sku.status }}</span>
+                    @if (sku.isDefault === 'Y') {
+                      <i class="bi bi-check-circle-fill text-success"></i>
+                    } @else {
+                      <i class="bi bi-circle text-muted"></i>
+                    }
                   </td>
                   <td class="text-end" (click)="$event.stopPropagation()">
                     <button class="btn btn-sm btn-outline-secondary m-1 px-3" (click)="openSku(sku)"><i class="bi bi-pencil"></i></button>

@@ -177,6 +177,10 @@ export class ProductDetailComponent implements OnInit {
 
   setTab(tab: ProductTab): void {
     this.activeTab.set(tab);
+    if (tab === 'skus') {
+      this.loadSkus();
+      return;
+    }
     const loaded = this.loadedTabs();
     if (!loaded.has(tab)) {
       this.loadedTabs.set(new Set([...loaded, tab]));
@@ -231,8 +235,7 @@ export class ProductDetailComponent implements OnInit {
     if (!tpId || !id) return;
     this.loadingSkus.set(true);
     try {
-      const result = await this.skusService.list(tpId, id, { page: 1, pageSize: 100 });
-      this.skus.set(result.data);
+      this.skus.set(await this.skusService.list(tpId, id));
     } catch { /* handled inline */ }
     finally { this.loadingSkus.set(false); }
   }
@@ -266,15 +269,6 @@ export class ProductDetailComponent implements OnInit {
       this.skuDeleteTarget.set(null);
     } catch { /* TODO: surface error */ }
     finally { this.deletingSkus.set(false); }
-  }
-
-  skuStatusBadge(status: string): string {
-    switch (status) {
-      case 'ACTIVE':       return 'badge bg-success-subtle text-success border border-success-subtle';
-      case 'INACTIVE':     return 'badge bg-secondary-subtle text-secondary border border-secondary-subtle';
-      case 'DISCONTINUED': return 'badge bg-warning-subtle text-warning border border-warning-subtle';
-      default:             return 'badge bg-light text-dark';
-    }
   }
 
   // ── Images ────────────────────────────────────────────────────────────────

@@ -11,7 +11,7 @@ export const environment = {
     tpSettings: 'APITPSTNGS',
     tpUsers: 'APITPUSERS',
     products: 'APIPRODUCT',
-    productSkus: 'APIPROSKU',
+    productSkus: 'APISKUS',
     brands: 'APIBRANDS',
     categories: 'APICATEGS',
     imageUpload: '/cgi/SEPIMGUPL',

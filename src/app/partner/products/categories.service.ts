@@ -17,6 +17,11 @@ export class CategoriesService {
     return data['data'] as unknown as Category[];
   }
 
+  async get(tpId: number, catId: number): Promise<Category> {
+    const data = await this.post({ action: '*GET', tpId, catId });
+    return data as unknown as Category;
+  }
+
   async create(tpId: number, form: CategoryForm): Promise<Category> {
     const data = await this.post({ action: '*CREATE', tpId, ...form });
     return data['category'] as unknown as Category;

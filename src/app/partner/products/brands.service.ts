@@ -14,7 +14,7 @@ export class BrandsService {
 
   async get(tpId: number, brandId: number): Promise<Brand> {
     const data = await this.post({ action: '*GET', tpId, brandId });
-    return data['brand'] as unknown as Brand;
+    return data as unknown as Brand;
   }
 
   async listAll(tpId: number): Promise<Brand[]> {

@@ -9,16 +9,31 @@
     </button>
   </div>
 
-  @if (error()) {
-    <div class="alert alert-danger d-flex align-items-center gap-2 mb-3">
-      <i class="bi bi-exclamation-triangle-fill"></i><span>{{ error() }}</span>
-      <button class="btn-close ms-auto" (click)="error.set(null)"></button>
+  @if (loading()) {
+    <div class="d-flex justify-content-center align-items-center py-5">
+      <div class="spinner-border text-secondary" role="status">
+        <span class="visually-hidden">Loading…</span>
+      </div>
     </div>
-  }
+  } @else {
 
   <form #catForm="ngForm" (ngSubmit)="save()" novalidate>
     <div class="row g-4">
       <div class="col-12 col-lg-8">
+
+        <div class="card mb-4">
+          <div class="card-body">
+            <h6 class="card-title fw-semibold mb-3">Hierarchy</h6>
+            <label class="form-label fw-medium">Parent Category</label>
+            <select class="form-select" name="parentCatId" [(ngModel)]="formData.parentCatId">
+              <option [ngValue]="null">— Top level —</option>
+              @for (cat of allCategories(); track cat.catId) {
+                <option [ngValue]="cat.catId">{{ cat.catName }}</option>
+              }
+            </select>
+            <div class="form-text mt-2">Leave blank for a top-level category.</div>
+          </div>
+        </div>
 
         <div class="card mb-4">
           <div class="card-body">
@@ -38,15 +53,24 @@
               }
             </div>
 
-            <div class="row g-3 mb-3">
-              <div class="col-12 col-sm-6">
-                <label class="form-label fw-medium">Slug</label>
-                <input type="text" class="form-control font-monospace" name="catSlug" [(ngModel)]="formData.catSlug" />
-              </div>
-              <div class="col-12 col-sm-6">
-                <label class="form-label fw-medium">Code</label>
-                <input type="text" class="form-control font-monospace" name="catCode" [(ngModel)]="formData.catCode" placeholder="Optional short code" />
-              </div>
+            <div class="mb-3">
+              <label class="form-label fw-medium d-flex align-items-center gap-2">
+                Slug <span class="text-danger">*</span>
+                @if (!isEdit && slugAutoSync) {
+                  <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle fw-normal" style="font-size:0.65rem;">auto</span>
+                }
+              </label>
+              <input type="text" class="form-control font-monospace"
+                     name="catSlug"
+                     [ngModel]="formData.catSlug"
+                     (ngModelChange)="onSlugChange($event)"
+                     required
+                     #slugCtrl="ngModel"
+                     [class.is-invalid]="slugCtrl.invalid && slugCtrl.touched"
+                     placeholder="url-friendly-slug" />
+              @if (slugCtrl.invalid && slugCtrl.touched) {
+                <div class="invalid-feedback">Slug is required.</div>
+              }
             </div>
 
             <div class="mb-3">
@@ -54,29 +78,11 @@
               <textarea class="form-control" name="catDescr" [(ngModel)]="formData.catDescr" rows="3"></textarea>
             </div>
 
-            <div class="mb-0">
-              <label class="form-label fw-medium">Image URL</label>
-              <input type="url" class="form-control" name="imgUrl" [(ngModel)]="formData.imgUrl" placeholder="https://…" />
-            </div>
           </div>
         </div>
 
       </div>
       <div class="col-12 col-lg-4">
-
-        <div class="card mb-4">
-          <div class="card-body">
-            <h6 class="card-title fw-semibold mb-3">Hierarchy</h6>
-            <label class="form-label fw-medium">Parent Category</label>
-            <select class="form-select" name="parentCatId" [(ngModel)]="formData.parentCatId">
-              <option [ngValue]="null">— Top level —</option>
-              @for (cat of allCategories(); track cat.catId) {
-                <option [ngValue]="cat.catId">{{ cat.catName }}</option>
-              }
-            </select>
-            <div class="form-text mt-2">Leave blank for a top-level category.</div>
-          </div>
-        </div>
 
         <div class="card mb-4">
           <div class="card-body">
@@ -90,15 +96,67 @@
 
         <div class="card mb-4">
           <div class="card-body">
+            <h6 class="card-title fw-semibold mb-3">Image</h6>
+
+            @if (uploadError()) {
+              <div class="alert alert-danger py-2 px-3 mb-2 small d-flex align-items-center gap-2">
+                <i class="bi bi-exclamation-triangle-fill"></i>{{ uploadError() }}
+                <button type="button" class="btn-close btn-close-sm ms-auto" (click)="uploadError.set(null)"></button>
+              </div>
+            }
+
+            <div class="logo-upload-zone" [class.logo-upload-zone--has-image]="formData.imgUrl"
+                 (click)="!formData.imgUrl && imgFileInput.click()">
+              @if (uploadingImg()) {
+                <div class="logo-upload-spinner">
+                  <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
+                  <span class="text-muted small ms-2">Uploading…</span>
+                </div>
+              } @else if (formData.imgUrl) {
+                <img [src]="formData.imgUrl" alt="Category image" class="logo-upload-preview" />
+                <div class="logo-upload-actions">
+                  <button type="button" class="btn btn-sm btn-outline-secondary" (click)="$event.stopPropagation(); imgFileInput.click()">
+                    <i class="bi bi-arrow-repeat me-1"></i>Replace
+                  </button>
+                  <button type="button" class="btn btn-sm btn-outline-danger" (click)="$event.stopPropagation(); removeImg()">
+                    <i class="bi bi-trash me-1"></i>Remove
+                  </button>
+                </div>
+              } @else {
+                <i class="bi bi-image text-muted" style="font-size:1.75rem;"></i>
+                <span class="text-muted small mt-1">Click to upload image</span>
+                <span class="text-muted" style="font-size:0.7rem;">PNG, JPG, SVG · max 2 MB</span>
+              }
+            </div>
+
+            <input #imgFileInput type="file" accept="image/*" style="display:none"
+                   (change)="onImgSelected($event)" />
+          </div>
+        </div>
+
+        <div class="card mb-4">
+          <div class="card-body">
             <h6 class="card-title fw-semibold mb-3">Sort Order</h6>
-            <input type="number" class="form-control" name="sortOrder" [(ngModel)]="formData.sortOrder" min="0" />
+            <select class="form-select" name="sortOrder" [(ngModel)]="formData.sortOrder">
+              <option [ngValue]="0">— Select —</option> 
+              @for (n of sortOrderOptions; track n) {
+                <option [ngValue]="n">{{ n }}</option>
+              }
+            </select>
           </div>
         </div>
 
       </div>
     </div>
 
-    <div class="d-flex gap-2 mt-2">
+    <div class="d-flex align-items-center justify-content-end gap-2 mt-2">
+      @if (error()) {
+        <div class="alert alert-danger d-flex align-items-center gap-2 mb-0 py-2 px-3 me-auto" role="alert">
+          <i class="bi bi-exclamation-triangle-fill"></i>
+          <span>{{ error() }}</span>
+        </div>
+      }
+      <button type="button" class="btn btn-outline-secondary" (click)="cancel()" [disabled]="saving()">Cancel</button>
       <button type="submit" class="btn btn-dark" [disabled]="saving()">
         @if (saving()) {
           <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving…
@@ -106,9 +164,10 @@
           <i class="bi bi-check-lg me-2"></i>{{ isEdit ? 'Save Changes' : 'Create Category' }}
         }
       </button>
-      <button type="button" class="btn btn-outline-secondary" (click)="cancel()" [disabled]="saving()">Cancel</button>
     </div>
 
   </form>
+
+  } <!-- end @else loading -->
 
 </section>

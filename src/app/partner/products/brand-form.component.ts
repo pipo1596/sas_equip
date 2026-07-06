@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, inject, signal } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, ViewChild, inject, signal } from '@angular/core';
 import { NgForm, FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { PartnerModeService } from '../partner-mode.service';
@@ -20,7 +20,9 @@ export class BrandFormComponent implements OnInit {
   private readonly uploadService = inject(ImageUploadService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly cdr = inject(ChangeDetectorRef);
 
+  readonly loading = signal(false);
   readonly saving = signal(false);
   readonly error = signal<string | null>(null);
   readonly uploadingLogo = signal(false);
@@ -65,19 +67,15 @@ export class BrandFormComponent implements OnInit {
     this.brandId = Number(idParam);
     this.slugAutoSync = false;
 
-    const state = (window.history.state as { brand?: Brand }).brand;
-    if (state && Number(state.brandId) === this.brandId) {
-      this.prefill(state);
-    } else {
-      // history state missing or stale — fetch from API
-      const tpId = this.tpId;
-      if (!tpId) return;
-      try {
-        const brand = await this.service.get(tpId, this.brandId);
-        this.prefill(brand);
-      } catch {
-        this.error.set('Could not load brand data.');
-      }
+    const tpId = this.tpId;
+    if (!tpId) return;
+    this.loading.set(true);
+    try {
+      this.prefill(await this.service.get(tpId, this.brandId));
+    } catch {
+      this.error.set('Could not load brand data.');
+    } finally {
+      this.loading.set(false);
     }
   }
 
@@ -93,6 +91,7 @@ export class BrandFormComponent implements OnInit {
       manufacturerId: brand.manufacturerId ?? '',
       bcBrandId:      brand.bcBrandId ?? null,
     };
+    this.cdr.markForCheck();
   }
 
   async onLogoSelected(event: Event): Promise<void> {

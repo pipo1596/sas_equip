@@ -110,9 +110,8 @@ export class ProductDetailComponent implements OnInit {
     if (stateProduct && stateProduct.productPk === Number(idParam)) {
       this.product.set(stateProduct);
       this.syncOverviewForm(stateProduct);
-    } else {
-      this.fetchProduct();
     }
+    this.fetchProduct();
     this.loadBrands();
   }
 

@@ -33,7 +33,7 @@
       <thead>
         <tr>
           <th>Category</th>
-          <th>Slug / Code</th>
+          <th>Slug</th>
           <th class="text-center">Active</th>
           <th class="text-center">Sort</th>
           <th class="text-end">Actions</th>
@@ -64,9 +64,7 @@
               </td>
               <td>
                 <div class="text-muted small font-monospace">{{ cat.catSlug || '' }}</div>
-                @if (cat.catCode) {
-                  <div class="text-muted small">{{ cat.catCode }}</div>
-                }
+                
               </td>
               <td class="text-center">
                 <span [class]="statusBadge(cat.activeFlag)">

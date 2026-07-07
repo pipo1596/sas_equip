@@ -3,20 +3,20 @@ import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DecimalPipe, NgStyle, TitleCasePipe } from '@angular/common';
 import { PartnerModeService } from '../partner-mode.service';
-import { ProductsService } from '../products/products.service';
-import { BrandsService } from '../products/brands.service';
-import { CategoriesService } from '../products/categories.service';
-import { Product, ProductSummary } from '../products/product.model';
-import { Brand } from '../products/brand.model';
-import { Category } from '../products/category.model';
+import { ProductsService } from './products.service';
+import { BrandsService } from './brands.service';
+import { CategoriesService } from './categories.service';
+import { Product, ProductSummary } from './product.model';
+import { Brand } from './brand.model';
+import { Category } from './category.model';
 
 @Component({
-  selector: 'app-partner-products',
+  selector: 'app-products-list',
   standalone: true,
   imports: [FormsModule, RouterModule, DecimalPipe, NgStyle, TitleCasePipe],
-  templateUrl: './partner-products.component.html',
+  templateUrl: './products-list.component.html',
 })
-export class PartnerProductsComponent implements OnInit {
+export class ProductsListComponent implements OnInit {
   protected readonly partnerMode = inject(PartnerModeService);
   private readonly service = inject(ProductsService);
   private readonly brandsService = inject(BrandsService);

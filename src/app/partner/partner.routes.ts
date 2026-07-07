@@ -33,6 +33,6 @@ export const PARTNER_ROUTES: Routes = [
   // ── Settings + users (one shared chunk) ────────────────────────────────────
   {
     path: ':id/settings',
-    loadChildren: () => import('./partner-settings.routes').then(m => m.SETTINGS_ROUTES),
+    loadChildren: () => import('./settings/settings.routes').then(m => m.SETTINGS_ROUTES),
   },
 ];

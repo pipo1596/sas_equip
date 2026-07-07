@@ -6,7 +6,7 @@ export const PRODUCT_ROUTES: Routes = [
   {
     path: '',
     pathMatch: 'full',
-    loadComponent: () => import('../partner-products/partner-products.component').then(m => m.PartnerProductsComponent),
+    loadComponent: () => import('./products-list.component').then(m => m.ProductsListComponent),
   },
   {
     path: 'new',

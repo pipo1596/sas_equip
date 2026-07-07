@@ -4,12 +4,14 @@ import { FormsModule } from '@angular/forms';
 import { DecimalPipe } from '@angular/common';
 import { PartnerModeService } from '../partner-mode.service';
 import { ProductSkusService } from './product-skus.service';
+import { ProductImagesService } from './product-images.service';
+import { ImageUploadService } from '../../shared/image-upload.service';
 import {
   ProductSku, ProductSkuForm, Product,
-  ProductInventory, ProductPricing,
+  ProductInventory, ProductPricing, ProductImage,
 } from './product.model';
 
-export type SkuTab = 'details' | 'options' | 'pricing' | 'logistics' | 'inventory';
+export type SkuTab = 'details' | 'options' | 'pricing' | 'logistics' | 'inventory' | 'images';
 
 @Component({
   selector: 'app-product-sku-detail',
@@ -20,6 +22,8 @@ export type SkuTab = 'details' | 'options' | 'pricing' | 'logistics' | 'inventor
 export class ProductSkuDetailComponent implements OnInit {
   protected readonly partnerMode = inject(PartnerModeService);
   private readonly service = inject(ProductSkusService);
+  private readonly imagesService = inject(ProductImagesService);
+  private readonly uploadService = inject(ImageUploadService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
 
@@ -67,6 +71,13 @@ export class ProductSkuDetailComponent implements OnInit {
   readonly loadingPricing = signal(false);
   readonly pricingForm = signal({ currencyCd: 'USD', priceAmount: 0, compareAmount: null as number | null, isActive: 'Y' as 'Y' | 'N' });
   readonly savingPricing = signal(false);
+
+  // Images
+  readonly images = signal<ProductImage[]>([]);
+  readonly loadingImages = signal(false);
+  readonly uploadingImage = signal(false);
+  readonly sortOrders = Array.from({ length: 50 }, (_, i) => i + 1);
+  readonly uploadImageError = signal<string | null>(null);
 
   protected get tpId(): number | undefined {
     return this.partnerMode.activePartner()?.tpId;
@@ -143,6 +154,7 @@ export class ProductSkuDetailComponent implements OnInit {
 
   setTab(tab: SkuTab): void {
     this.activeTab.set(tab);
+    if (tab === 'images') { this.loadImages(); return; }
     const loaded = this.loadedTabs();
     if (!loaded.has(tab)) {
       this.loadedTabs.set(new Set([...loaded, tab]));
@@ -286,6 +298,66 @@ export class ProductSkuDetailComponent implements OnInit {
     try {
       await this.service.deletePricing(tpId, p.priceId);
       this.pricing.update(list => list.filter(r => r.priceId !== p.priceId));
+    } catch { /* TODO: surface error */ }
+  }
+
+  // ── Images ────────────────────────────────────────────────────────────────
+
+  private async loadImages(): Promise<void> {
+    const tpId = this.tpId;
+    const productId = this.productId;
+    const skuId = this.skuId;
+    if (!tpId || !productId || !skuId) return;
+    this.loadingImages.set(true);
+    try {
+      this.images.set(await this.imagesService.get(tpId, productId, skuId));
+    } catch { /* handled inline */ }
+    finally { this.loadingImages.set(false); }
+  }
+
+  async onImageFileSelected(event: Event): Promise<void> {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    const tpId = this.tpId;
+    const productId = this.productId;
+    const skuId = this.skuId;
+    if (!tpId || !productId || !skuId) return;
+    this.uploadingImage.set(true);
+    this.uploadImageError.set(null);
+    try {
+      const imgUrl = await this.uploadService.upload('product_image', file, tpId, { tpId, productPk: productId, skuId, subfolder: 'products' });
+      await this.imagesService.add(tpId, productId, imgUrl, 'large', '', this.images().length, skuId);
+      this.images.set(await this.imagesService.get(tpId, productId, skuId));
+    } catch (err) {
+      this.uploadImageError.set(err instanceof Error ? err.message : 'Upload failed.');
+    } finally {
+      this.uploadingImage.set(false);
+      (event.target as HTMLInputElement).value = '';
+    }
+  }
+
+  async setSkuImageSortOrder(img: ProductImage, sortOrder: number): Promise<void> {
+    const tpId = this.tpId;
+    const productId = this.productId;
+    const skuId = this.skuId;
+    if (!tpId || !productId || !skuId) return;
+    try {
+      await this.imagesService.updateSortOrder(tpId, productId, img.imageId, sortOrder);
+      this.images.update(list =>
+        list.map(i => i.imageId === img.imageId ? { ...i, sortOrder } : i)
+      );
+    } catch { /* TODO: surface error */ }
+  }
+
+  async deleteSkuImage(img: ProductImage): Promise<void> {
+    if (!confirm('Delete this image? This cannot be undone.')) return;
+    const tpId = this.tpId;
+    const productId = this.productId;
+    const skuId = this.skuId;
+    if (!tpId || !productId || !skuId) return;
+    try {
+      await this.imagesService.remove(tpId, productId, img.imageId);
+      this.images.update(list => list.filter(i => i.imageId !== img.imageId));
     } catch { /* TODO: surface error */ }
   }
 

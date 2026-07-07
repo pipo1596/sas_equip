@@ -23,7 +23,8 @@
       {id:'options', label:'Options', icon:'bi-sliders'},
       {id:'pricing', label:'Pricing', icon:'bi-currency-dollar'},
       {id:'logistics', label:'Logistics', icon:'bi-truck'},
-      {id:'inventory', label:'Inventory', icon:'bi-box-seam'}
+      {id:'inventory', label:'Inventory', icon:'bi-box-seam'},
+      {id:'images', label:'Images', icon:'bi-images'}
     ]); track tab.id) {
       <li class="nav-item">
         <button class="nav-link" [class.active]="activeTab() === tab.id"
@@ -508,6 +509,59 @@
               }
             </tbody>
           </table>
+        </div>
+      }
+    }
+
+    <!-- ── Images ── -->
+    @if (activeTab() === 'images') {
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h6 class="fw-semibold mb-0">SKU Images</h6>
+        <label class="btn btn-dark btn-sm" [class.disabled]="uploadingImage()">
+          @if (uploadingImage()) {
+            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Uploading…
+          } @else {
+            <i class="bi bi-upload me-2"></i>Upload Image
+          }
+          <input type="file" class="d-none" accept="image/*" (change)="onImageFileSelected($event)" [disabled]="uploadingImage()" />
+        </label>
+      </div>
+
+      @if (uploadImageError()) {
+        <div class="alert alert-danger py-2 mb-3">{{ uploadImageError() }}</div>
+      }
+
+      @if (loadingImages()) {
+        <div class="text-center py-5 text-muted">
+          <div class="spinner-border" role="status" aria-hidden="true"></div>
+        </div>
+      } @else if (images().length === 0) {
+        <div class="text-center py-5 text-muted">
+          <i class="bi bi-images mb-2" style="font-size:2rem; display:block;"></i>
+          No images yet. Upload a photo to get started.
+        </div>
+      } @else {
+        <div class="row g-3">
+          @for (img of images(); track img.imageId) {
+            <div class="col-6 col-sm-4 col-md-3">
+              <div class="card h-100">
+                <img [src]="img.imageUrl" [alt]="img.imageDesc || ''" class="card-img-top" style="height:140px; object-fit:cover;">
+                <div class="card-body p-2 d-flex flex-column gap-2">
+                  <select class="form-select form-select-sm"
+                          [ngModel]="img.sortOrder || 0"
+                          (ngModelChange)="setSkuImageSortOrder(img, +$event)">
+                    <option value="0" disabled>Select sort</option>
+                    @for (n of sortOrders; track n) {
+                      <option [value]="n">{{ n }}</option>
+                    }
+                  </select>
+                  <button class="btn btn-sm btn-outline-danger w-100" (click)="deleteSkuImage(img)">
+                    <i class="bi bi-trash me-1"></i>Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          }
         </div>
       }
     }

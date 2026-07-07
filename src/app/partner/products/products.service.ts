@@ -60,8 +60,8 @@ export class ProductsService {
     return data['data'] as unknown as ProductImage[];
   }
 
-  async addImage(tpId: number, productPk: number, imgUrl: string, imgAlt: string, isThumbnail: 'Y' | 'N'): Promise<ProductImage> {
-    const data = await this.post({ action: '*ADD_IMAGE', tpId, productPk, imgUrl, imgAlt, isThumbnail });
+  async addImage(tpId: number, productPk: number, imgUrl: string, imgType: string, imgDesc: string): Promise<ProductImage> {
+    const data = await this.post({ action: '*ADD_IMAGE', tpId, productPk, imgUrl, imgType, imgDesc });
     return data['image'] as unknown as ProductImage;
   }
 

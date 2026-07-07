@@ -54,8 +54,8 @@ export class ProductSkusService {
     return data['data'] as unknown as ProductImage[];
   }
 
-  async addImage(tpId: number, skuId: number, imgUrl: string, imgAlt: string): Promise<ProductImage> {
-    const data = await this.post({ action: '*ADD_IMAGE', tpId, skuId, imgUrl, imgAlt });
+  async addImage(tpId: number, skuId: number, imgUrl: string, imgType: string, imgDesc: string): Promise<ProductImage> {
+    const data = await this.post({ action: '*ADD_IMAGE', tpId, skuId, imgUrl, imgType, imgDesc });
     return data['image'] as unknown as ProductImage;
   }
 

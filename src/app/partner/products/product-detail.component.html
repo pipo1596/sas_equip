@@ -45,9 +45,6 @@
           (click)="setTab($any(tab.id))"
         >
           <i class="bi {{ tab.icon }} me-1"></i>{{ tab.label }}
-          @if (tab.id === 'images' && images().length > 0) {
-            <span class="badge bg-light text-dark border ms-1" style="font-size:0.65rem;">{{ images().length }}</span>
-          }
         </button>
       </li>
     }
@@ -268,7 +265,7 @@
             <div class="card mb-4">
               <div class="card-body">
                 <h6 class="card-title fw-semibold mb-3">Thumbnail</h6>
-                <img [src]="thumb.imgUrl" [alt]="thumb.imgAlt || ''" class="img-fluid rounded" style="max-height:180px; object-fit:contain;">
+                <img [src]="thumb.imageUrl" [alt]="thumb.imageDesc || ''" class="img-fluid rounded" style="max-height:180px; object-fit:contain;">
               </div>
             </div>
           }
@@ -346,7 +343,7 @@
                   </td>
                   <td class="text-end">
                     @if (sku.basePrice != null) {
-                      {{ sku.basePrice | number:'1.2-2' }}
+                      ${{ sku.basePrice | number:'1.2-2' }}
                     } @else { — }
                   </td>
                   <td class="text-center">
@@ -371,10 +368,20 @@
     <!-- ── Images ── -->
     @if (activeTab() === 'images') {
       <div class="d-flex align-items-center justify-content-between mb-3">
-        <h6 class="fw-semibold mb-0">Product Images</h6>
-        <button class="btn btn-dark btn-sm" disabled>
-          <i class="bi bi-upload me-1"></i>Upload Image
-        </button>
+        <div class="d-flex align-items-center gap-2">
+          <h6 class="fw-semibold mb-0">Product Images</h6>
+          @if (uploadImageError()) {
+            <span class="text-danger small"><i class="bi bi-exclamation-triangle-fill me-1"></i>{{ uploadImageError() }}</span>
+          }
+        </div>
+        <label class="btn btn-dark btn-sm mb-0" [class.disabled]="uploadingImage()">
+          @if (uploadingImage()) {
+            <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>Uploading…
+          } @else {
+            <i class="bi bi-upload me-1"></i>Upload Image
+          }
+          <input type="file" accept="image/*" class="d-none" (change)="onImageFileSelected($event)" [disabled]="uploadingImage()" />
+        </label>
       </div>
 
       @if (loadingImages()) {
@@ -388,24 +395,22 @@
         </div>
       } @else {
         <div class="row g-3">
-          @for (img of images(); track img.imgId) {
-            <div class="col-6 col-sm-4 col-md-3 col-lg-2">
-              <div class="card h-100" [class.border-primary]="img.isThumbnail === 'Y'">
-                <img [src]="img.imgUrl" [alt]="img.imgAlt || ''" class="card-img-top" style="height:120px; object-fit:cover;">
-                <div class="card-body p-2">
-                  @if (img.isThumbnail === 'Y') {
-                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle small d-block text-center mb-1">Thumbnail</span>
-                  }
-                  <div class="d-flex gap-1 justify-content-center">
-                    @if (img.isThumbnail !== 'Y') {
-                      <button class="btn btn-xs btn-outline-secondary" style="font-size:0.7rem; padding:2px 6px;" title="Set as thumbnail" (click)="setThumbnail(img)">
-                        <i class="bi bi-star"></i>
-                      </button>
+          @for (img of images(); track img.imageId) {
+            <div class="col-6 col-sm-4 col-md-3">
+              <div class="card h-100">
+                <img [src]="img.imageUrl" [alt]="img.imageDesc || ''" class="card-img-top" style="height:140px; object-fit:cover;">
+                <div class="card-body p-2 d-flex flex-column gap-2">
+                  <select class="form-select form-select-sm"
+                          [ngModel]="img.sortOrder || 0"
+                          (ngModelChange)="setImageSortOrder(img, +$event)">
+                    <option value="0" disabled>Select sort</option>
+                    @for (n of sortOrders; track n) {
+                      <option [value]="n">{{ n }}</option>
                     }
-                    <button class="btn btn-xs btn-outline-danger" style="font-size:0.7rem; padding:2px 6px;" title="Delete" (click)="deleteImage(img)">
-                      <i class="bi bi-trash"></i>
-                    </button>
-                  </div>
+                  </select>
+                  <button class="btn btn-sm btn-outline-danger w-100" (click)="deleteImage(img)">
+                    <i class="bi bi-trash me-1"></i>Delete
+                  </button>
                 </div>
               </div>
             </div>

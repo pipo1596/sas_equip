@@ -3,7 +3,9 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DecimalPipe } from '@angular/common';
 import { PartnerModeService } from '../partner-mode.service';
+import { ImageUploadService } from '../../shared/image-upload.service';
 import { ProductsService } from './products.service';
+import { ProductImagesService } from './product-images.service';
 import { ProductSkusService } from './product-skus.service';
 import { BrandsService } from './brands.service';
 import { CategoriesService } from './categories.service';
@@ -30,6 +32,8 @@ export class ProductDetailComponent implements OnInit {
   private readonly categoriesService = inject(CategoriesService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly uploadService = inject(ImageUploadService);
+  private readonly imagesService = inject(ProductImagesService);
 
   // ── Core state ────────────────────────────────────────────────────────────
   readonly product = signal<Product | null>(null);
@@ -72,6 +76,9 @@ export class ProductDetailComponent implements OnInit {
   // ── Images ────────────────────────────────────────────────────────────────
   readonly images = signal<ProductImage[]>([]);
   readonly loadingImages = signal(false);
+  readonly uploadingImage = signal(false);
+  readonly sortOrders = Array.from({ length: 50 }, (_, i) => i + 1);
+  readonly uploadImageError = signal<string | null>(null);
 
   // ── Categories ────────────────────────────────────────────────────────────
   readonly allCategories = signal<Category[]>([]);
@@ -94,7 +101,7 @@ export class ProductDetailComponent implements OnInit {
   readonly savingXref = signal(false);
 
   readonly thumbnail = computed(() =>
-    this.images().find(i => i.isThumbnail === 'Y') ?? this.images()[0] ?? null
+    this.images().find(i => i.imageType === 'thumbnail') ?? this.images()[0] ?? null
   );
 
   protected get tpId(): number | undefined {
@@ -181,10 +188,8 @@ export class ProductDetailComponent implements OnInit {
 
   setTab(tab: ProductTab): void {
     this.activeTab.set(tab);
-    if (tab === 'skus') {
-      this.loadSkus();
-      return;
-    }
+    if (tab === 'skus') { this.loadSkus(); return; }
+    if (tab === 'images') { this.loadImages(); return; }
     const loaded = this.loadedTabs();
     if (!loaded.has(tab)) {
       this.loadedTabs.set(new Set([...loaded, tab]));
@@ -283,28 +288,51 @@ export class ProductDetailComponent implements OnInit {
     if (!tpId || !id) return;
     this.loadingImages.set(true);
     try {
-      this.images.set(await this.service.listImages(tpId, id));
+      this.images.set(await this.imagesService.get(tpId, id));
     } catch { /* handled inline */ }
     finally { this.loadingImages.set(false); }
   }
 
-  async setThumbnail(img: ProductImage): Promise<void> {
+  async onImageFileSelected(event: Event): Promise<void> {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
     const tpId = this.tpId;
-    if (!tpId) return;
+    const id = this.productPk();
+    if (!tpId || !id) return;
+    this.uploadingImage.set(true);
+    this.uploadImageError.set(null);
     try {
-      await this.service.setThumbnail(tpId, img.imgId);
+      const imgUrl = await this.uploadService.upload('product_image', file, tpId, { tpId, productPk: id, subfolder: 'products' });
+      await this.imagesService.add(tpId, id, imgUrl, 'large', '', this.images().length);
+      this.images.set(await this.imagesService.get(tpId, id));
+    } catch (err) {
+      this.uploadImageError.set(err instanceof Error ? err.message : 'Upload failed.');
+    } finally {
+      this.uploadingImage.set(false);
+      (event.target as HTMLInputElement).value = '';
+    }
+  }
+
+  async setImageSortOrder(img: ProductImage, sortOrder: number): Promise<void> {
+    const tpId = this.tpId;
+    const productPk = this.productPk();
+    if (!tpId || !productPk) return;
+    try {
+      await this.imagesService.updateSortOrder(tpId, productPk, img.imageId, sortOrder);
       this.images.update(list =>
-        list.map(i => ({ ...i, isThumbnail: i.imgId === img.imgId ? 'Y' as const : 'N' as const }))
+        list.map(i => i.imageId === img.imageId ? { ...i, sortOrder } : i)
       );
     } catch { /* TODO: surface error */ }
   }
 
   async deleteImage(img: ProductImage): Promise<void> {
+    if (!confirm('Delete this image? This cannot be undone.')) return;
     const tpId = this.tpId;
-    if (!tpId) return;
+    const productPk = this.productPk();
+    if (!tpId || !productPk) return;
     try {
-      await this.service.deleteImage(tpId, img.imgId);
-      this.images.update(list => list.filter(i => i.imgId !== img.imgId));
+      await this.imagesService.remove(tpId, productPk, img.imageId);
+      this.images.update(list => list.filter(i => i.imageId !== img.imageId));
     } catch { /* TODO: surface error */ }
   }
 

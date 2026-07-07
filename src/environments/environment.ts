@@ -14,6 +14,7 @@ export const environment = {
     productSkus: 'APISKUS',
     brands: 'APIBRANDS',
     categories: 'APICATEGS',
+    productImages: 'APIPRDIMGS',
     imageUpload: '/cgi/SEPIMGUPL',
   },
 };

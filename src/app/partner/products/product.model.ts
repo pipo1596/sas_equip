@@ -157,16 +157,14 @@ export interface ProductOption {
 }
 
 export interface ProductImage {
-  imgId: number;
+  imageId: number;
   productPk: number;
   skuId: number | null;
-  tpId: number;
-  imgUrl: string;
-  imgAlt: string | null;
+  imageUrl: string;
+  imageType: 'large' | 'thumbnail' | 'swatch' | 'variant' | 'gallery' | 'technical_spec';
+  imageDesc: string | null;
   sortOrder: number;
-  isThumbnail: 'Y' | 'N';
   createdTs: string;
-  createdBy: string | null;
 }
 
 export interface ProductAttribute {

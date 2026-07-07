@@ -1,58 +1,29 @@
 import { Routes } from '@angular/router';
+import { PartnerUsersComponent } from '../partner-users/partner-users.component';
+import { PartnerUserFormComponent } from '../partner-users/partner-user-form.component';
+import { PartnerSettingsIdentityComponent } from './partner-settings-identity.component';
+import { PartnerSettingsOrganizationComponent } from './partner-settings-organization.component';
+import { PartnerSettingsBrandingComponent } from './partner-settings-branding.component';
+import { PartnerSettingsSocialComponent } from './partner-settings-social.component';
+import { PartnerSettingsStorefrontCopyComponent } from './partner-settings-storefront-copy.component';
+import { PartnerSettingsLegalComponent } from './partner-settings-legal.component';
+import { PartnerSettingsAddressComponent } from './partner-settings-address.component';
+import { PartnerSettingsContactsComponent } from './partner-settings-contacts.component';
+import { PartnerSettingsMfaComponent } from './partner-settings-mfa.component';
 
 // All routes are relative to partner/:id/settings
 export const SETTINGS_ROUTES: Routes = [
   { path: '', redirectTo: 'identity', pathMatch: 'full' },
-
-  // ── Users ──────────────────────────────────────────────────────────────────
-  {
-    path: 'users',
-    loadComponent: () => import('../partner-users/partner-users.component').then(m => m.PartnerUsersComponent),
-  },
-  {
-    path: 'users/new',
-    loadComponent: () => import('../partner-users/partner-user-form.component').then(m => m.PartnerUserFormComponent),
-  },
-  {
-    path: 'users/:userId/edit',
-    loadComponent: () => import('../partner-users/partner-user-form.component').then(m => m.PartnerUserFormComponent),
-  },
-
-  // ── Settings pages ─────────────────────────────────────────────────────────
-  {
-    path: 'identity',
-    loadComponent: () => import('./partner-settings-identity.component').then(m => m.PartnerSettingsIdentityComponent),
-  },
-  {
-    path: 'organization',
-    loadComponent: () => import('./partner-settings-organization.component').then(m => m.PartnerSettingsOrganizationComponent),
-  },
-  {
-    path: 'branding',
-    loadComponent: () => import('./partner-settings-branding.component').then(m => m.PartnerSettingsBrandingComponent),
-  },
-  {
-    path: 'social',
-    loadComponent: () => import('./partner-settings-social.component').then(m => m.PartnerSettingsSocialComponent),
-  },
-  {
-    path: 'storefront-copy',
-    loadComponent: () => import('./partner-settings-storefront-copy.component').then(m => m.PartnerSettingsStorefrontCopyComponent),
-  },
-  {
-    path: 'legal',
-    loadComponent: () => import('./partner-settings-legal.component').then(m => m.PartnerSettingsLegalComponent),
-  },
-  {
-    path: 'address',
-    loadComponent: () => import('./partner-settings-address.component').then(m => m.PartnerSettingsAddressComponent),
-  },
-  {
-    path: 'contacts',
-    loadComponent: () => import('./partner-settings-contacts.component').then(m => m.PartnerSettingsContactsComponent),
-  },
-  {
-    path: 'mfa',
-    loadComponent: () => import('./partner-settings-mfa.component').then(m => m.PartnerSettingsMfaComponent),
-  },
+  { path: 'users', component: PartnerUsersComponent },
+  { path: 'users/new', component: PartnerUserFormComponent },
+  { path: 'users/:userId/edit', component: PartnerUserFormComponent },
+  { path: 'identity', component: PartnerSettingsIdentityComponent },
+  { path: 'organization', component: PartnerSettingsOrganizationComponent },
+  { path: 'branding', component: PartnerSettingsBrandingComponent },
+  { path: 'social', component: PartnerSettingsSocialComponent },
+  { path: 'storefront-copy', component: PartnerSettingsStorefrontCopyComponent },
+  { path: 'legal', component: PartnerSettingsLegalComponent },
+  { path: 'address', component: PartnerSettingsAddressComponent },
+  { path: 'contacts', component: PartnerSettingsContactsComponent },
+  { path: 'mfa', component: PartnerSettingsMfaComponent },
 ];

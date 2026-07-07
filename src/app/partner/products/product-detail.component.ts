@@ -7,10 +7,10 @@ import { ImageUploadService } from '../../shared/image-upload.service';
 import { ProductsService } from './products.service';
 import { ProductImagesService } from './product-images.service';
 import { ProductSkusService } from './product-skus.service';
-import { BrandsService } from './brands.service';
-import { CategoriesService } from './categories.service';
-import { Brand } from './brand.model';
-import { Category } from './category.model';
+import { BrandsService } from '../brands/brands.service';
+import { CategoriesService } from '../categories/categories.service';
+import { Brand } from '../brands/brand.model';
+import { Category } from '../categories/category.model';
 import {
   Product, ProductForm, ProductSku,
   ProductImage, ProductAttribute, ProductXref,

@@ -4,11 +4,11 @@ import { FormsModule } from '@angular/forms';
 import { DecimalPipe, NgStyle, TitleCasePipe } from '@angular/common';
 import { PartnerModeService } from '../partner-mode.service';
 import { ProductsService } from './products.service';
-import { BrandsService } from './brands.service';
-import { CategoriesService } from './categories.service';
+import { BrandsService } from '../brands/brands.service';
+import { CategoriesService } from '../categories/categories.service';
 import { Product, ProductSummary } from './product.model';
-import { Brand } from './brand.model';
-import { Category } from './category.model';
+import { Brand } from '../brands/brand.model';
+import { Category } from '../categories/category.model';
 
 @Component({
   selector: 'app-products-list',

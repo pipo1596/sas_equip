@@ -3,8 +3,8 @@ import { NgForm, FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { PartnerModeService } from '../partner-mode.service';
 import { ProductsService } from './products.service';
-import { BrandsService } from './brands.service';
-import { Brand } from './brand.model';
+import { BrandsService } from '../brands/brands.service';
+import { Brand } from '../brands/brand.model';
 import { Product, ProductForm } from './product.model';
 
 @Component({

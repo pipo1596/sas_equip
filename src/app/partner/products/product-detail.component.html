@@ -2,22 +2,20 @@
 
   <!-- Header -->
   <div class="page-shell-header d-flex align-items-center justify-content-between flex-wrap gap-2">
-    <div class="d-flex align-items-center gap-3">
-      <button type="button" class="btn btn-outline-secondary btn-sm" (click)="backToList()">
-        <i class="bi bi-arrow-left"></i>
-      </button>
-      <div>
-        @if (loadingProduct()) {
-          <div class="placeholder-glow"><span class="placeholder col-6"></span></div>
-        } @else if (product(); as p) {
-          <h1 class="page-title mb-0">{{ p.title }}</h1>
-          <div class="d-flex align-items-center gap-2 mt-1">
-            <span class="text-muted small font-monospace">{{ p.handle }}</span>
-            <span [class]="statusBadge(p.status)"><span style="font-size:0.5rem;">&#9679;</span> {{ p.status }}</span>
-          </div>
-        }
-      </div>
+    <div>
+      @if (loadingProduct()) {
+        <div class="placeholder-glow"><span class="placeholder col-6"></span></div>
+      } @else if (product(); as p) {
+        <h1 class="page-title mb-0">{{ p.title }}</h1>
+        <div class="d-flex align-items-center gap-2 mt-1">
+          <span class="text-muted small font-monospace">{{ p.handle }}</span>
+          <span [class]="statusBadge(p.status)"><span style="font-size:0.5rem;">&#9679;</span> {{ p.status }}</span>
+        </div>
+      }
     </div>
+    <button type="button" class="btn btn-outline-secondary btn-sm" (click)="backToList()">
+      <i class="bi bi-arrow-left me-2"></i>Back to Products
+    </button>
   </div>
 
   <!-- Load error -->

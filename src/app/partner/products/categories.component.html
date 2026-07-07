@@ -80,7 +80,10 @@
               <td class="text-center text-muted small">{{ cat.sortOrder }}</td>
               <td class="text-end">
                 <button class="btn btn-sm btn-outline-secondary m-1 px-3" (click)="editCategory(cat)"><i class="bi bi-pencil"></i></button>
-                <button class="btn btn-sm btn-outline-danger m-1 px-3" (click)="openDeleteModal(cat)"><i class="bi bi-trash"></i></button>
+                <button class="btn btn-sm m-1 px-3"
+                        [class]="hasChildrenSet().has(cat.catId) ? 'btn-outline-secondary' : 'btn-outline-danger'"
+                        [disabled]="hasChildrenSet().has(cat.catId)"
+                        (click)="openDeleteModal(cat)"><i class="bi bi-trash"></i></button>
               </td>
             </tr>
           }

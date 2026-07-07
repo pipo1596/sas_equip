@@ -26,6 +26,7 @@ export class ProductSkuDetailComponent implements OnInit {
   readonly activeTab = signal<SkuTab>('details');
   readonly loadedTabs = signal<Set<SkuTab>>(new Set(['details']));
 
+  readonly loading = signal(false);
   readonly saving = signal(false);
   readonly saveError = signal<string | null>(null);
   readonly saveSuccess = signal(false);
@@ -41,7 +42,7 @@ export class ProductSkuDetailComponent implements OnInit {
   // Details form (all fields)
   detailsForm: ProductSkuForm = {
     skuCode: '', upcEan: '', mfrSkuId: '', mfrPartNum: '', sku300: '',
-    price: null, compareAtPrc: null, costPerItem: null,
+    basePrice: null, compareAtPrc: null, costPerItem: null,
     msrp: null, mapPrice: null, points: null,
     weight: null, weightUnit: 'LB',
     height: null, length: null, width: null, dimensionUnit: 'in',
@@ -82,27 +83,26 @@ export class ProductSkuDetailComponent implements OnInit {
     if (skuParam && skuParam !== 'new') {
       this.isEdit = true;
       this.skuId = Number(skuParam);
-      if (state.sku && state.sku.skuId === this.skuId) {
-        this.syncDetailsForm(state.sku);
-        if (state.sku.options) {
-          this.options.set(state.sku.options.map(o => ({
-            optName: o.optName, optValue: o.optValue, sortOrder: o.sortOrder,
-          })));
-        }
-      } else {
-        this.fetchSku();
-      }
+      this.fetchSku();
     }
   }
 
   private async fetchSku(): Promise<void> {
     const tpId = this.tpId;
     if (!tpId || !this.skuId) return;
+    this.loading.set(true);
     try {
       const sku = await this.service.get(tpId, this.skuId);
       this.syncDetailsForm(sku);
+      if (sku.options) {
+        this.options.set(sku.options.map(o => ({
+          optName: o.optName, optValue: o.optValue, sortOrder: o.sortOrder,
+        })));
+      }
     } catch (err) {
       this.saveError.set(err instanceof Error ? err.message : 'Failed to load SKU.');
+    } finally {
+      this.loading.set(false);
     }
   }
 
@@ -113,7 +113,7 @@ export class ProductSkuDetailComponent implements OnInit {
       mfrSkuId:      sku.mfrSkuId ?? '',
       mfrPartNum:    sku.mfrPartNum ?? '',
       sku300:        sku.sku300 ?? '',
-      price:         sku.price,
+      basePrice:     sku.basePrice,
       compareAtPrc:  sku.compareAtPrc,
       costPerItem:   sku.costPerItem,
       msrp:          sku.msrp,
@@ -161,6 +161,14 @@ export class ProductSkuDetailComponent implements OnInit {
   async save(): Promise<void> {
     const tpId = this.tpId;
     if (!tpId) return;
+    if (!this.detailsForm.skuCode?.trim()) {
+      this.saveError.set('SKU Code is required.');
+      return;
+    }
+    if (this.detailsForm.basePrice == null) {
+      this.saveError.set('Price is required.');
+      return;
+    }
     this.saving.set(true);
     this.saveError.set(null);
     this.saveSuccess.set(false);
@@ -282,6 +290,8 @@ export class ProductSkuDetailComponent implements OnInit {
   }
 
   backToProduct(): void {
-    this.router.navigate(['/partner', this.tpId, 'products', this.productId]);
+    this.router.navigate(['/partner', this.tpId, 'products', this.productId], {
+      state: { tab: 'skus' },
+    });
   }
 }

@@ -80,7 +80,7 @@ export interface ProductSku {
   mfrSkuId: string | null;
   mfrPartNum: string | null;
   sku300: string | null;
-  price: number;
+  basePrice: number;
   compareAtPrc: number | null;
   costPerItem: number | null;
   msrp: number | null;
@@ -118,7 +118,7 @@ export interface ProductSkuForm {
   mfrSkuId: string;
   mfrPartNum: string;
   sku300: string;
-  price: number | null;
+  basePrice: number | null;
   compareAtPrc: number | null;
   costPerItem: number | null;
   msrp: number | null;

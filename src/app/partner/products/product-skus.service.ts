@@ -20,12 +20,12 @@ export class ProductSkusService {
 
   async get(tpId: number, skuId: number): Promise<ProductSku> {
     const data = await this.post({ action: '*GET', tpId, skuId });
-    return data['sku'] as unknown as ProductSku;
+    return data as unknown as ProductSku;
   }
 
   async create(tpId: number, productId: number, form: ProductSkuForm): Promise<ProductSku> {
     const data = await this.post({ action: '*CREATE', tpId, productId, ...form });
-    return data['sku'] as unknown as ProductSku;
+    return data as unknown as ProductSku;
   }
 
   async update(tpId: number, skuId: number, form: ProductSkuForm): Promise<void> {

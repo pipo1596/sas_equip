@@ -106,7 +106,11 @@ export class ProductDetailComponent implements OnInit {
     if (!idParam) return;
     this.productPk.set(Number(idParam));
 
-    const stateProduct = (window.history.state as { product?: Product }).product;
+    const state = window.history.state as { product?: Product; tab?: string };
+    const initialTab = state.tab as ProductTab | undefined;
+    if (initialTab) this.setTab(initialTab);
+
+    const stateProduct = state.product;
     if (stateProduct && stateProduct.productPk === Number(idParam)) {
       this.product.set(stateProduct);
       this.syncOverviewForm(stateProduct);

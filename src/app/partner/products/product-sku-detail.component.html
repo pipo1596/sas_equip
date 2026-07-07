@@ -2,32 +2,19 @@
 
   <!-- Header -->
   <div class="page-shell-header d-flex align-items-center justify-content-between flex-wrap gap-2">
-    <div class="d-flex align-items-center gap-3">
-      <button type="button" class="btn btn-outline-secondary btn-sm" (click)="backToProduct()">
-        <i class="bi bi-arrow-left"></i>
-      </button>
-      <div>
-        <div class="text-muted small mb-1">
-          <span style="opacity:0.7;">{{ product?.title || 'Product' }}</span>
-          <i class="bi bi-chevron-right mx-1" style="font-size:0.65rem;"></i>
-          SKU
-        </div>
-        <h1 class="page-title mb-0">{{ isEdit ? detailsForm.skuCode : 'New SKU' }}</h1>
+    <div>
+      <div class="text-muted small mb-1">
+        <span style="opacity:0.7;">{{ product?.title || 'Product' }}</span>
+        <i class="bi bi-chevron-right mx-1" style="font-size:0.65rem;"></i>
+        SKU
       </div>
+      <h1 class="page-title mb-0">{{ isEdit ? detailsForm.skuCode : 'New SKU' }}</h1>
     </div>
+    <button type="button" class="btn btn-outline-secondary btn-sm" (click)="backToProduct()">
+      <i class="bi bi-arrow-left me-2"></i>Back to SKUs
+    </button>
   </div>
 
-  @if (saveError()) {
-    <div class="alert alert-danger d-flex align-items-center gap-2 mb-3">
-      <i class="bi bi-exclamation-triangle-fill"></i><span>{{ saveError() }}</span>
-      <button class="btn-close ms-auto" (click)="saveError.set(null)"></button>
-    </div>
-  }
-  @if (saveSuccess()) {
-    <div class="alert alert-success d-flex align-items-center gap-2 mb-3">
-      <i class="bi bi-check-circle-fill"></i><span>SKU saved.</span>
-    </div>
-  }
 
   <!-- Tab nav -->
   <ul class="nav nav-tabs mb-0" style="border-bottom: 2px solid #dee2e6;">
@@ -39,7 +26,9 @@
       {id:'inventory', label:'Inventory', icon:'bi-box-seam'}
     ]); track tab.id) {
       <li class="nav-item">
-        <button class="nav-link" [class.active]="activeTab() === tab.id" (click)="setTab($any(tab.id))">
+        <button class="nav-link" [class.active]="activeTab() === tab.id"
+                [disabled]="!isEdit && tab.id !== 'details'"
+                (click)="setTab($any(tab.id))">
           <i class="bi {{ tab.icon }} me-1"></i>{{ tab.label }}
         </button>
       </li>
@@ -47,6 +36,12 @@
   </ul>
 
   <div class="pt-4">
+
+    @if (loading()) {
+      <div class="text-center py-5 text-muted">
+        <div class="spinner-border" role="status" aria-hidden="true"></div>
+      </div>
+    } @else {
 
     <!-- ── Details ── -->
     @if (activeTab() === 'details') {
@@ -58,7 +53,13 @@
               <div class="row g-3">
                 <div class="col-12 col-sm-6">
                   <label class="form-label fw-medium">SKU Code <span class="text-danger">*</span></label>
-                  <input type="text" class="form-control font-monospace" [(ngModel)]="detailsForm.skuCode" required />
+                  <input type="text" class="form-control font-monospace" name="skuCode"
+                         [(ngModel)]="detailsForm.skuCode" required
+                         #skuCodeCtrl="ngModel"
+                         [class.is-invalid]="skuCodeCtrl.invalid && skuCodeCtrl.touched" />
+                  @if (skuCodeCtrl.invalid && skuCodeCtrl.touched) {
+                    <div class="invalid-feedback">SKU Code is required.</div>
+                  }
                 </div>
                 <div class="col-12 col-sm-6">
                   <label class="form-label fw-medium">UPC / EAN</label>
@@ -90,10 +91,16 @@
               <div class="row g-3">
                 <div class="col-12 col-sm-4">
                   <label class="form-label fw-medium">Price <span class="text-danger">*</span></label>
-                  <div class="input-group">
+                  <div class="input-group" [class.is-invalid]="basePriceCtrl.invalid && basePriceCtrl.touched">
                     <span class="input-group-text">$</span>
-                    <input type="number" class="form-control" [(ngModel)]="detailsForm.price" min="0" step="0.0001" />
+                    <input type="number" class="form-control" name="basePrice"
+                           [(ngModel)]="detailsForm.basePrice" required min="0" step="0.0001"
+                           #basePriceCtrl="ngModel"
+                           [class.is-invalid]="basePriceCtrl.invalid && basePriceCtrl.touched" />
                   </div>
+                  @if (basePriceCtrl.invalid && basePriceCtrl.touched) {
+                    <div class="invalid-feedback d-block">Price is required.</div>
+                  }
                 </div>
                 <div class="col-12 col-sm-4">
                   <label class="form-label fw-medium">Compare-at Price</label>
@@ -167,13 +174,27 @@
         </div>
       </div>
 
-      <button class="btn btn-dark" (click)="save()" [disabled]="saving()">
-        @if (saving()) {
-          <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving…
-        } @else {
-          <i class="bi bi-check-lg me-2"></i>{{ isEdit ? 'Save Changes' : 'Create SKU' }}
+      <div class="d-flex align-items-center justify-content-end gap-2">
+        @if (saveError()) {
+          <div class="alert alert-danger d-flex align-items-center gap-2 mb-0 py-2 px-3">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <span>{{ saveError() }}</span>
+            <button class="btn-close ms-1" (click)="saveError.set(null)"></button>
+          </div>
         }
-      </button>
+        @if (saveSuccess()) {
+          <div class="alert alert-success d-flex align-items-center gap-2 mb-0 py-2 px-3">
+            <i class="bi bi-patch-check-fill"></i><span>Saved successfully!</span>
+          </div>
+        }
+        <button class="btn btn-dark" (click)="save()" [disabled]="saving()">
+          @if (saving()) {
+            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving…
+          } @else {
+            <i class="bi bi-check-lg me-2"></i>{{ isEdit ? 'Save Changes' : 'Create SKU' }}
+          }
+        </button>
+      </div>
     }
 
     <!-- ── Options ── -->
@@ -490,6 +511,8 @@
         </div>
       }
     }
+
+    } <!-- end @else loading -->
 
   </div><!-- /tab panels -->
 

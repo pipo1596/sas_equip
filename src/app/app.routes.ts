@@ -3,13 +3,16 @@ import { AuthGuard } from './auth/auth.guard';
 import { GuestGuard } from './auth/guest.guard';
 import { ShellComponent } from './shell/shell.component';
 import { partnerModeGuard } from './partner/partner-mode.guard';
+import { LoginComponent } from './auth/login/login.component';
+import { MfaComponent } from './auth/mfa/mfa.component';
+import { PartnerShellComponent } from './partner/partner-shell/partner-shell.component';
 
 export const routes: Routes = [
-  { path: 'login', canMatch: [GuestGuard], canActivate: [GuestGuard], loadComponent: () => import('./auth/login/login.component').then((m) => m.LoginComponent) },
-  { path: 'mfa', canMatch: [GuestGuard], canActivate: [GuestGuard], loadComponent: () => import('./auth/mfa/mfa.component').then((m) => m.MfaComponent) },
+  { path: 'login', canMatch: [GuestGuard], canActivate: [GuestGuard], component: LoginComponent },
+  { path: 'mfa', canMatch: [GuestGuard], canActivate: [GuestGuard], component: MfaComponent },
   {
     path: 'partner',
-    loadComponent: () => import('./partner/partner-shell/partner-shell.component').then(m => m.PartnerShellComponent),
+    component: PartnerShellComponent,
     canMatch: [AuthGuard],
     canActivate: [AuthGuard],
     loadChildren: () => import('./partner/partner.routes').then(m => m.PARTNER_ROUTES),
@@ -22,18 +25,9 @@ export const routes: Routes = [
     canActivateChild: [partnerModeGuard],
     children: [
       { path: '', redirectTo: 'admin', pathMatch: 'full' },
-      {
-        path: 'reports',
-        loadChildren: () => import('./reports/reports.module').then((m) => m.ReportsModule),
-      },
-      {
-        path: 'settings',
-        loadChildren: () => import('./settings/settings.module').then((m) => m.SettingsModule),
-      },
-      {
-        path: 'admin',
-        loadChildren: () => import('./admin/admin.module').then((m) => m.AdminModule),
-      },
+      { path: 'reports', loadChildren: () => import('./reports/reports.module').then((m) => m.ReportsModule) },
+      { path: 'settings', loadChildren: () => import('./settings/settings.module').then((m) => m.SettingsModule) },
+      { path: 'admin', loadChildren: () => import('./admin/admin.module').then((m) => m.AdminModule) },
       { path: '**', redirectTo: 'admin' },
     ],
   },

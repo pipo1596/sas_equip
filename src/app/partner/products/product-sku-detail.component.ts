@@ -341,12 +341,12 @@ export class ProductSkuDetailComponent implements OnInit {
     const productId = this.productId;
     const skuId = this.skuId;
     if (!tpId || !productId || !skuId) return;
+    this.loadingImages.set(true);
     try {
       await this.imagesService.updateSortOrder(tpId, productId, img.imageId, sortOrder);
-      this.images.update(list =>
-        list.map(i => i.imageId === img.imageId ? { ...i, sortOrder } : i)
-      );
+      this.images.set(await this.imagesService.get(tpId, productId, skuId));
     } catch { /* TODO: surface error */ }
+    finally { this.loadingImages.set(false); }
   }
 
   async deleteSkuImage(img: ProductImage): Promise<void> {

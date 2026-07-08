@@ -547,14 +547,17 @@
               <div class="card h-100">
                 <img [src]="img.imageUrl" [alt]="img.imageDesc || ''" class="card-img-top" style="height:140px; object-fit:cover;">
                 <div class="card-body p-2 d-flex flex-column gap-2">
-                  <select class="form-select form-select-sm"
-                          [ngModel]="img.sortOrder || 0"
-                          (ngModelChange)="setSkuImageSortOrder(img, +$event)">
-                    <option value="0" disabled>Select sort</option>
-                    @for (n of sortOrders; track n) {
-                      <option [value]="n">{{ n }}</option>
-                    }
-                  </select>
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="text-muted small text-nowrap">Sort</span>
+                    <select class="form-select form-select-sm"
+                            [ngModel]="img.sortOrder || 0"
+                            (ngModelChange)="setSkuImageSortOrder(img, +$event)">
+                      <option value="0" disabled>—</option>
+                      @for (n of sortOrders; track n) {
+                        <option [value]="n">{{ n }}</option>
+                      }
+                    </select>
+                  </div>
                   <button class="btn btn-sm btn-outline-danger w-100" (click)="deleteSkuImage(img)">
                     <i class="bi bi-trash me-1"></i>Delete
                   </button>

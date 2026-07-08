@@ -27,7 +27,10 @@ export class ProductsService {
     if (!params.catId)      delete body['catId'];
     if (!params.platformCd) delete body['platformCd'];
     const data = await this.post(body);
-    return data as unknown as ProductsPage;
+    return {
+      ...data,
+      data: (data['data'] as unknown as Product[]) ?? [],
+    } as unknown as ProductsPage;
   }
 
   async listPlatforms(tpId: number): Promise<string[]> {
@@ -57,7 +60,7 @@ export class ProductsService {
 
   async listImages(tpId: number, productPk: number): Promise<ProductImage[]> {
     const data = await this.post({ action: '*LIST_IMAGES', tpId, productPk });
-    return data['data'] as unknown as ProductImage[];
+    return (data['data'] as unknown as ProductImage[]) ?? [];
   }
 
   async addImage(tpId: number, productPk: number, imgUrl: string, imgType: string, imgDesc: string): Promise<ProductImage> {
@@ -77,7 +80,7 @@ export class ProductsService {
 
   async listProductCategories(tpId: number, productPk: number): Promise<ProductCategoryAssignment[]> {
     const data = await this.post({ action: '*LIST_CATS', tpId, productPk });
-    return data['data'] as unknown as ProductCategoryAssignment[];
+    return (data['data'] as unknown as ProductCategoryAssignment[]) ?? [];
   }
 
   async setProductCategories(tpId: number, productPk: number, assignments: Array<{ catId: number; isPrimary: 'Y' | 'N' }>): Promise<void> {
@@ -88,7 +91,7 @@ export class ProductsService {
 
   async listAttributes(tpId: number, productPk: number): Promise<ProductAttribute[]> {
     const data = await this.post({ action: '*LIST_ATTRS', tpId, productPk });
-    return data['data'] as unknown as ProductAttribute[];
+    return (data['data'] as unknown as ProductAttribute[]) ?? [];
   }
 
   async addAttribute(tpId: number, attr: Omit<ProductAttribute, 'attrId' | 'tpId' | 'createdTs'>): Promise<ProductAttribute> {
@@ -108,7 +111,7 @@ export class ProductsService {
 
   async listXrefs(tpId: number, productPk: number): Promise<ProductXref[]> {
     const data = await this.post({ action: '*LIST_XREFS', tpId, productPk });
-    return data['data'] as unknown as ProductXref[];
+    return (data['data'] as unknown as ProductXref[]) ?? [];
   }
 
   async addXref(tpId: number, productPk: number, xref: Partial<ProductXref>): Promise<ProductXref> {

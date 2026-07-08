@@ -22,7 +22,7 @@ export class ProductImagesService {
   }
 
   async updateSortOrder(tpId: number, productPk: number, imageId: number, sortOrder: number): Promise<void> {
-    await this.post({ action: '*UPDATE_SORT', tpId, productPk, imageId, sortOrder });
+    await this.post({ action: '*UPDATE', tpId, productPk, imageId, sortOrder });
   }
 
   async remove(tpId: number, productPk: number, imageId: number): Promise<void> {

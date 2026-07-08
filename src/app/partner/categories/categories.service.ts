@@ -13,8 +13,8 @@ export class CategoriesService {
   }
 
   async listAll(tpId: number): Promise<Category[]> {
-    const data = await this.post({ action: '*LIST_ALL', tpId });
-    return data['data'] as unknown as Category[];
+    const data = await this.post({ action: '*LIST', tpId, page: 1, pageSize: 500, search: '' });
+    return (data['data'] as unknown as Category[]) ?? [];
   }
 
   async get(tpId: number, catId: number): Promise<Category> {

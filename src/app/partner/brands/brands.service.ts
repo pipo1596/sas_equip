@@ -19,7 +19,7 @@ export class BrandsService {
 
   async listAll(tpId: number): Promise<Brand[]> {
     const data = await this.post({ action: '*LIST_ALL', tpId });
-    return data['data'] as unknown as Brand[];
+    return (data['data'] as unknown as Brand[]) ?? [];
   }
 
   async create(tpId: number, form: BrandForm): Promise<Brand> {

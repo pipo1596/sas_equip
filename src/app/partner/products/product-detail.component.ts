@@ -82,6 +82,13 @@ export class ProductDetailComponent implements OnInit {
 
   // ── Categories ────────────────────────────────────────────────────────────
   readonly allCategories = signal<Category[]>([]);
+  readonly parentCatIds = computed(() => {
+    const s = new Set<number>();
+    for (const c of this.allCategories()) {
+      if (c.parentCatId != null) s.add(c.parentCatId);
+    }
+    return s;
+  });
   readonly assignedCatIds = signal<Set<number>>(new Set());
   readonly primaryCatId = signal<number | null>(null);
   readonly loadingCategories = signal(false);
@@ -317,12 +324,12 @@ export class ProductDetailComponent implements OnInit {
     const tpId = this.tpId;
     const productPk = this.productPk();
     if (!tpId || !productPk) return;
+    this.loadingImages.set(true);
     try {
       await this.imagesService.updateSortOrder(tpId, productPk, img.imageId, sortOrder);
-      this.images.update(list =>
-        list.map(i => i.imageId === img.imageId ? { ...i, sortOrder } : i)
-      );
+      this.images.set(await this.imagesService.get(tpId, productPk));
     } catch { /* TODO: surface error */ }
+    finally { this.loadingImages.set(false); }
   }
 
   async deleteImage(img: ProductImage): Promise<void> {
@@ -344,11 +351,11 @@ export class ProductDetailComponent implements OnInit {
     if (!tpId || !id) return;
     this.loadingCategories.set(true);
     try {
-      const [allCats, assigned] = await Promise.all([
-        this.categoriesService.listAll(tpId),
-        this.service.listProductCategories(tpId, id),
-      ]);
+      const allCats = await this.categoriesService.listAll(tpId);
       this.allCategories.set(allCats);
+    } catch { /* handled inline */ }
+    try {
+      const assigned = await this.service.listProductCategories(tpId, id);
       this.assignedCatIds.set(new Set(assigned.map(a => a.catId)));
       const primary = assigned.find(a => a.isPrimary === 'Y');
       this.primaryCatId.set(primary?.catId ?? null);
@@ -387,25 +394,18 @@ export class ProductDetailComponent implements OnInit {
     const map = new Map<number, Category & { level: number }>(
       cats.map(c => [c.catId, { ...c, level: 0 }])
     );
-    const roots: Array<Category & { level: number }> = [];
-    for (const cat of map.values()) {
-      if (cat.parentCatId && map.has(cat.parentCatId)) {
-        map.get(cat.parentCatId)!.level;
-        cat.level = (map.get(cat.parentCatId)!.level ?? 0) + 1;
-      } else {
-        roots.push(cat);
-      }
-    }
+    const roots = [...map.values()].filter(c => !c.parentCatId || !map.has(c.parentCatId));
     const result: Array<Category & { level: number }> = [];
-    const visit = (catId: number) => {
+    const visit = (catId: number, level: number) => {
       const node = map.get(catId);
       if (!node) return;
+      node.level = level;
       result.push(node);
       for (const child of map.values()) {
-        if (child.parentCatId === catId) visit(child.catId);
+        if (child.parentCatId === catId) visit(child.catId, level + 1);
       }
     };
-    roots.forEach(r => visit(r.catId));
+    roots.forEach(r => visit(r.catId, 0));
     return result;
   }
 

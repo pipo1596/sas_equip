@@ -149,9 +149,15 @@
             <tr style="cursor:pointer;" (click)="openProduct(product)">
               <td data-label="Product">
                 <div class="d-flex align-items-center gap-3">
-                  <span class="product-abbr-tile flex-shrink-0" [ngStyle]="abbrStyle(product.productPk)">
-                    {{ productAbbr(product.title) }}
-                  </span>
+                  @if (product.thumbnailUrl) {
+                    <img [src]="product.thumbnailUrl" [alt]="product.title"
+                         class="flex-shrink-0 rounded"
+                         style="width:40px; height:40px; object-fit:contain; border:1px solid #e2e8f0; background:#f8fafc;" />
+                  } @else {
+                    <span class="product-abbr-tile flex-shrink-0" [ngStyle]="abbrStyle(product.productPk)">
+                      {{ productAbbr(product.title) }}
+                    </span>
+                  }
                   <div>
                     <div class="fw-semibold">{{ product.title }}</div>
                     <div class="text-muted small font-monospace">

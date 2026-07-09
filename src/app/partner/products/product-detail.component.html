@@ -6,10 +6,19 @@
       @if (loadingProduct()) {
         <div class="placeholder-glow"><span class="placeholder col-6"></span></div>
       } @else if (product(); as p) {
-        <h1 class="page-title mb-0">{{ p.title }}</h1>
-        <div class="d-flex align-items-center gap-2 mt-1">
-          <span class="text-muted small font-monospace">{{ p.handle }}</span>
-          <span [class]="statusBadge(p.status)"><span style="font-size:0.5rem;">&#9679;</span> {{ p.status }}</span>
+        <div class="d-flex align-items-center gap-3">
+          @if (p.thumbnailUrl) {
+            <img [src]="p.thumbnailUrl" [alt]="p.title"
+                 class="flex-shrink-0 rounded"
+                 style="width:48px; height:48px; object-fit:contain; border:1px solid #e2e8f0; background:#f8fafc;" />
+          }
+          <div>
+            <h1 class="page-title mb-0">{{ p.title }}</h1>
+            <div class="d-flex align-items-center gap-2 mt-1">
+              <span class="text-muted small font-monospace">{{ p.handle }}</span>
+              <span [class]="statusBadge(p.status)"><span style="font-size:0.5rem;">&#9679;</span> {{ p.status }}</span>
+            </div>
+          </div>
         </div>
       }
     </div>
@@ -266,11 +275,11 @@
             </div>
           </div>
 
-          @if (thumbnail(); as thumb) {
+          @if (product()?.thumbnailUrl || thumbnail()?.imageUrl; as thumbUrl) {
             <div class="card mb-4">
               <div class="card-body">
                 <h6 class="card-title fw-semibold mb-3">Thumbnail</h6>
-                <img [src]="thumb.imageUrl" [alt]="thumb.imageDesc || ''" class="img-fluid rounded" style="max-height:180px; object-fit:contain;">
+                <img [src]="thumbUrl" [alt]="product()?.title || ''" class="img-fluid rounded" style="max-height:180px; object-fit:contain;">
               </div>
             </div>
           }

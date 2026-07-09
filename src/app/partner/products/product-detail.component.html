@@ -31,6 +31,7 @@
     @for (tab of ([
       {id:'overview', label:'Overview', icon:'bi-info-circle'},
       {id:'skus', label:'SKUs', icon:'bi-upc-scan'},
+      {id:'options', label:'Options', icon:'bi-sliders'},
       {id:'images', label:'Images', icon:'bi-images'},
       {id:'categories', label:'Categories', icon:'bi-folder2'},
       {id:'attributes', label:'Attributes', icon:'bi-tags'},
@@ -369,59 +370,150 @@
       }
     }
 
+    <!-- ── Options ── -->
+    @if (activeTab() === 'options') {
+      <div class="card">
+        <!-- Header -->
+        <div class="d-flex align-items-center justify-content-between px-4 py-3 border-bottom">
+          <span class="fw-semibold">Variants</span>
+          <button class="btn btn-outline-secondary btn-sm rounded-pill px-3" (click)="newSku()">
+            <i class="bi bi-plus-lg me-1"></i>Add variant
+          </button>
+        </div>
+
+        @if (loadingOptions()) {
+          <div class="text-center py-4 text-muted">
+            <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>Loading…
+          </div>
+        } @else {
+
+          <!-- Option groups -->
+          @for (group of productOptions(); track $index; let gi = $index) {
+            <div class="d-flex align-items-start gap-3 px-4 py-3 border-bottom">
+              <i class="bi bi-grip-vertical text-muted" style="font-size:1.1rem; margin-top:0.35rem; cursor:grab; opacity:0.5;"></i>
+              <div class="flex-grow-1">
+                <!-- Option name -->
+                <input
+                  type="text"
+                  class="form-control-plaintext fw-semibold p-0 mb-2"
+                  style="font-size:0.9rem;"
+                  [ngModel]="group.name"
+                  (ngModelChange)="updateOptionGroupName(gi, $event)"
+                  placeholder="Option name"
+                />
+                <!-- Value chips + add input -->
+                <div class="d-flex flex-wrap align-items-center gap-1">
+                  @for (val of group.values; track $index; let vi = $index) {
+                    <span class="d-inline-flex align-items-center gap-1 border rounded-pill px-2"
+                          style="background:#f1f5f9; font-size:0.78rem; font-weight:500; height:26px; color:#334155;">
+                      {{ val }}
+                      <button type="button" class="btn p-0 border-0 bg-transparent lh-1"
+                              style="font-size:0.6rem; color:#94a3b8; margin-top:1px;"
+                              (click)="removeOptionValue(gi, vi)">
+                        <i class="bi bi-x-lg"></i>
+                      </button>
+                    </span>
+                  }
+                  <input
+                    type="text"
+                    class="form-control form-control-sm"
+                    style="width:110px; height:26px; font-size:0.8rem;"
+                    [ngModel]="group.pendingInput"
+                    (ngModelChange)="updateOptionGroupInput(gi, $event)"
+                    (keydown.enter)="addOptionValue(gi, group.pendingInput); $event.preventDefault()"
+                    placeholder="Add value…"
+                  />
+                </div>
+              </div>
+              <button class="btn btn-sm border-0 text-muted p-1 mt-1" (click)="removeOptionGroup(gi)">
+                <i class="bi bi-trash" style="font-size:0.85rem;"></i>
+              </button>
+            </div>
+          }
+
+          <!-- Footer -->
+          <div class="d-flex align-items-center justify-content-between px-4 py-3">
+            <button class="btn btn-link p-0 text-muted small text-decoration-none" (click)="addOptionGroup()">
+              <i class="bi bi-plus-circle me-1"></i>Add another option
+            </button>
+            @if (productOptions().length > 0) {
+              <button class="btn btn-dark btn-sm" (click)="saveProductOptions()" [disabled]="savingProductOptions()">
+                @if (savingProductOptions()) {
+                  <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>Saving…
+                } @else {
+                  <i class="bi bi-check-lg me-1"></i>Save Options
+                }
+              </button>
+            }
+          </div>
+        }
+      </div>
+    }
+
     <!-- ── Images ── -->
     @if (activeTab() === 'images') {
-      <div class="d-flex align-items-center justify-content-between mb-3">
-        <div class="d-flex align-items-center gap-2">
-          <h6 class="fw-semibold mb-0">Product Images</h6>
-          @if (uploadImageError()) {
-            <span class="text-danger small"><i class="bi bi-exclamation-triangle-fill me-1"></i>{{ uploadImageError() }}</span>
-          }
-        </div>
-        <label class="btn btn-dark btn-sm mb-0" [class.disabled]="uploadingImage()">
-          @if (uploadingImage()) {
-            <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>Uploading…
-          } @else {
-            <i class="bi bi-upload me-1"></i>Upload Image
-          }
-          <input type="file" accept="image/*" class="d-none" (change)="onImageFileSelected($event)" [disabled]="uploadingImage()" />
-        </label>
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <h6 class="fw-semibold mb-0">Media</h6>
+        @if (uploadImageError()) {
+          <span class="text-danger small"><i class="bi bi-exclamation-triangle-fill me-1"></i>{{ uploadImageError() }}</span>
+        }
       </div>
 
       @if (loadingImages()) {
         <div class="text-center py-4 text-muted">
           <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>Loading…
         </div>
-      } @else if (images().length === 0) {
-        <div class="text-center py-5 text-muted">
-          <i class="bi bi-images mb-2" style="font-size:2rem; display:block;"></i>
-          No images yet. Upload a product photo to get started.
-        </div>
       } @else {
-        <div class="row g-3">
-          @for (img of images(); track img.imageId) {
-            <div class="col-6 col-sm-4 col-md-3">
-              <div class="card h-100">
-                <img [src]="img.imageUrl" [alt]="img.imageDesc || ''" class="card-img-top" style="height:140px; object-fit:cover;">
-                <div class="card-body p-2 d-flex flex-column gap-2">
-                  <div class="d-flex align-items-center gap-2">
-                    <span class="text-muted small text-nowrap">Sort</span>
-                    <select class="form-select form-select-sm"
-                            [ngModel]="img.sortOrder || 0"
-                            (ngModelChange)="setImageSortOrder(img, +$event)">
-                      <option value="0" disabled>—</option>
-                      @for (n of sortOrders; track n) {
-                        <option [value]="n">{{ n }}</option>
-                      }
-                    </select>
-                  </div>
-                  <button class="btn btn-sm btn-outline-danger w-100" (click)="deleteImage(img)">
-                    <i class="bi bi-trash me-1"></i>Delete
-                  </button>
+        <div class="product-media-grid">
+          @for (img of images(); track img.imageId; let i = $index) {
+            <div class="media-cell" [class.media-cell-featured]="i === 0">
+              <img [src]="img.imageUrl" [alt]="img.imageDesc || ''">
+              <div class="media-actions">
+                <div class="d-flex align-items-center gap-1">
+                  <span class="text-white small text-nowrap" style="font-size:0.7rem;">Sort</span>
+                  <select class="form-select form-select-sm flex-grow-1"
+                          style="font-size:0.72rem; padding:0.15rem 1.5rem 0.15rem 0.4rem; height:24px;"
+                          [ngModel]="img.sortOrder || 0"
+                          (ngModelChange)="setImageSortOrder(img, +$event)">
+                    <option value="0" disabled>—</option>
+                    @for (n of sortOrders; track n) {
+                      <option [value]="n">{{ n }}</option>
+                    }
+                  </select>
                 </div>
+                <button class="btn btn-sm btn-danger py-0" style="font-size:0.72rem; height:24px;"
+                        (click)="deleteImage(img)">
+                  <i class="bi bi-trash me-1"></i>Delete
+                </button>
               </div>
             </div>
           }
+          <!-- Upload cell -->
+          <label class="media-cell-add" [class.disabled]="uploadingImage()">
+            @if (uploadingImage()) {
+              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            } @else {
+              <i class="bi bi-plus-lg"></i>
+            }
+            <input type="file" accept="image/*" class="d-none" (change)="onImageFileSelected($event)" [disabled]="uploadingImage()" />
+          </label>
+        </div>
+
+        <!-- URL input -->
+        <div class="d-flex gap-2 mt-3">
+          <input type="url" class="form-control form-control-sm" placeholder="https://… paste image URL"
+                 [ngModel]="imageUrlInput()" (ngModelChange)="imageUrlInput.set($event)"
+                 (keydown.enter)="addImageByUrl()" />
+          <button class="btn btn-outline-secondary btn-sm text-nowrap"
+                  (click)="addImageByUrl()"
+                  [disabled]="addingImageUrl() || !imageUrlInput().trim()">
+            @if (addingImageUrl()) {
+              <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+            } @else {
+              <i class="bi bi-link-45deg me-1"></i>
+            }
+            Add URL
+          </button>
         </div>
       }
     }
@@ -452,23 +544,25 @@
         <div class="card">
           <div class="list-group list-group-flush">
             @for (cat of buildCategoryTree(allCategories()); track cat.catId) {
-              <label class="list-group-item d-flex align-items-center gap-3 py-2"
-                     [class.list-group-item-action]="!parentCatIds().has(cat.catId)"
-                     [class.text-muted]="parentCatIds().has(cat.catId)"
-                     [style.padding-left.px]="16 + (cat.level ?? 0) * 24">
-                <input
-                  type="checkbox"
-                  class="form-check-input mt-0"
-                  [checked]="assignedCatIds().has(cat.catId)"
-                  [disabled]="parentCatIds().has(cat.catId)"
-                  (change)="toggleCategory(cat.catId)"
-                />
-                <span class="flex-grow-1">{{ cat.catName }}</span>
+              <div class="list-group-item d-flex align-items-center gap-3 py-2"
+                   [class.text-muted]="parentCatIds().has(cat.catId)"
+                   [style.padding-left.px]="16 + (cat.level ?? 0) * 24">
+                <label class="d-flex align-items-center gap-2 flex-grow-1 mb-0"
+                       [style.cursor]="parentCatIds().has(cat.catId) ? 'default' : 'pointer'">
+                  <input
+                    type="checkbox"
+                    class="form-check-input mt-0"
+                    [checked]="assignedCatIds().has(cat.catId)"
+                    [disabled]="parentCatIds().has(cat.catId)"
+                    (change)="toggleCategory(cat.catId)"
+                  />
+                  <span>{{ cat.catName }}</span>
+                </label>
                 @if (parentCatIds().has(cat.catId)) {
                   <span style="font-size:0.68rem; font-weight:600; letter-spacing:0.04em; text-transform:uppercase; color:#94a3b8; border:1px solid #cbd5e1; border-radius:0.25rem; padding:0.1rem 0.45rem;">parent</span>
                 }
                 @if (assignedCatIds().has(cat.catId)) {
-                  <div class="d-flex align-items-center gap-1" (click)="$event.stopPropagation()">
+                  <label class="d-flex align-items-center gap-1 mb-0" style="cursor:pointer;">
                     <input
                       type="radio"
                       class="form-check-input mt-0"
@@ -478,9 +572,9 @@
                       (ngModelChange)="primaryCatId.set($event)"
                     />
                     <span class="small text-muted">Primary</span>
-                  </div>
+                  </label>
                 }
-              </label>
+              </div>
             }
           </div>
         </div>

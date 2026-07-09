@@ -16,7 +16,7 @@ import {
   ProductImage, ProductAttribute, ProductXref,
 } from './product.model';
 
-export type ProductTab = 'overview' | 'skus' | 'images' | 'categories' | 'attributes' | 'xrefs';
+export type ProductTab = 'overview' | 'skus' | 'options' | 'images' | 'categories' | 'attributes' | 'xrefs';
 
 @Component({
   selector: 'app-product-detail',
@@ -73,12 +73,21 @@ export class ProductDetailComponent implements OnInit {
   readonly deletingSkus = signal(false);
   readonly skuDeleteTarget = signal<ProductSku | null>(null);
 
+  // ── Options ───────────────────────────────────────────────────────────────
+  readonly productOptions = signal<Array<{name: string; values: string[]; pendingInput: string}>>([]);
+  readonly loadingOptions = signal(false);
+  readonly savingProductOptions = signal(false);
+  readonly optionNames = ['SIZE', 'COLOR', 'WIDTH', 'FIT', 'MATERIAL', 'INSEAM', 'STYLE', 'LENGTH'];
+  private skuOptionsSnapshot: Record<number, Array<{optName: string; optValue: string; sortOrder: number}>> = {};
+
   // ── Images ────────────────────────────────────────────────────────────────
   readonly images = signal<ProductImage[]>([]);
   readonly loadingImages = signal(false);
   readonly uploadingImage = signal(false);
   readonly sortOrders = Array.from({ length: 50 }, (_, i) => i + 1);
   readonly uploadImageError = signal<string | null>(null);
+  readonly imageUrlInput = signal('');
+  readonly addingImageUrl = signal(false);
 
   // ── Categories ────────────────────────────────────────────────────────────
   readonly allCategories = signal<Category[]>([]);
@@ -196,6 +205,7 @@ export class ProductDetailComponent implements OnInit {
   setTab(tab: ProductTab): void {
     this.activeTab.set(tab);
     if (tab === 'skus') { this.loadSkus(); return; }
+    if (tab === 'options') { this.loadOptionsTab(); return; }
     if (tab === 'images') { this.loadImages(); return; }
     const loaded = this.loadedTabs();
     if (!loaded.has(tab)) {
@@ -287,6 +297,83 @@ export class ProductDetailComponent implements OnInit {
     finally { this.deletingSkus.set(false); }
   }
 
+  // ── Options ───────────────────────────────────────────────────────────────
+
+  private async loadOptionsTab(): Promise<void> {
+    const tpId = this.tpId;
+    const id = this.productPk();
+    if (!tpId || !id) return;
+    this.loadingOptions.set(true);
+    if (this.skus().length === 0) {
+      try { this.skus.set(await this.skusService.list(tpId, id)); } catch { /* ok */ }
+    }
+    const groups = new Map<string, Set<string>>();
+    const snapshot: typeof this.skuOptionsSnapshot = {};
+    for (const sku of this.skus()) {
+      try {
+        const opts = await this.skusService.listOptions(tpId, sku.skuId);
+        snapshot[sku.skuId] = opts.map(o => ({ optName: o.optName, optValue: o.optValue, sortOrder: o.sortOrder }));
+        for (const opt of opts) {
+          if (!groups.has(opt.optName)) groups.set(opt.optName, new Set());
+          if (opt.optValue?.trim()) groups.get(opt.optName)!.add(opt.optValue.trim());
+        }
+      } catch {
+        snapshot[sku.skuId] = [];
+      }
+    }
+    this.skuOptionsSnapshot = snapshot;
+    this.productOptions.set([...groups.entries()].map(([name, values]) => ({
+      name, values: [...values], pendingInput: '',
+    })));
+    this.loadingOptions.set(false);
+  }
+
+  addOptionGroup(): void {
+    this.productOptions.update(list => [...list, { name: '', values: [], pendingInput: '' }]);
+  }
+
+  removeOptionGroup(index: number): void {
+    this.productOptions.update(list => list.filter((_, i) => i !== index));
+  }
+
+  addOptionValue(groupIndex: number, value: string): void {
+    const v = value.trim();
+    if (!v) return;
+    this.productOptions.update(list => list.map((g, i) =>
+      i === groupIndex ? { ...g, values: [...g.values, v], pendingInput: '' } : g
+    ));
+  }
+
+  removeOptionValue(groupIndex: number, valueIndex: number): void {
+    this.productOptions.update(list => list.map((g, i) =>
+      i === groupIndex ? { ...g, values: g.values.filter((_, vi) => vi !== valueIndex) } : g
+    ));
+  }
+
+  updateOptionGroupName(index: number, name: string): void {
+    this.productOptions.update(list => list.map((g, i) => i === index ? { ...g, name } : g));
+  }
+
+  updateOptionGroupInput(index: number, value: string): void {
+    this.productOptions.update(list => list.map((g, i) => i === index ? { ...g, pendingInput: value } : g));
+  }
+
+  async saveProductOptions(): Promise<void> {
+    const tpId = this.tpId;
+    if (!tpId) return;
+    this.savingProductOptions.set(true);
+    const groups = this.productOptions().filter(g => g.name.trim());
+    for (const sku of this.skus()) {
+      const existing = this.skuOptionsSnapshot[sku.skuId] ?? [];
+      const newOpts = groups.map((g, idx) => {
+        const cur = existing.find(o => o.optName === g.name);
+        return { optName: g.name, optValue: cur?.optValue ?? '', sortOrder: idx };
+      });
+      try { await this.skusService.saveOptions(tpId, sku.skuId, newOpts); } catch { /* ok */ }
+    }
+    this.savingProductOptions.set(false);
+  }
+
   // ── Images ────────────────────────────────────────────────────────────────
 
   private async loadImages(): Promise<void> {
@@ -330,6 +417,25 @@ export class ProductDetailComponent implements OnInit {
       this.images.set(await this.imagesService.get(tpId, productPk));
     } catch { /* TODO: surface error */ }
     finally { this.loadingImages.set(false); }
+  }
+
+  async addImageByUrl(): Promise<void> {
+    const url = this.imageUrlInput().trim();
+    if (!url) return;
+    const tpId = this.tpId;
+    const id = this.productPk();
+    if (!tpId || !id) return;
+    this.addingImageUrl.set(true);
+    this.uploadImageError.set(null);
+    try {
+      await this.imagesService.add(tpId, id, url, 'large', '', this.images().length);
+      this.imageUrlInput.set('');
+      this.images.set(await this.imagesService.get(tpId, id));
+    } catch (err) {
+      this.uploadImageError.set(err instanceof Error ? err.message : 'Failed to add image.');
+    } finally {
+      this.addingImageUrl.set(false);
+    }
   }
 
   async deleteImage(img: ProductImage): Promise<void> {

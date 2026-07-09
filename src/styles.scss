@@ -1126,3 +1126,105 @@ app-partner-settings-contacts {
     background: #fff;
   }
 }
+
+/* ── Product / SKU media gallery ── */
+.product-media-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+
+  .media-cell {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 7px;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+
+    &.media-cell-featured {
+      grid-column: span 2;
+      grid-row: span 2;
+    }
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .media-actions {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.42);
+      opacity: 0;
+      transition: opacity 0.14s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: flex-end;
+      padding: 6px;
+      gap: 4px;
+    }
+
+    &:hover .media-actions { opacity: 1; }
+  }
+
+  .media-cell-add {
+    aspect-ratio: 1;
+    border: 2px dashed #cbd5e1;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #94a3b8;
+    font-size: 1.6rem;
+    transition: border-color 0.14s, color 0.14s;
+    margin: 0;
+    background: transparent;
+
+    &:hover:not(.disabled) {
+      border-color: #475569;
+      color: #475569;
+    }
+
+    &.disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .product-media-grid {
+    .media-cell {
+      border-color: #334155;
+      background: #1e293b;
+    }
+    .media-cell-add {
+      border-color: #475569;
+      color: #64748b;
+      &:hover:not(.disabled) {
+        border-color: #94a3b8;
+        color: #94a3b8;
+      }
+    }
+  }
+}
+
+:root[data-theme="dark"] .product-media-grid {
+  .media-cell {
+    border-color: #334155;
+    background: #1e293b;
+  }
+  .media-cell-add {
+    border-color: #475569;
+    color: #64748b;
+    &:hover:not(.disabled) {
+      border-color: #94a3b8;
+      color: #94a3b8;
+    }
+  }
+}

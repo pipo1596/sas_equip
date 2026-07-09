@@ -11,7 +11,7 @@ import {
   ProductInventory, ProductPricing, ProductImage,
 } from './product.model';
 
-export type SkuTab = 'details' | 'options' | 'pricing' | 'logistics' | 'inventory' | 'images';
+export type SkuTab = 'details' | 'pricing' | 'logistics' | 'inventory' | 'images';
 
 @Component({
   selector: 'app-product-sku-detail',
@@ -33,7 +33,7 @@ export class ProductSkuDetailComponent implements OnInit {
   readonly loading = signal(false);
   readonly saving = signal(false);
   readonly saveError = signal<string | null>(null);
-  readonly saveSuccess = signal(false);
+  readonly saveSuccess = signal<string | null>(null);
 
   // Parent product context
   product: Product | null = null;
@@ -57,11 +57,6 @@ export class ProductSkuDetailComponent implements OnInit {
     fulfillSvc: '', variantImgUrl: '', isDefault: 'N',
   };
 
-  // Options (inline grid)
-  readonly options = signal<Array<{ optName: string; optValue: string; sortOrder: number }>>([]);
-  readonly savingOptions = signal(false);
-  readonly optionNames = ['SIZE', 'COLOR', 'WIDTH', 'FIT', 'MATERIAL', 'INSEAM', 'STYLE', 'LENGTH'];
-
   // Inventory
   readonly inventory = signal<ProductInventory[]>([]);
   readonly loadingInventory = signal(false);
@@ -78,6 +73,8 @@ export class ProductSkuDetailComponent implements OnInit {
   readonly uploadingImage = signal(false);
   readonly sortOrders = Array.from({ length: 50 }, (_, i) => i + 1);
   readonly uploadImageError = signal<string | null>(null);
+  readonly imageUrlInput = signal('');
+  readonly addingImageUrl = signal(false);
 
   protected get tpId(): number | undefined {
     return this.partnerMode.activePartner()?.tpId;
@@ -88,8 +85,14 @@ export class ProductSkuDetailComponent implements OnInit {
     const productParam = this.route.snapshot.paramMap.get('productId');
     this.productId = productParam ? Number(productParam) : null;
 
-    const state = window.history.state as { sku?: ProductSku; product?: Product };
+    const state = window.history.state as { sku?: ProductSku; product?: Product; justCreated?: boolean };
     this.product = state.product ?? null;
+
+    if (state.justCreated) {
+      this.saveSuccess.set('SKU created successfully!');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setTimeout(() => this.saveSuccess.set(null), 4000);
+    }
 
     if (skuParam && skuParam !== 'new') {
       this.isEdit = true;
@@ -105,11 +108,6 @@ export class ProductSkuDetailComponent implements OnInit {
     try {
       const sku = await this.service.get(tpId, this.skuId);
       this.syncDetailsForm(sku);
-      if (sku.options) {
-        this.options.set(sku.options.map(o => ({
-          optName: o.optName, optValue: o.optValue, sortOrder: o.sortOrder,
-        })));
-      }
     } catch (err) {
       this.saveError.set(err instanceof Error ? err.message : 'Failed to load SKU.');
     } finally {
@@ -163,7 +161,6 @@ export class ProductSkuDetailComponent implements OnInit {
   }
 
   private loadTabData(tab: SkuTab): void {
-    if (tab === 'options' && this.isEdit) this.loadOptions();
     if (tab === 'inventory' && this.isEdit) this.loadInventory();
     if (tab === 'pricing' && this.isEdit) this.loadPricing();
   }
@@ -183,21 +180,20 @@ export class ProductSkuDetailComponent implements OnInit {
     }
     this.saving.set(true);
     this.saveError.set(null);
-    this.saveSuccess.set(false);
+    this.saveSuccess.set(null);
     try {
       if (this.isEdit && this.skuId != null) {
         await this.service.update(tpId, this.skuId, this.detailsForm);
-        this.saveSuccess.set(true);
-        setTimeout(() => this.saveSuccess.set(false), 3000);
+        this.saveSuccess.set('Saved successfully!');
+        setTimeout(() => this.saveSuccess.set(null), 3000);
       } else {
         if (!this.productId) return;
         const created = await this.service.create(tpId, this.productId, this.detailsForm);
         this.isEdit = true;
         this.skuId = created.skuId;
-        this.saveSuccess.set(true);
         this.router.navigate(
           ['/partner', tpId, 'products', this.productId, 'skus', created.skuId],
-          { replaceUrl: true, state: { sku: created, product: this.product } }
+          { replaceUrl: true, state: { sku: created, product: this.product, justCreated: true } }
         );
       }
     } catch (err) {
@@ -205,35 +201,6 @@ export class ProductSkuDetailComponent implements OnInit {
     } finally {
       this.saving.set(false);
     }
-  }
-
-  // ── Options (inline grid) ─────────────────────────────────────────────────
-
-  private async loadOptions(): Promise<void> {
-    const tpId = this.tpId;
-    if (!tpId || !this.skuId) return;
-    try {
-      const opts = await this.service.listOptions(tpId, this.skuId);
-      this.options.set(opts.map(o => ({ optName: o.optName, optValue: o.optValue, sortOrder: o.sortOrder })));
-    } catch { /* non-critical */ }
-  }
-
-  addOption(): void {
-    this.options.update(list => [...list, { optName: 'SIZE', optValue: '', sortOrder: list.length }]);
-  }
-
-  removeOption(index: number): void {
-    this.options.update(list => list.filter((_, i) => i !== index));
-  }
-
-  async saveOptions(): Promise<void> {
-    const tpId = this.tpId;
-    if (!tpId || !this.skuId) return;
-    this.savingOptions.set(true);
-    try {
-      await this.service.saveOptions(tpId, this.skuId, this.options());
-    } catch { /* TODO: surface error */ }
-    finally { this.savingOptions.set(false); }
   }
 
   // ── Inventory ─────────────────────────────────────────────────────────────
@@ -347,6 +314,26 @@ export class ProductSkuDetailComponent implements OnInit {
       this.images.set(await this.imagesService.get(tpId, productId, skuId));
     } catch { /* TODO: surface error */ }
     finally { this.loadingImages.set(false); }
+  }
+
+  async addSkuImageByUrl(): Promise<void> {
+    const url = this.imageUrlInput().trim();
+    if (!url) return;
+    const tpId = this.tpId;
+    const productId = this.productId;
+    const skuId = this.skuId;
+    if (!tpId || !productId || !skuId) return;
+    this.addingImageUrl.set(true);
+    this.uploadImageError.set(null);
+    try {
+      await this.imagesService.add(tpId, productId, url, 'large', '', this.images().length, skuId);
+      this.imageUrlInput.set('');
+      this.images.set(await this.imagesService.get(tpId, productId, skuId));
+    } catch (err) {
+      this.uploadImageError.set(err instanceof Error ? err.message : 'Failed to add image.');
+    } finally {
+      this.addingImageUrl.set(false);
+    }
   }
 
   async deleteSkuImage(img: ProductImage): Promise<void> {

@@ -1,5 +1,13 @@
 <section class="page-shell">
 
+  <!-- Created success banner -->
+  @if (saveSuccess() === 'SKU created successfully!') {
+    <div class="alert alert-success d-flex align-items-center gap-2 mb-3 py-2 px-3" role="alert">
+      <i class="bi bi-patch-check-fill"></i>
+      <span>{{ saveSuccess() }}</span>
+    </div>
+  }
+
   <!-- Header -->
   <div class="page-shell-header d-flex align-items-center justify-content-between flex-wrap gap-2">
     <div>
@@ -20,7 +28,6 @@
   <ul class="nav nav-tabs mb-0" style="border-bottom: 2px solid #dee2e6;">
     @for (tab of ([
       {id:'details', label:'Details', icon:'bi-upc-scan'},
-      {id:'options', label:'Options', icon:'bi-sliders'},
       {id:'pricing', label:'Pricing', icon:'bi-currency-dollar'},
       {id:'logistics', label:'Logistics', icon:'bi-truck'},
       {id:'inventory', label:'Inventory', icon:'bi-box-seam'},
@@ -185,7 +192,7 @@
         }
         @if (saveSuccess()) {
           <div class="alert alert-success d-flex align-items-center gap-2 mb-0 py-2 px-3">
-            <i class="bi bi-patch-check-fill"></i><span>Saved successfully!</span>
+            <i class="bi bi-patch-check-fill"></i><span>{{ saveSuccess() }}</span>
           </div>
         }
         <button class="btn btn-dark" (click)="save()" [disabled]="saving()">
@@ -196,70 +203,6 @@
           }
         </button>
       </div>
-    }
-
-    <!-- ── Options ── -->
-    @if (activeTab() === 'options') {
-      <div class="d-flex align-items-center justify-content-between mb-3">
-        <h6 class="fw-semibold mb-0">Variant Options</h6>
-        <div class="d-flex gap-2">
-          <button class="btn btn-outline-secondary btn-sm" (click)="addOption()">
-            <i class="bi bi-plus-lg me-1"></i>Add Row
-          </button>
-          <button class="btn btn-dark btn-sm" (click)="saveOptions()" [disabled]="savingOptions()">
-            @if (savingOptions()) {
-              <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-            } @else {
-              <i class="bi bi-check-lg me-1"></i>
-            }
-            Save Options
-          </button>
-        </div>
-      </div>
-
-      @if (!isEdit) {
-        <div class="alert alert-info">Save the SKU details first before adding options.</div>
-      } @else if (options().length === 0) {
-        <div class="text-center py-5 text-muted">
-          <i class="bi bi-sliders mb-2" style="font-size:2rem; display:block;"></i>
-          No options yet. Click "Add Row" to define size, color, etc.
-        </div>
-      } @else {
-        <div class="card">
-          <div class="table-responsive">
-            <table class="table table-borderless align-middle mb-0">
-              <thead class="border-bottom">
-                <tr>
-                  <th style="width:40%;">Option Name</th>
-                  <th>Value</th>
-                  <th style="width:60px;"></th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (opt of options(); track $index; let i = $index) {
-                  <tr>
-                    <td>
-                      <select class="form-select form-select-sm" [(ngModel)]="opt.optName">
-                        @for (name of optionNames; track name) {
-                          <option [value]="name">{{ name }}</option>
-                        }
-                      </select>
-                    </td>
-                    <td>
-                      <input type="text" class="form-control form-control-sm" [(ngModel)]="opt.optValue" placeholder="e.g. Large, Red, 10W" />
-                    </td>
-                    <td>
-                      <button class="btn btn-sm btn-outline-danger" (click)="removeOption(i)">
-                        <i class="bi bi-trash"></i>
-                      </button>
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-        </div>
-      }
     }
 
     <!-- ── Pricing ── -->
@@ -515,56 +458,68 @@
 
     <!-- ── Images ── -->
     @if (activeTab() === 'images') {
-      <div class="d-flex align-items-center justify-content-between mb-3">
-        <h6 class="fw-semibold mb-0">SKU Images</h6>
-        <label class="btn btn-dark btn-sm" [class.disabled]="uploadingImage()">
-          @if (uploadingImage()) {
-            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Uploading…
-          } @else {
-            <i class="bi bi-upload me-2"></i>Upload Image
-          }
-          <input type="file" class="d-none" accept="image/*" (change)="onImageFileSelected($event)" [disabled]="uploadingImage()" />
-        </label>
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <h6 class="fw-semibold mb-0">Media</h6>
+        @if (uploadImageError()) {
+          <span class="text-danger small"><i class="bi bi-exclamation-triangle-fill me-1"></i>{{ uploadImageError() }}</span>
+        }
       </div>
 
-      @if (uploadImageError()) {
-        <div class="alert alert-danger py-2 mb-3">{{ uploadImageError() }}</div>
-      }
-
       @if (loadingImages()) {
-        <div class="text-center py-5 text-muted">
-          <div class="spinner-border" role="status" aria-hidden="true"></div>
-        </div>
-      } @else if (images().length === 0) {
-        <div class="text-center py-5 text-muted">
-          <i class="bi bi-images mb-2" style="font-size:2rem; display:block;"></i>
-          No images yet. Upload a photo to get started.
+        <div class="text-center py-4 text-muted">
+          <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>Loading…
         </div>
       } @else {
-        <div class="row g-3">
-          @for (img of images(); track img.imageId) {
-            <div class="col-6 col-sm-4 col-md-3">
-              <div class="card h-100">
-                <img [src]="img.imageUrl" [alt]="img.imageDesc || ''" class="card-img-top" style="height:140px; object-fit:cover;">
-                <div class="card-body p-2 d-flex flex-column gap-2">
-                  <div class="d-flex align-items-center gap-2">
-                    <span class="text-muted small text-nowrap">Sort</span>
-                    <select class="form-select form-select-sm"
-                            [ngModel]="img.sortOrder || 0"
-                            (ngModelChange)="setSkuImageSortOrder(img, +$event)">
-                      <option value="0" disabled>—</option>
-                      @for (n of sortOrders; track n) {
-                        <option [value]="n">{{ n }}</option>
-                      }
-                    </select>
-                  </div>
-                  <button class="btn btn-sm btn-outline-danger w-100" (click)="deleteSkuImage(img)">
-                    <i class="bi bi-trash me-1"></i>Delete
-                  </button>
+        <div class="product-media-grid">
+          @for (img of images(); track img.imageId; let i = $index) {
+            <div class="media-cell" [class.media-cell-featured]="i === 0">
+              <img [src]="img.imageUrl" [alt]="img.imageDesc || ''">
+              <div class="media-actions">
+                <div class="d-flex align-items-center gap-1">
+                  <span class="text-white small text-nowrap" style="font-size:0.7rem;">Sort</span>
+                  <select class="form-select form-select-sm flex-grow-1"
+                          style="font-size:0.72rem; padding:0.15rem 1.5rem 0.15rem 0.4rem; height:24px;"
+                          [ngModel]="img.sortOrder || 0"
+                          (ngModelChange)="setSkuImageSortOrder(img, +$event)">
+                    <option value="0" disabled>—</option>
+                    @for (n of sortOrders; track n) {
+                      <option [value]="n">{{ n }}</option>
+                    }
+                  </select>
                 </div>
+                <button class="btn btn-sm btn-danger py-0" style="font-size:0.72rem; height:24px;"
+                        (click)="deleteSkuImage(img)">
+                  <i class="bi bi-trash me-1"></i>Delete
+                </button>
               </div>
             </div>
           }
+          <!-- Upload cell -->
+          <label class="media-cell-add" [class.disabled]="uploadingImage()">
+            @if (uploadingImage()) {
+              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            } @else {
+              <i class="bi bi-plus-lg"></i>
+            }
+            <input type="file" class="d-none" accept="image/*" (change)="onImageFileSelected($event)" [disabled]="uploadingImage()" />
+          </label>
+        </div>
+
+        <!-- URL input -->
+        <div class="d-flex gap-2 mt-3">
+          <input type="url" class="form-control form-control-sm" placeholder="https://… paste image URL"
+                 [ngModel]="imageUrlInput()" (ngModelChange)="imageUrlInput.set($event)"
+                 (keydown.enter)="addSkuImageByUrl()" />
+          <button class="btn btn-outline-secondary btn-sm text-nowrap"
+                  (click)="addSkuImageByUrl()"
+                  [disabled]="addingImageUrl() || !imageUrlInput().trim()">
+            @if (addingImageUrl()) {
+              <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+            } @else {
+              <i class="bi bi-link-45deg me-1"></i>
+            }
+            Add URL
+          </button>
         </div>
       }
     }

@@ -44,12 +44,30 @@ export class ProductsService {
   }
 
   async create(tpId: number, form: ProductForm): Promise<Product> {
-    const data = await this.post({ action: '*CREATE', tpId, ...form });
+    const data = await this.post({ action: '*CREATE', tpId, ...this.chunkLongFields(form) });
     return data as unknown as Product;
   }
 
   async update(tpId: number, productPk: number, form: ProductForm): Promise<void> {
-    await this.post({ action: '*UPDATE', tpId, productPk, ...form });
+    await this.post({ action: '*UPDATE', tpId, productPk, ...this.chunkLongFields(form) });
+  }
+
+  private chunkLongFields(form: ProductForm): Record<string, unknown> {
+    const CHUNK = 10_000;
+    const fields = ['longDescr', 'features', 'construction', 'seoDescr', 'orderNote', 'techSpec'] as const;
+    const result: Record<string, unknown> = { ...form };
+    for (const field of fields) {
+      const value = form[field];
+      if (!value || value.length <= CHUNK) continue;
+      delete result[field];
+      let pos = 0, n = 1;
+      while (pos < value.length) {
+        result[n === 1 ? field : `${field}${n}`] = value.slice(pos, pos + CHUNK);
+        pos += CHUNK;
+        n++;
+      }
+    }
+    return result;
   }
 
   async remove(tpId: number, productPk: number): Promise<void> {

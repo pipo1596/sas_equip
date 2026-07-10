@@ -1,7 +1,9 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, WritableSignal } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { DecimalPipe } from '@angular/common';
+import { DecimalPipe, NgClass } from '@angular/common';
+import { QuillEditorComponent } from 'ngx-quill';
+import type { ContentChange } from 'ngx-quill';
 import { PartnerModeService } from '../partner-mode.service';
 import { ImageUploadService } from '../../shared/image-upload.service';
 import { ProductsService } from './products.service';
@@ -21,7 +23,7 @@ export type ProductTab = 'overview' | 'skus' | 'options' | 'images' | 'categorie
 @Component({
   selector: 'app-product-detail',
   standalone: true,
-  imports: [FormsModule, RouterModule, DecimalPipe],
+  imports: [FormsModule, RouterModule, DecimalPipe, NgClass, QuillEditorComponent],
   templateUrl: './product-detail.component.html',
 })
 export class ProductDetailComponent implements OnInit {
@@ -49,6 +51,40 @@ export class ProductDetailComponent implements OnInit {
   // ── Tab state ─────────────────────────────────────────────────────────────
   readonly activeTab = signal<ProductTab>('overview');
   readonly loadedTabs = signal<Set<ProductTab>>(new Set(['overview']));
+
+  // ── Rich-text editor ──────────────────────────────────────────────────────
+  readonly LIMIT_1M = 1_048_576;
+  readonly LIMIT_64K = 65_536;
+
+  readonly editorModules = {
+    toolbar: [
+      [{ header: [1, 2, 3, false] }],
+      ['bold', 'italic', 'underline'],
+      [{ list: 'ordered' }, { list: 'bullet' }],
+      ['link', 'clean'],
+    ],
+  };
+
+  readonly longDescrCount    = signal(0);
+  readonly featuresCount     = signal(0);
+  readonly constructionCount = signal(0);
+  readonly seoDescrCount     = signal(0);
+  readonly orderNoteCount    = signal(0);
+  readonly techSpecCount     = signal(0);
+
+  onEditorCreated(quill: { getLength(): number }, count: WritableSignal<number>): void {
+    count.set(Math.max(0, quill.getLength() - 1));
+  }
+
+  onContentChanged(event: ContentChange, count: WritableSignal<number>, limit: number): void {
+    const len = event.editor.getLength() - 1;
+    if (len > limit) {
+      event.editor.deleteText(limit, event.editor.getLength());
+      count.set(limit);
+    } else {
+      count.set(Math.max(0, len));
+    }
+  }
 
   // ── Overview form ─────────────────────────────────────────────────────────
   readonly brands = signal<Brand[]>([]);

@@ -134,15 +134,39 @@
               </div>
               <div class="mb-3">
                 <label class="form-label fw-medium">Long Description</label>
-                <textarea class="form-control" [(ngModel)]="overviewForm.longDescr" rows="5"></textarea>
+                <quill-editor [(ngModel)]="overviewForm.longDescr" name="longDescr"
+                  [modules]="editorModules" [styles]="{ height: '200px' }"
+                  (onEditorCreated)="onEditorCreated($event, longDescrCount)"
+                  (onContentChanged)="onContentChanged($event, longDescrCount, LIMIT_1M)"
+                ></quill-editor>
+                <div class="text-end small mt-1"
+                     [ngClass]="longDescrCount() >= LIMIT_1M ? 'text-danger' : 'text-muted'">
+                  {{ LIMIT_1M - longDescrCount() | number }} chars remaining
+                </div>
               </div>
               <div class="mb-3">
                 <label class="form-label fw-medium">Features</label>
-                <textarea class="form-control" [(ngModel)]="overviewForm.features" rows="4"></textarea>
+                <quill-editor [(ngModel)]="overviewForm.features" name="features"
+                  [modules]="editorModules" [styles]="{ height: '160px' }"
+                  (onEditorCreated)="onEditorCreated($event, featuresCount)"
+                  (onContentChanged)="onContentChanged($event, featuresCount, LIMIT_1M)"
+                ></quill-editor>
+                <div class="text-end small mt-1"
+                     [ngClass]="featuresCount() >= LIMIT_1M ? 'text-danger' : 'text-muted'">
+                  {{ LIMIT_1M - featuresCount() | number }} chars remaining
+                </div>
               </div>
               <div class="mb-0">
                 <label class="form-label fw-medium">Construction</label>
-                <textarea class="form-control" [(ngModel)]="overviewForm.construction" rows="4"></textarea>
+                <quill-editor [(ngModel)]="overviewForm.construction" name="construction"
+                  [modules]="editorModules" [styles]="{ height: '160px' }"
+                  (onEditorCreated)="onEditorCreated($event, constructionCount)"
+                  (onContentChanged)="onContentChanged($event, constructionCount, LIMIT_1M)"
+                ></quill-editor>
+                <div class="text-end small mt-1"
+                     [ngClass]="constructionCount() >= LIMIT_1M ? 'text-danger' : 'text-muted'">
+                  {{ LIMIT_1M - constructionCount() | number }} chars remaining
+                </div>
               </div>
             </div>
           </div>
@@ -157,7 +181,15 @@
               </div>
               <div class="mb-0">
                 <label class="form-label fw-medium">Meta Description</label>
-                <textarea class="form-control" [(ngModel)]="overviewForm.seoDescr" rows="3"></textarea>
+                <quill-editor [(ngModel)]="overviewForm.seoDescr" name="seoDescr"
+                  [modules]="editorModules" [styles]="{ height: '130px' }"
+                  (onEditorCreated)="onEditorCreated($event, seoDescrCount)"
+                  (onContentChanged)="onContentChanged($event, seoDescrCount, LIMIT_64K)"
+                ></quill-editor>
+                <div class="text-end small mt-1"
+                     [ngClass]="seoDescrCount() >= LIMIT_64K ? 'text-danger' : 'text-muted'">
+                  {{ LIMIT_64K - seoDescrCount() | number }} chars remaining
+                </div>
               </div>
             </div>
           </div>
@@ -197,11 +229,28 @@
               <h6 class="card-title fw-semibold mb-3">Notes &amp; Docs</h6>
               <div class="mb-3">
                 <label class="form-label fw-medium">Order Note</label>
-                <textarea class="form-control" [(ngModel)]="overviewForm.orderNote" rows="3" placeholder="Shown on order confirmations"></textarea>
+                <quill-editor [(ngModel)]="overviewForm.orderNote" name="orderNote"
+                  [modules]="editorModules" [styles]="{ height: '130px' }"
+                  placeholder="Shown on order confirmations"
+                  (onEditorCreated)="onEditorCreated($event, orderNoteCount)"
+                  (onContentChanged)="onContentChanged($event, orderNoteCount, LIMIT_64K)"
+                ></quill-editor>
+                <div class="text-end small mt-1"
+                     [ngClass]="orderNoteCount() >= LIMIT_64K ? 'text-danger' : 'text-muted'">
+                  {{ LIMIT_64K - orderNoteCount() | number }} chars remaining
+                </div>
               </div>
               <div class="mb-3">
                 <label class="form-label fw-medium">Tech Spec</label>
-                <textarea class="form-control" [(ngModel)]="overviewForm.techSpec" rows="4"></textarea>
+                <quill-editor [(ngModel)]="overviewForm.techSpec" name="techSpec"
+                  [modules]="editorModules" [styles]="{ height: '160px' }"
+                  (onEditorCreated)="onEditorCreated($event, techSpecCount)"
+                  (onContentChanged)="onContentChanged($event, techSpecCount, LIMIT_64K)"
+                ></quill-editor>
+                <div class="text-end small mt-1"
+                     [ngClass]="techSpecCount() >= LIMIT_64K ? 'text-danger' : 'text-muted'">
+                  {{ LIMIT_64K - techSpecCount() | number }} chars remaining
+                </div>
               </div>
               <div class="mb-0">
                 <label class="form-label fw-medium">Tech Spec Image URL</label>

@@ -98,16 +98,7 @@
       }
     </select>
 
-    <select class="form-select product-filter-select"
-            [ngModel]="filterPlatform()"
-            (ngModelChange)="filterPlatform.set($event); onFilterChange()">
-      <option value="">All Platforms</option>
-      @for (platform of platforms(); track platform) {
-        <option [value]="platform">{{ platform }}</option>
-      }
-    </select>
-
-    @if (hasActiveFilters() || search()) {
+@if (hasActiveFilters() || search()) {
       <button class="btn btn-outline-secondary product-filter-clear" type="button" (click)="clearFilters()" title="Clear all filters">
         <i class="bi bi-x-circle me-1"></i>Clear
       </button>

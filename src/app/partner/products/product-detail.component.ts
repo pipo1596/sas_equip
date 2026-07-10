@@ -110,11 +110,13 @@ export class ProductDetailComponent implements OnInit {
   readonly skuDeleteTarget = signal<ProductSku | null>(null);
 
   // ── Options ───────────────────────────────────────────────────────────────
-  readonly productOptions = signal<Array<{name: string; values: string[]; pendingInput: string}>>([]);
+  readonly optionValueSortOrders = Array.from({ length: 50 }, (_, i) => i + 1);
+  readonly productOptions = signal<Array<{name: string; values: Array<{val: string; desc: string; sortOrder: number}>; pendingInput: string; showValues: boolean}>>([]);
   readonly loadingOptions = signal(false);
   readonly savingProductOptions = signal(false);
+  readonly expandedGroupIndex = signal<number | null>(null);
   readonly optionNames = ['SIZE', 'COLOR', 'WIDTH', 'FIT', 'MATERIAL', 'INSEAM', 'STYLE', 'LENGTH'];
-  private skuOptionsSnapshot: Record<number, Array<{optName: string; optValue: string; sortOrder: number}>> = {};
+  private skuOptionsSnapshot: Record<number, Array<{optName: string; optValue: string; optDescr?: string; sortOrder: number}>> = {};
 
   // ── Images ────────────────────────────────────────────────────────────────
   readonly images = signal<ProductImage[]>([]);
@@ -343,41 +345,81 @@ export class ProductDetailComponent implements OnInit {
     if (this.skus().length === 0) {
       try { this.skus.set(await this.skusService.list(tpId, id)); } catch { /* ok */ }
     }
-    const groups = new Map<string, Set<string>>();
+    const groups = new Map<string, Map<string, string>>();
     const snapshot: typeof this.skuOptionsSnapshot = {};
     for (const sku of this.skus()) {
       try {
         const opts = await this.skusService.listOptions(tpId, sku.skuId);
-        snapshot[sku.skuId] = opts.map(o => ({ optName: o.optName, optValue: o.optValue, sortOrder: o.sortOrder }));
+        snapshot[sku.skuId] = opts.map(o => ({ optName: o.optName, optValue: o.optValue, optDescr: o.optDescr ?? undefined, sortOrder: o.sortOrder }));
         for (const opt of opts) {
-          if (!groups.has(opt.optName)) groups.set(opt.optName, new Set());
-          if (opt.optValue?.trim()) groups.get(opt.optName)!.add(opt.optValue.trim());
+          if (!groups.has(opt.optName)) groups.set(opt.optName, new Map());
+          const v = opt.optValue?.trim();
+          if (v && !groups.get(opt.optName)!.has(v))
+            groups.get(opt.optName)!.set(v, opt.optDescr ?? v);
         }
       } catch {
         snapshot[sku.skuId] = [];
       }
     }
     this.skuOptionsSnapshot = snapshot;
-    this.productOptions.set([...groups.entries()].map(([name, values]) => ({
-      name, values: [...values], pendingInput: '',
+    this.productOptions.set([...groups.entries()].map(([name, valMap]) => ({
+      name,
+      values: [...valMap.entries()].map(([val, desc], i) => ({ val, desc, sortOrder: i + 1 })),
+      pendingInput: '',
+      showValues: valMap.size > 0,
     })));
     this.loadingOptions.set(false);
   }
 
   addOptionGroup(): void {
-    this.productOptions.update(list => [...list, { name: '', values: [], pendingInput: '' }]);
+    this.productOptions.update(list => [...list, { name: '', values: [], pendingInput: '', showValues: false }]);
+    this.expandedGroupIndex.set(this.productOptions().length - 1);
+  }
+
+  showGroupValues(index: number): void {
+    this.productOptions.update(list => list.map((g, i) =>
+      i === index
+        ? { ...g, showValues: true, values: g.values.length === 0 ? [{ val: '', desc: '', sortOrder: 1 }] : g.values }
+        : g
+    ));
   }
 
   removeOptionGroup(index: number): void {
+    const name = this.productOptions()[index]?.name || 'this option';
+    if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
     this.productOptions.update(list => list.filter((_, i) => i !== index));
+    if (this.expandedGroupIndex() === index) this.expandedGroupIndex.set(null);
   }
 
-  addOptionValue(groupIndex: number, value: string): void {
-    const v = value.trim();
-    if (!v) return;
+  updateOptionSortOrder(groupIndex: number, valueIndex: number, sortOrder: number): void {
     this.productOptions.update(list => list.map((g, i) =>
-      i === groupIndex ? { ...g, values: [...g.values, v], pendingInput: '' } : g
+      i === groupIndex
+        ? { ...g, values: g.values.map((v, vi) => vi === valueIndex ? { ...v, sortOrder } : v) }
+        : g
     ));
+  }
+
+  updateOptionValue(groupIndex: number, valueIndex: number, field: 'val' | 'desc', value: string): void {
+    this.productOptions.update(list => list.map((g, i) => {
+      if (i !== groupIndex) return g;
+      return {
+        ...g,
+        values: g.values.map((v, vi) => {
+          if (vi !== valueIndex) return v;
+          const updated = { ...v, [field]: value };
+          if (field === 'val' && (v.desc === '' || v.desc === v.val)) updated.desc = value;
+          return updated;
+        }),
+      };
+    }));
+  }
+
+  addOptionValue(groupIndex: number): void {
+    this.productOptions.update(list => list.map((g, i) => {
+      if (i !== groupIndex) return g;
+      const nextSort = g.values.reduce((max, v) => Math.max(max, v.sortOrder), 0) + 1;
+      return { ...g, values: [...g.values, { val: '', desc: '', sortOrder: nextSort }] };
+    }));
   }
 
   removeOptionValue(groupIndex: number, valueIndex: number): void {
@@ -403,7 +445,9 @@ export class ProductDetailComponent implements OnInit {
       const existing = this.skuOptionsSnapshot[sku.skuId] ?? [];
       const newOpts = groups.map((g, idx) => {
         const cur = existing.find(o => o.optName === g.name);
-        return { optName: g.name, optValue: cur?.optValue ?? '', sortOrder: idx };
+        const optValue = cur?.optValue ?? '';
+        const descMap = new Map(g.values.map(v => [v.val, v.desc]));
+        return { optName: g.name, optValue, optDescr: descMap.get(optValue) ?? '', sortOrder: idx };
       });
       try { await this.skusService.saveOptions(tpId, sku.skuId, newOpts); } catch { /* ok */ }
     }

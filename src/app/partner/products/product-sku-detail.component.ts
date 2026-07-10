@@ -8,10 +8,10 @@ import { ProductImagesService } from './product-images.service';
 import { ImageUploadService } from '../../shared/image-upload.service';
 import {
   ProductSku, ProductSkuForm, Product,
-  ProductInventory, ProductPricing, ProductImage,
+  ProductInventory, ProductImage,
 } from './product.model';
 
-export type SkuTab = 'details' | 'pricing' | 'logistics' | 'inventory' | 'images';
+export type SkuTab = 'details' | 'logistics' | 'inventory' | 'images';
 
 @Component({
   selector: 'app-product-sku-detail',
@@ -60,12 +60,6 @@ export class ProductSkuDetailComponent implements OnInit {
   // Inventory
   readonly inventory = signal<ProductInventory[]>([]);
   readonly loadingInventory = signal(false);
-
-  // Pricing
-  readonly pricing = signal<ProductPricing[]>([]);
-  readonly loadingPricing = signal(false);
-  readonly pricingForm = signal({ currencyCd: 'USD', priceAmount: 0, compareAmount: null as number | null, isActive: 'Y' as 'Y' | 'N' });
-  readonly savingPricing = signal(false);
 
   // Images
   readonly images = signal<ProductImage[]>([]);
@@ -162,7 +156,6 @@ export class ProductSkuDetailComponent implements OnInit {
 
   private loadTabData(tab: SkuTab): void {
     if (tab === 'inventory' && this.isEdit) this.loadInventory();
-    if (tab === 'pricing' && this.isEdit) this.loadPricing();
   }
 
   // ── Details save ──────────────────────────────────────────────────────────
@@ -223,48 +216,6 @@ export class ProductSkuDetailComponent implements OnInit {
       this.inventory.update(list =>
         list.map(i => i.invId === inv.invId ? { ...i, qtyOnHand: qty, qtyAvailable: qty - i.qtyReserved } : i)
       );
-    } catch { /* TODO: surface error */ }
-  }
-
-  // ── Pricing ───────────────────────────────────────────────────────────────
-
-  private async loadPricing(): Promise<void> {
-    const tpId = this.tpId;
-    if (!tpId || !this.skuId) return;
-    this.loadingPricing.set(true);
-    try {
-      this.pricing.set(await this.service.listPricing(tpId, this.skuId));
-    } catch { /* handled inline */ }
-    finally { this.loadingPricing.set(false); }
-  }
-
-  async addPricingRow(): Promise<void> {
-    const tpId = this.tpId;
-    if (!tpId || !this.skuId) return;
-    const form = this.pricingForm();
-    this.savingPricing.set(true);
-    try {
-      const created = await this.service.addPricing(tpId, {
-        skuId: this.skuId,
-        channelId: null, marketId: null,
-        currencyCd: form.currencyCd,
-        priceAmount: form.priceAmount,
-        compareAmount: form.compareAmount,
-        effectiveFrom: null, effectiveTo: null,
-        isActive: form.isActive,
-      });
-      this.pricing.update(list => [...list, created]);
-      this.pricingForm.set({ currencyCd: 'USD', priceAmount: 0, compareAmount: null, isActive: 'Y' });
-    } catch { /* TODO: surface error */ }
-    finally { this.savingPricing.set(false); }
-  }
-
-  async deletePricingRow(p: ProductPricing): Promise<void> {
-    const tpId = this.tpId;
-    if (!tpId) return;
-    try {
-      await this.service.deletePricing(tpId, p.priceId);
-      this.pricing.update(list => list.filter(r => r.priceId !== p.priceId));
     } catch { /* TODO: surface error */ }
   }
 

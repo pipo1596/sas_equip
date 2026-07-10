@@ -152,6 +152,7 @@ export interface ProductOption {
   tpId: number;
   optName: string;
   optValue: string;
+  optDescr?: string | null;
   sortOrder: number;
   createdTs?: string;
 }

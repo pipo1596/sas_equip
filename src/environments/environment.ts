@@ -11,6 +11,7 @@ export const environment = {
     tpSettings: 'APITPSTNGS',
     tpUsers: 'APITPUSERS',
     products: 'APIPRODUCT',
+    productOptions: 'APIOPTIONS',
     productSkus: 'APISKUS',
     brands: 'APIBRANDS',
     categories: 'APICATEGS',

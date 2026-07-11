@@ -39,6 +39,12 @@ input[type="radio"].form-check-input {
   cursor: not-allowed;
 }
 
+/* Lighter placeholder text */
+::placeholder {
+  color: #b0b7c3 !important;
+  opacity: 1 !important;
+}
+
 /* Form control overrides */
 .biginputs .form-control,.biginputs .form-select {
   border: 1px solid #cbd5e1;

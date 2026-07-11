@@ -153,6 +153,7 @@ export interface ProductOption {
   optName: string;
   optValue: string;
   optDescr?: string | null;
+  optColor?: string | null;
   sortOrder: number;
   createdTs?: string;
 }

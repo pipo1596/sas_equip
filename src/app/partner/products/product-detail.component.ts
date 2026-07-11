@@ -7,6 +7,7 @@ import type { ContentChange } from 'ngx-quill';
 import { PartnerModeService } from '../partner-mode.service';
 import { ImageUploadService } from '../../shared/image-upload.service';
 import { ProductsService } from './products.service';
+import { ProductOptionsService } from './product-options.service';
 import { ProductImagesService } from './product-images.service';
 import { ProductSkusService } from './product-skus.service';
 import { BrandsService } from '../brands/brands.service';
@@ -15,10 +16,10 @@ import { Brand } from '../brands/brand.model';
 import { Category } from '../categories/category.model';
 import {
   Product, ProductForm, ProductSku,
-  ProductImage, ProductAttribute, ProductXref,
+  ProductImage, ProductAttribute,
 } from './product.model';
 
-export type ProductTab = 'overview' | 'skus' | 'options' | 'images' | 'categories' | 'attributes' | 'xrefs';
+export type ProductTab = 'overview' | 'skus' | 'options' | 'images' | 'categories' | 'attributes';
 
 @Component({
   selector: 'app-product-detail',
@@ -29,6 +30,7 @@ export type ProductTab = 'overview' | 'skus' | 'options' | 'images' | 'categorie
 export class ProductDetailComponent implements OnInit {
   protected readonly partnerMode = inject(PartnerModeService);
   private readonly service = inject(ProductsService);
+  private readonly optionsService = inject(ProductOptionsService);
   private readonly skusService = inject(ProductSkusService);
   private readonly brandsService = inject(BrandsService);
   private readonly categoriesService = inject(CategoriesService);
@@ -111,12 +113,12 @@ export class ProductDetailComponent implements OnInit {
 
   // ── Options ───────────────────────────────────────────────────────────────
   readonly optionValueSortOrders = Array.from({ length: 50 }, (_, i) => i + 1);
-  readonly productOptions = signal<Array<{name: string; values: Array<{val: string; desc: string; sortOrder: number}>; pendingInput: string; showValues: boolean}>>([]);
+  readonly productOptions = signal<Array<{name: string; values: Array<{optId?: number; val: string; desc: string; color: string; sortOrder: number}>; pendingInput: string; showValues: boolean}>>([]);
   readonly loadingOptions = signal(false);
   readonly savingProductOptions = signal(false);
+  readonly saveOptionsMessage = signal<{ text: string; ok: boolean } | null>(null);
   readonly expandedGroupIndex = signal<number | null>(null);
   readonly optionNames = ['SIZE', 'COLOR', 'WIDTH', 'FIT', 'MATERIAL', 'INSEAM', 'STYLE', 'LENGTH'];
-  private skuOptionsSnapshot: Record<number, Array<{optName: string; optValue: string; optDescr?: string; sortOrder: number}>> = {};
 
   // ── Images ────────────────────────────────────────────────────────────────
   readonly images = signal<ProductImage[]>([]);
@@ -148,11 +150,6 @@ export class ProductDetailComponent implements OnInit {
   readonly attrForm = signal({ attrKey: '', attrValue: '', attrType: 'TEXT' as ProductAttribute['attrType'], isVisible: 'Y' as 'Y' | 'N', isSearchable: 'N' as 'Y' | 'N' });
   readonly savingAttr = signal(false);
 
-  // ── Cross-refs ────────────────────────────────────────────────────────────
-  readonly xrefs = signal<ProductXref[]>([]);
-  readonly loadingXrefs = signal(false);
-  readonly xrefForm = signal({ platformCd: '', extProductId: '', extSkuId: '', extUrl: '' });
-  readonly savingXref = signal(false);
 
   readonly thumbnail = computed(() =>
     this.images().find(i => i.imageType === 'thumbnail') ?? this.images()[0] ?? null
@@ -258,7 +255,6 @@ export class ProductDetailComponent implements OnInit {
       case 'images':     this.loadImages(); break;
       case 'categories': this.loadCategoriesTab(); break;
       case 'attributes': this.loadAttributes(); break;
-      case 'xrefs':      this.loadXrefs(); break;
     }
   }
 
@@ -342,33 +338,24 @@ export class ProductDetailComponent implements OnInit {
     const id = this.productPk();
     if (!tpId || !id) return;
     this.loadingOptions.set(true);
-    if (this.skus().length === 0) {
-      try { this.skus.set(await this.skusService.list(tpId, id)); } catch { /* ok */ }
-    }
-    const groups = new Map<string, Map<string, string>>();
-    const snapshot: typeof this.skuOptionsSnapshot = {};
-    for (const sku of this.skus()) {
-      try {
-        const opts = await this.skusService.listOptions(tpId, sku.skuId);
-        snapshot[sku.skuId] = opts.map(o => ({ optName: o.optName, optValue: o.optValue, optDescr: o.optDescr ?? undefined, sortOrder: o.sortOrder }));
-        for (const opt of opts) {
-          if (!groups.has(opt.optName)) groups.set(opt.optName, new Map());
-          const v = opt.optValue?.trim();
-          if (v && !groups.get(opt.optName)!.has(v))
-            groups.get(opt.optName)!.set(v, opt.optDescr ?? v);
-        }
-      } catch {
-        snapshot[sku.skuId] = [];
+    this.expandedGroupIndex.set(null);
+    try {
+      const opts = await this.optionsService.list(tpId, id);
+      const groups = new Map<string, Map<string, { optId?: number; desc: string; color: string; sortOrder: number }>>();
+      for (const opt of opts) {
+        if (!groups.has(opt.optName)) groups.set(opt.optName, new Map());
+        const v = opt.optValue?.trim();
+        if (v && !groups.get(opt.optName)!.has(v))
+          groups.get(opt.optName)!.set(v, { optId: opt.optId, desc: opt.optDescr ?? v, color: opt.optColor ?? '', sortOrder: opt.sortOrder });
       }
-    }
-    this.skuOptionsSnapshot = snapshot;
-    this.productOptions.set([...groups.entries()].map(([name, valMap]) => ({
-      name,
-      values: [...valMap.entries()].map(([val, desc], i) => ({ val, desc, sortOrder: i + 1 })),
-      pendingInput: '',
-      showValues: valMap.size > 0,
-    })));
-    this.loadingOptions.set(false);
+      this.productOptions.set([...groups.entries()].map(([name, valMap]) => ({
+        name,
+        values: [...valMap.entries()].map(([val, { optId, desc, color, sortOrder }]) => ({ optId, val, desc, color, sortOrder })),
+        pendingInput: '',
+        showValues: valMap.size > 0,
+      })));
+    } catch { /* handled inline */ }
+    finally { this.loadingOptions.set(false); }
   }
 
   addOptionGroup(): void {
@@ -379,7 +366,7 @@ export class ProductDetailComponent implements OnInit {
   showGroupValues(index: number): void {
     this.productOptions.update(list => list.map((g, i) =>
       i === index
-        ? { ...g, showValues: true, values: g.values.length === 0 ? [{ val: '', desc: '', sortOrder: 1 }] : g.values }
+        ? { ...g, showValues: true, values: g.values.length === 0 ? [{ optId: undefined, val: '', desc: '', color: '', sortOrder: 1 }] : g.values }
         : g
     ));
   }
@@ -399,7 +386,7 @@ export class ProductDetailComponent implements OnInit {
     ));
   }
 
-  updateOptionValue(groupIndex: number, valueIndex: number, field: 'val' | 'desc', value: string): void {
+  updateOptionValue(groupIndex: number, valueIndex: number, field: 'val' | 'desc' | 'color', value: string): void {
     this.productOptions.update(list => list.map((g, i) => {
       if (i !== groupIndex) return g;
       return {
@@ -418,7 +405,7 @@ export class ProductDetailComponent implements OnInit {
     this.productOptions.update(list => list.map((g, i) => {
       if (i !== groupIndex) return g;
       const nextSort = g.values.reduce((max, v) => Math.max(max, v.sortOrder), 0) + 1;
-      return { ...g, values: [...g.values, { val: '', desc: '', sortOrder: nextSort }] };
+      return { ...g, values: [...g.values, { optId: undefined, val: '', desc: '', color: '', sortOrder: nextSort }] };
     }));
   }
 
@@ -438,20 +425,23 @@ export class ProductDetailComponent implements OnInit {
 
   async saveProductOptions(): Promise<void> {
     const tpId = this.tpId;
-    if (!tpId) return;
+    const id = this.productPk();
+    if (!tpId || !id) return;
     this.savingProductOptions.set(true);
-    const groups = this.productOptions().filter(g => g.name.trim());
-    for (const sku of this.skus()) {
-      const existing = this.skuOptionsSnapshot[sku.skuId] ?? [];
-      const newOpts = groups.map((g, idx) => {
-        const cur = existing.find(o => o.optName === g.name);
-        const optValue = cur?.optValue ?? '';
-        const descMap = new Map(g.values.map(v => [v.val, v.desc]));
-        return { optName: g.name, optValue, optDescr: descMap.get(optValue) ?? '', sortOrder: idx };
-      });
-      try { await this.skusService.saveOptions(tpId, sku.skuId, newOpts); } catch { /* ok */ }
+    const options = this.productOptions()
+      .filter(g => g.name.trim())
+      .flatMap(g => g.values.map(v => ({ optId: v.optId, optName: g.name, optValue: v.val, optDescr: v.desc, optColor: v.color || null, sortOrder: v.sortOrder })));
+    this.saveOptionsMessage.set(null);
+    try {
+      const msg = await this.optionsService.save(tpId, id, options);
+      this.saveOptionsMessage.set({ text: msg, ok: true });
+      this.expandedGroupIndex.set(null);
+      setTimeout(() => this.saveOptionsMessage.set(null), 4000);
+    } catch (err) {
+      this.saveOptionsMessage.set({ text: err instanceof Error ? err.message : 'Save failed.', ok: false });
+    } finally {
+      this.savingProductOptions.set(false);
     }
-    this.savingProductOptions.set(false);
   }
 
   // ── Images ────────────────────────────────────────────────────────────────
@@ -658,48 +648,6 @@ export class ProductDetailComponent implements OnInit {
     try {
       await this.service.deleteAttribute(tpId, attr.attrId);
       this.attributes.update(list => list.filter(a => a.attrId !== attr.attrId));
-    } catch { /* TODO: surface error */ }
-  }
-
-  // ── Cross-refs ────────────────────────────────────────────────────────────
-
-  private async loadXrefs(): Promise<void> {
-    const tpId = this.tpId;
-    const id = this.productPk();
-    if (!tpId || !id) return;
-    this.loadingXrefs.set(true);
-    try {
-      this.xrefs.set(await this.service.listXrefs(tpId, id));
-    } catch { /* handled inline */ }
-    finally { this.loadingXrefs.set(false); }
-  }
-
-  async addXref(): Promise<void> {
-    const tpId = this.tpId;
-    const id = this.productPk();
-    const form = this.xrefForm();
-    if (!tpId || !id || !form.platformCd.trim()) return;
-    this.savingXref.set(true);
-    try {
-      const created = await this.service.addXref(tpId, id, {
-        platformCd: form.platformCd,
-        extProductId: form.extProductId || null,
-        extSkuId: form.extSkuId || null,
-        extUrl: form.extUrl || null,
-        skuId: null,
-      });
-      this.xrefs.update(list => [...list, created]);
-      this.xrefForm.set({ platformCd: '', extProductId: '', extSkuId: '', extUrl: '' });
-    } catch { /* TODO: surface error */ }
-    finally { this.savingXref.set(false); }
-  }
-
-  async deleteXref(xref: ProductXref): Promise<void> {
-    const tpId = this.tpId;
-    if (!tpId) return;
-    try {
-      await this.service.deleteXref(tpId, xref.xrefId);
-      this.xrefs.update(list => list.filter(x => x.xrefId !== xref.xrefId));
     } catch { /* TODO: surface error */ }
   }
 

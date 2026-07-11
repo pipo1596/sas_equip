@@ -43,8 +43,7 @@
       {id:'skus', label:'SKUs', icon:'bi-upc-scan'},
       {id:'images', label:'Images', icon:'bi-images'},
       {id:'categories', label:'Categories', icon:'bi-folder2'},
-      {id:'attributes', label:'Attributes', icon:'bi-tags'},
-      {id:'xrefs', label:'Cross-refs', icon:'bi-link-45deg'}
+      {id:'attributes', label:'Attributes', icon:'bi-tags'}
     ]); track tab.id) {
       <li class="nav-item">
         <button
@@ -477,13 +476,14 @@
                     <span style="width:1rem; flex-shrink:0;"></span>
                     <span class="small fw-semibold text-muted flex-grow-1">Value</span>
                     <span class="small fw-semibold text-muted flex-grow-1 ps-5">Description</span>
+                    <span class="small fw-semibold text-muted ps-2" style="width:130px; flex-shrink:0;">Swatch Color</span>
                     <span class="small fw-semibold text-muted ps-2" style="width:80px; flex-shrink:0;">Sort</span>
                     <span style="width:1.25rem; flex-shrink:0;"></span>
                   </div>
 
                   @for (v of group.values; track $index; let vi = $index) {
                     <div class="d-flex align-items-center gap-2 mb-2">
-                      <i class="bi bi-grip-vertical text-muted flex-shrink-0" style="cursor:grab; font-size:1rem;"></i>
+                      <i class="bi bi-grip-vertical text-muted flex-shrink-0" style="font-size:1.25rem; line-height:1;"></i>
                       <input type="text" class="form-control"
                              [ngModel]="v.val"
                              (ngModelChange)="updateOptionValue(gi, vi, 'val', $event)"
@@ -492,6 +492,28 @@
                              [ngModel]="v.desc"
                              (ngModelChange)="updateOptionValue(gi, vi, 'desc', $event)"
                              placeholder="Description (optional)" />
+                      <!-- Color swatch picker -->
+                      <div class="d-flex align-items-center gap-1 flex-shrink-0" style="width:130px;">
+                        <input type="color" class="form-control form-control-color p-0 flex-shrink-0"
+                               style="width:32px; height:32px; cursor:pointer;"
+                               [ngModel]="v.color || '#ffffff'"
+                               (ngModelChange)="updateOptionValue(gi, vi, 'color', $event)"
+                               title="Swatch color" />
+                        <input type="text" class="form-control form-control-sm font-monospace"
+                               style="min-width:0;"
+                               [ngModel]="v.color"
+                               (ngModelChange)="updateOptionValue(gi, vi, 'color', $event)"
+                               placeholder="#rrggbb or red"
+                               maxlength="7" />
+                        @if (v.color) {
+                          <button type="button" class="btn btn-link p-0 text-muted flex-shrink-0"
+                                  style="font-size:0.65rem;"
+                                  (click)="updateOptionValue(gi, vi, 'color', '')"
+                                  title="Clear color">
+                            <i class="bi bi-x-lg"></i>
+                          </button>
+                        }
+                      </div>
                       <select class="form-select" style="width:80px; flex-shrink:0;"
                               [ngModel]="v.sortOrder"
                               (ngModelChange)="updateOptionSortOrder(gi, vi, +$event)">
@@ -529,14 +551,19 @@
               <!-- ── Collapsed view ── -->
               <div class="d-flex align-items-center gap-3 px-4 py-3 border-bottom"
                    style="cursor:pointer;" (click)="expandedGroupIndex.set(gi)">
-                <i class="bi bi-grip-vertical text-muted flex-shrink-0" style="font-size:1rem; cursor:grab;" (click)="$event.stopPropagation()"></i>
+                <i class="bi bi-grip-vertical text-muted flex-shrink-0" style="font-size:1.25rem; line-height:1;" (click)="$event.stopPropagation()"></i>
                 <div class="flex-grow-1">
                   <div class="fw-semibold small text-uppercase mb-1" style="letter-spacing:.05em;">{{ group.name || '(unnamed)' }}</div>
                   <div class="d-flex flex-wrap gap-1">
                     @for (v of group.values; track $index) {
                       @if (v.val.trim()) {
-                        <span class="badge rounded-1"
+                        <span class="badge rounded-1 d-inline-flex align-items-center gap-1"
                               style="background:#f1f5f9; color:#334155; font-weight:500; font-size:0.8rem; border:1px solid #e2e8f0; padding:0.7rem 0.65rem;">
+                          @if (v.color) {
+                            <span class="rounded-circle flex-shrink-0"
+                                  [style.background]="v.color"
+                                  style="width:10px; height:10px; border:1px solid rgba(0,0,0,.15); display:inline-block;"></span>
+                          }
                           {{ v.val }}
                         </span>
                       }
@@ -553,15 +580,24 @@
             <button class="btn btn-link p-0 text-muted small text-decoration-none" (click)="addOptionGroup()">
               <i class="bi bi-plus-circle me-1"></i>Add another option
             </button>
-            @if (productOptions().length > 0) {
-              <button class="btn btn-dark btn-sm" (click)="saveProductOptions()" [disabled]="savingProductOptions()">
+            <div class="d-flex align-items-center gap-2">
+              @if (saveOptionsMessage(); as msg) {
+                <div class="alert mb-0 py-2 px-3 d-flex align-items-center gap-2"
+                     [class.alert-success]="msg.ok"
+                     [class.alert-danger]="!msg.ok"
+                     role="alert">
+                  <i class="bi" [class.bi-patch-check-fill]="msg.ok" [class.bi-exclamation-triangle-fill]="!msg.ok"></i>
+                  <span>{{ msg.text }}</span>
+                </div>
+              }
+              <button class="btn btn-dark" (click)="saveProductOptions()" [disabled]="savingProductOptions()">
                 @if (savingProductOptions()) {
                   <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>Saving…
                 } @else {
                   <i class="bi bi-check-lg me-1"></i>Save Options
                 }
               </button>
-            }
+            </div>
           </div>
         }
       </div>
@@ -783,91 +819,6 @@
       }
     }
 
-    <!-- ── Cross-refs ── -->
-    @if (activeTab() === 'xrefs') {
-      <div class="d-flex align-items-center justify-content-between mb-3">
-        <h6 class="fw-semibold mb-0">Platform Cross-References</h6>
-      </div>
-
-      <!-- Add xref form -->
-      <div class="card mb-4">
-        <div class="card-body">
-          <h6 class="card-title fw-semibold mb-3 small text-muted text-uppercase">Link to External Platform</h6>
-          <div class="row g-2 align-items-end">
-            <div class="col-12 col-sm-3">
-              <label class="form-label small">Platform</label>
-              <input type="text" class="form-control form-control-sm" placeholder="SHOPIFY, WOO…"
-                     [ngModel]="xrefForm().platformCd" (ngModelChange)="xrefForm.update(f => ({...f, platformCd: $event}))" />
-            </div>
-            <div class="col-12 col-sm-3">
-              <label class="form-label small">External Product ID</label>
-              <input type="text" class="form-control form-control-sm"
-                     [ngModel]="xrefForm().extProductId" (ngModelChange)="xrefForm.update(f => ({...f, extProductId: $event}))" />
-            </div>
-            <div class="col-12 col-sm-3">
-              <label class="form-label small">External URL</label>
-              <input type="text" class="form-control form-control-sm"
-                     [ngModel]="xrefForm().extUrl" (ngModelChange)="xrefForm.update(f => ({...f, extUrl: $event}))" />
-            </div>
-            <div class="col-12 col-sm-3">
-              <button class="btn btn-dark btn-sm w-100" (click)="addXref()" [disabled]="savingXref() || !xrefForm().platformCd.trim()">
-                @if (savingXref()) {
-                  <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
-                } @else {
-                  <i class="bi bi-plus-lg me-1"></i>
-                }
-                Add Link
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      @if (loadingXrefs()) {
-        <div class="text-center py-4 text-muted">
-          <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>Loading…
-        </div>
-      } @else if (xrefs().length === 0) {
-        <div class="text-center py-4 text-muted">
-          <i class="bi bi-link-45deg me-2"></i>No external links yet.
-        </div>
-      } @else {
-        <div class="table-responsive">
-          <table class="table table-hover align-middle mb-0 table-stacked">
-            <thead>
-              <tr>
-                <th>Platform</th>
-                <th>External Product ID</th>
-                <th>External URL</th>
-                <th class="text-center">Sync Status</th>
-                <th class="text-center">Last Sync</th>
-                <th class="text-end">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (xref of xrefs(); track xref.xrefId) {
-                <tr>
-                  <td><span class="badge bg-light text-dark border">{{ xref.platformCd }}</span></td>
-                  <td><span class="font-monospace small">{{ xref.extProductId || '—' }}</span></td>
-                  <td>
-                    @if (xref.extUrl) {
-                      <a [href]="xref.extUrl" target="_blank" class="small text-truncate d-inline-block" style="max-width:200px;">{{ xref.extUrl }}</a>
-                    } @else { — }
-                  </td>
-                  <td class="text-center">
-                    <span class="badge bg-light text-dark border small">{{ xref.syncStatus || '—' }}</span>
-                  </td>
-                  <td class="text-center small text-muted">{{ xref.lastSyncTs || '—' }}</td>
-                  <td class="text-end">
-                    <button class="btn btn-sm btn-outline-danger m-1 px-3" (click)="deleteXref(xref)"><i class="bi bi-trash"></i></button>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      }
-    }
 
     } <!-- end @else loadingProduct -->
 

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import {
   Product, ProductForm, ProductsPage,
-  ProductImage, ProductAttribute, ProductCategoryAssignment, ProductXref,
+  ProductOption, ProductImage, ProductAttribute, ProductCategoryAssignment, ProductXref,
 } from './product.model';
 
 @Injectable({ providedIn: 'root' })
@@ -72,6 +72,17 @@ export class ProductsService {
 
   async remove(tpId: number, productPk: number): Promise<void> {
     await this.post({ action: '*DELETE', tpId, productPk });
+  }
+
+  // ── Options ───────────────────────────────────────────────────────────────
+
+  async listOptions(tpId: number, productPk: number): Promise<ProductOption[]> {
+    const data = await this.post({ action: '*LIST_OPTS', tpId, productPk });
+    return (data['data'] as unknown as ProductOption[]) ?? [];
+  }
+
+  async saveOptions(tpId: number, productPk: number, options: Array<{ optName: string; optValue: string; optDescr?: string; optColor?: string | null; sortOrder: number }>): Promise<void> {
+    await this.post({ action: '*SAVE_OPTS', tpId, productPk, options });
   }
 
   // ── Images ────────────────────────────────────────────────────────────────

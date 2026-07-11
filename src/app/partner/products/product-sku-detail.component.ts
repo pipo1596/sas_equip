@@ -1,7 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { DecimalPipe } from '@angular/common';
 import { PartnerModeService } from '../partner-mode.service';
 import { ProductSkusService } from './product-skus.service';
 import { ProductImagesService } from './product-images.service';
@@ -16,7 +15,7 @@ export type SkuTab = 'details' | 'logistics' | 'inventory' | 'images';
 @Component({
   selector: 'app-product-sku-detail',
   standalone: true,
-  imports: [FormsModule, RouterModule, DecimalPipe],
+  imports: [FormsModule, RouterModule],
   templateUrl: './product-sku-detail.component.html',
 })
 export class ProductSkuDetailComponent implements OnInit {

@@ -15,7 +15,7 @@ import { CategoriesService } from '../categories/categories.service';
 import { Brand } from '../brands/brand.model';
 import { Category } from '../categories/category.model';
 import {
-  Product, ProductForm, ProductSku,
+  Product, ProductForm, ProductSku, ProductSkuForm,
   ProductImage, ProductAttribute,
 } from './product.model';
 
@@ -119,6 +119,10 @@ export class ProductDetailComponent implements OnInit {
   readonly saveOptionsMessage = signal<{ text: string; ok: boolean } | null>(null);
   readonly expandedGroupIndex = signal<number | null>(null);
   readonly optionNames = ['SIZE', 'COLOR', 'WIDTH', 'FIT', 'MATERIAL', 'INSEAM', 'STYLE', 'LENGTH'];
+  readonly generatedSkusState = signal<{ optionNames: string[]; rows: Array<{ skuCode: string; values: string[]; price: number | null; msrp: number | null; mapPrice: number | null; points: number | null }> } | null>(null);
+  readonly creatingGeneratedSkus = signal(false);
+  readonly createSkusMessage = signal<{ text: string; ok: boolean } | null>(null);
+  readonly skusBannerMessage = signal<{ text: string; ok: boolean } | null>(null);
 
   // ── Images ────────────────────────────────────────────────────────────────
   readonly images = signal<ProductImage[]>([]);
@@ -442,6 +446,94 @@ export class ProductDetailComponent implements OnInit {
     } finally {
       this.savingProductOptions.set(false);
     }
+  }
+
+  // ── Generate SKUs ─────────────────────────────────────────────────────────
+
+  generateSkus(): void {
+    const groups = this.productOptions()
+      .filter(g => g.name.trim() && g.values.some(v => v.val.trim()));
+    if (groups.length === 0 && !confirm('No options are set up. Generate a SKU with no option values?')) return;
+    const productId = this.product()?.productId ?? '';
+    const combos = groups.length === 0
+      ? [[]]
+      : groups.map(g => g.values.filter(v => v.val.trim()).map(v => v.val.trim()))
+          .reduce<string[][]>((acc, vals) => acc.flatMap(c => vals.map(v => [...c, v])), [[]]);
+    this.generatedSkusState.set({
+      optionNames: groups.map(g => g.name),
+      rows: combos.map(combo => ({
+        skuCode: [productId, ...combo].filter(Boolean).join('-').toUpperCase(),
+        values: combo,
+        price: null, msrp: null, mapPrice: null, points: null,
+      })),
+    });
+    this.createSkusMessage.set(null);
+  }
+
+  dismissGeneratedSkus(): void {
+    this.generatedSkusState.set(null);
+    this.createSkusMessage.set(null);
+  }
+
+  updateGeneratedSkuField(index: number, field: 'price' | 'msrp' | 'mapPrice' | 'points', value: string): void {
+    const state = this.generatedSkusState();
+    if (!state) return;
+    const parsed = value === '' ? null : parseFloat(value);
+    const num = parsed === null || isNaN(parsed) ? null : parsed;
+    this.generatedSkusState.set({
+      ...state,
+      rows: state.rows.map((r, i) => i === index ? { ...r, [field]: num } : r),
+    });
+  }
+
+  spreadField(field: 'price' | 'msrp' | 'mapPrice' | 'points'): void {
+    const state = this.generatedSkusState();
+    if (!state || state.rows.length === 0) return;
+    const val = state.rows[0][field];
+    this.generatedSkusState.set({
+      ...state,
+      rows: state.rows.map(r => ({ ...r, [field]: val })),
+    });
+  }
+
+  async createGeneratedSkus(): Promise<void> {
+    const tpId = this.tpId;
+    const id = this.productPk();
+    const state = this.generatedSkusState();
+    if (!tpId || !id || !state) return;
+    this.creatingGeneratedSkus.set(true);
+    this.createSkusMessage.set(null);
+    const base: ProductSkuForm = {
+      skuCode: '', upcEan: '', mfrSkuId: '', mfrPartNum: '', sku300: '',
+      basePrice: null, compareAtPrc: null, costPerItem: null,
+      msrp: null, mapPrice: null, points: null,
+      weight: null, weightUnit: 'LB',
+      height: null, length: null, width: null, dimensionUnit: 'in',
+      countryOfOrig: '', htsCode: '',
+      uom: 'EA', hazmatCode: '', restrictedSt: '', erpSkuCode: '',
+      requiresShip: 'Y', isTaxable: 'Y',
+      invTracker: '', invPolicy: 'deny',
+      fulfillSvc: '', variantImgUrl: '', isDefault: 'N',
+    };
+    let created = 0, failed = 0;
+    for (const row of state.rows) {
+      try {
+        await this.skusService.create(tpId, id, { ...base, skuCode: row.skuCode, basePrice: row.price, msrp: row.msrp, mapPrice: row.mapPrice, points: row.points });
+        created++;
+      } catch { failed++; }
+    }
+    this.createSkusMessage.set({
+      text: failed === 0
+        ? `${created} SKU${created !== 1 ? 's' : ''} created successfully.`
+        : `${created} created, ${failed} failed.`,
+      ok: failed === 0,
+    });
+    if (failed === 0) {
+      this.generatedSkusState.set(null);
+      this.skusBannerMessage.set({ text: `${created} SKU${created !== 1 ? 's' : ''} created successfully.`, ok: true });
+      setTimeout(() => this.skusBannerMessage.set(null), 5000);
+    }
+    this.creatingGeneratedSkus.set(false);
   }
 
   // ── Images ────────────────────────────────────────────────────────────────

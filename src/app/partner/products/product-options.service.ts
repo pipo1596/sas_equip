@@ -18,6 +18,7 @@ export class ProductOptionsService {
     optValue: string;
     optDescr?: string;
     optColor?: string | null;
+    optSwatchImg?: string | null;
     sortOrder: number;
   }>): Promise<string> {
     const data = await this.post({ action: '*SAVE_OPTS', tpId, productPk, options });

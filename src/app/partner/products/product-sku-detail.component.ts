@@ -7,7 +7,7 @@ import { ProductImagesService } from './product-images.service';
 import { ImageUploadService } from '../../shared/image-upload.service';
 import {
   ProductSku, ProductSkuForm, Product,
-  ProductInventory, ProductImage,
+  ProductInventory, ProductImage, ProductOption,
 } from './product.model';
 
 export type SkuTab = 'details' | 'logistics' | 'inventory' | 'images';
@@ -55,6 +55,9 @@ export class ProductSkuDetailComponent implements OnInit {
     invTracker: '', invPolicy: 'deny',
     fulfillSvc: '', variantImgUrl: '', isDefault: 'N',
   };
+
+  // SKU options (read-only display)
+  readonly skuOptions = signal<ProductOption[]>([]);
 
   // Inventory
   readonly inventory = signal<ProductInventory[]>([]);
@@ -141,6 +144,7 @@ export class ProductSkuDetailComponent implements OnInit {
       variantImgUrl: sku.variantImgUrl ?? '',
       isDefault:     sku.isDefault,
     };
+    this.skuOptions.set(sku.options ?? []);
   }
 
   setTab(tab: SkuTab): void {

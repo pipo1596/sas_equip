@@ -147,6 +147,27 @@
         </div>
 
         <div class="col-12 col-lg-4">
+          @if (skuOptions().length > 0) {
+            <div class="card mb-4">
+              <div class="card-body">
+                <h6 class="card-title fw-semibold mb-3">Options</h6>
+                <div class="d-flex flex-wrap gap-2">
+                  @for (opt of skuOptions(); track opt.optId ?? $index) {
+                    <span class="badge rounded-1 d-inline-flex align-items-center gap-1"
+                          style="background:#f1f5f9; color:#334155; font-weight:500; font-size:0.8rem; border:1px solid #e2e8f0; padding:0.5rem 0.65rem;">
+                      <span class="text-muted" style="font-weight:400;">{{ opt.optName }}:</span>
+                      @if (opt.optSwatchImg || opt.optColor) {
+                        <span class="rounded-circle flex-shrink-0"
+                              [style.background]="opt.optSwatchImg ? 'url(' + opt.optSwatchImg + ') center/cover' : opt.optColor"
+                              style="width:10px; height:10px; border:1px solid rgba(0,0,0,.15); display:inline-block;"></span>
+                      }
+                      {{ opt.optValue }}
+                    </span>
+                  }
+                </div>
+              </div>
+            </div>
+          }
           <div class="card mb-4">
             <div class="card-body">
               <h6 class="card-title fw-semibold mb-3">Flags</h6>

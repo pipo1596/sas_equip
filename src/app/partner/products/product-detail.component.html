@@ -441,9 +441,11 @@
                 <span class="small">{{ msg.text }}</span>
               </div>
             }
-            <button class="btn btn-outline-secondary btn-sm" (click)="generateSkus()">
-              <i class="bi bi-grid-3x3-gap me-1"></i>Generate SKUs
-            </button>
+            @if (expandedGroupIndex() === null) {
+              <button class="btn btn-outline-secondary btn-sm" (click)="generateSkus()">
+                <i class="bi bi-grid-3x3-gap me-1"></i>Generate SKUs
+              </button>
+            }
           </div>
         </div>
 
@@ -488,7 +490,7 @@
                     <span style="width:1rem; flex-shrink:0;"></span>
                     <span class="small fw-semibold text-muted flex-grow-1">Value</span>
                     <span class="small fw-semibold text-muted flex-grow-1 ps-5">Description</span>
-                    <span class="small fw-semibold text-muted ps-2" style="width:130px; flex-shrink:0;">Swatch Color</span>
+                    <span class="small fw-semibold text-muted ps-2" style="width:160px; flex-shrink:0;">Swatch</span>
                     <span class="small fw-semibold text-muted ps-2" style="width:80px; flex-shrink:0;">Sort</span>
                     <span style="width:1.25rem; flex-shrink:0;"></span>
                   </div>
@@ -504,26 +506,53 @@
                              [ngModel]="v.desc"
                              (ngModelChange)="updateOptionValue(gi, vi, 'desc', $event)"
                              placeholder="Description (optional)" />
-                      <!-- Color swatch picker -->
-                      <div class="d-flex align-items-center gap-1 flex-shrink-0" style="width:130px;">
-                        <input type="color" class="form-control form-control-color p-0 flex-shrink-0"
-                               style="width:32px; height:32px; cursor:pointer;"
-                               [ngModel]="v.color || '#ffffff'"
-                               (ngModelChange)="updateOptionValue(gi, vi, 'color', $event)"
-                               title="Swatch color" />
-                        <input type="text" class="form-control form-control-sm font-monospace"
-                               style="min-width:0;"
-                               [ngModel]="v.color"
-                               (ngModelChange)="updateOptionValue(gi, vi, 'color', $event)"
-                               placeholder="#rrggbb or red"
-                               maxlength="7" />
-                        @if (v.color) {
+                      <!-- Swatch: image OR color -->
+                      <div class="d-flex align-items-center gap-1 flex-shrink-0" style="width:160px;">
+                        @if (v.swatchImg) {
+                          <!-- Image as background swatch -->
+                          <span class="flex-shrink-0"
+                                [style.background]="'url(' + v.swatchImg + ') center/cover'"
+                                style="width:32px; height:32px; border-radius:4px; border:1px solid #dee2e6; display:inline-block;"></span>
                           <button type="button" class="btn btn-link p-0 text-muted flex-shrink-0"
-                                  style="font-size:0.65rem;"
-                                  (click)="updateOptionValue(gi, vi, 'color', '')"
-                                  title="Clear color">
+                                  style="font-size:0.75rem;"
+                                  (click)="updateOptionValue(gi, vi, 'swatchImg', '')"
+                                  title="Remove image">
                             <i class="bi bi-x-lg"></i>
                           </button>
+                        } @else {
+                          <!-- Color picker + upload trigger -->
+                          <input type="color" class="form-control form-control-color p-0 flex-shrink-0"
+                                 style="width:32px; height:32px; cursor:pointer;"
+                                 [ngModel]="v.color || '#ffffff'"
+                                 (ngModelChange)="updateOptionValue(gi, vi, 'color', $event)"
+                                 title="Swatch color" />
+                          <input type="text" class="form-control form-control-sm font-monospace"
+                                 style="min-width:0;"
+                                 [ngModel]="v.color"
+                                 (ngModelChange)="updateOptionValue(gi, vi, 'color', $event)"
+                                 placeholder="#rrggbb"
+                                 maxlength="7" />
+                          @if (v.color) {
+                            <button type="button" class="btn btn-link p-0 text-muted flex-shrink-0"
+                                    style="font-size:0.65rem;"
+                                    (click)="updateOptionValue(gi, vi, 'color', '')"
+                                    title="Clear color">
+                              <i class="bi bi-x-lg"></i>
+                            </button>
+                          }
+                          <!-- Upload image -->
+                          <label class="d-flex align-items-center justify-content-center flex-shrink-0"
+                                 style="width:24px; height:24px; cursor:pointer; color:#6c757d;"
+                                 title="Upload swatch image">
+                            @if (uploadingSwatchIdx() === gi + '-' + vi) {
+                              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                            } @else {
+                              <i class="bi bi-plus-circle" style="font-size:1rem;"></i>
+                            }
+                            <input type="file" accept="image/*" class="d-none"
+                                   (change)="uploadSwatchImage(gi, vi, $event)"
+                                   [disabled]="uploadingSwatchIdx() !== null" />
+                          </label>
                         }
                       </div>
                       <select class="form-select" style="width:80px; flex-shrink:0;"
@@ -571,9 +600,9 @@
                       @if (v.val.trim()) {
                         <span class="badge rounded-1 d-inline-flex align-items-center gap-1"
                               style="background:#f1f5f9; color:#334155; font-weight:500; font-size:0.8rem; border:1px solid #e2e8f0; padding:0.7rem 0.65rem;">
-                          @if (v.color) {
+                          @if (v.swatchImg || v.color) {
                             <span class="rounded-circle flex-shrink-0"
-                                  [style.background]="v.color"
+                                  [style.background]="v.swatchImg ? 'url(' + v.swatchImg + ') center/cover' : v.color"
                                   style="width:10px; height:10px; border:1px solid rgba(0,0,0,.15); display:inline-block;"></span>
                           }
                           {{ v.val }}
@@ -590,9 +619,13 @@
           <!-- Footer -->
           <div class="d-flex align-items-center justify-content-between px-4 py-3">
             <div class="d-flex align-items-center gap-2">
-              <button class="btn btn-link p-0 text-muted small text-decoration-none" (click)="addOptionGroup()">
-                <i class="bi bi-plus-circle me-1"></i>Add another option
-              </button>
+              @if (productOptions().length < 4) {
+                <button class="btn btn-link p-0 text-muted small text-decoration-none" (click)="addOptionGroup()">
+                  <i class="bi bi-plus-circle me-1"></i>Add another option
+                </button>
+              } @else {
+                <span class="small text-muted">Maximum of 4 options reached.</span>
+              }
             </div>
             <div class="d-flex align-items-center gap-2">
               @if (saveOptionsMessage(); as msg) {

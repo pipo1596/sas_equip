@@ -143,6 +143,7 @@ export interface ProductSkuForm {
   fulfillSvc: string;
   variantImgUrl: string;
   isDefault: 'Y' | 'N';
+  options?: Array<{ optId?: number; optName: string; optValue: string }>;
 }
 
 export interface ProductOption {
@@ -154,6 +155,7 @@ export interface ProductOption {
   optValue: string;
   optDescr?: string | null;
   optColor?: string | null;
+  optSwatchImg?: string | null;
   sortOrder: number;
   createdTs?: string;
 }

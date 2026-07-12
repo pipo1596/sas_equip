@@ -113,7 +113,8 @@ export class ProductDetailComponent implements OnInit {
 
   // ── Options ───────────────────────────────────────────────────────────────
   readonly optionValueSortOrders = Array.from({ length: 50 }, (_, i) => i + 1);
-  readonly productOptions = signal<Array<{name: string; values: Array<{optId?: number; val: string; desc: string; color: string; sortOrder: number}>; pendingInput: string; showValues: boolean}>>([]);
+  readonly productOptions = signal<Array<{name: string; values: Array<{optId?: number; val: string; desc: string; color: string; swatchImg: string; sortOrder: number}>; pendingInput: string; showValues: boolean}>>([]);
+  readonly uploadingSwatchIdx = signal<string | null>(null);
   readonly loadingOptions = signal(false);
   readonly savingProductOptions = signal(false);
   readonly saveOptionsMessage = signal<{ text: string; ok: boolean } | null>(null);
@@ -345,16 +346,16 @@ export class ProductDetailComponent implements OnInit {
     this.expandedGroupIndex.set(null);
     try {
       const opts = await this.optionsService.list(tpId, id);
-      const groups = new Map<string, Map<string, { optId?: number; desc: string; color: string; sortOrder: number }>>();
+      const groups = new Map<string, Map<string, { optId?: number; desc: string; color: string; swatchImg: string; sortOrder: number }>>();
       for (const opt of opts) {
         if (!groups.has(opt.optName)) groups.set(opt.optName, new Map());
         const v = opt.optValue?.trim();
         if (v && !groups.get(opt.optName)!.has(v))
-          groups.get(opt.optName)!.set(v, { optId: opt.optId, desc: opt.optDescr ?? v, color: opt.optColor ?? '', sortOrder: opt.sortOrder });
+          groups.get(opt.optName)!.set(v, { optId: opt.optId, desc: opt.optDescr ?? v, color: opt.optColor ?? '', swatchImg: opt.optSwatchImg ?? '', sortOrder: opt.sortOrder });
       }
       this.productOptions.set([...groups.entries()].map(([name, valMap]) => ({
         name,
-        values: [...valMap.entries()].map(([val, { optId, desc, color, sortOrder }]) => ({ optId, val, desc, color, sortOrder })),
+        values: [...valMap.entries()].map(([val, { optId, desc, color, swatchImg, sortOrder }]) => ({ optId, val, desc, color, swatchImg, sortOrder })),
         pendingInput: '',
         showValues: valMap.size > 0,
       })));
@@ -370,7 +371,7 @@ export class ProductDetailComponent implements OnInit {
   showGroupValues(index: number): void {
     this.productOptions.update(list => list.map((g, i) =>
       i === index
-        ? { ...g, showValues: true, values: g.values.length === 0 ? [{ optId: undefined, val: '', desc: '', color: '', sortOrder: 1 }] : g.values }
+        ? { ...g, showValues: true, values: g.values.length === 0 ? [{ optId: undefined, val: '', desc: '', color: '', swatchImg: '', sortOrder: 1 }] : g.values }
         : g
     ));
   }
@@ -390,7 +391,7 @@ export class ProductDetailComponent implements OnInit {
     ));
   }
 
-  updateOptionValue(groupIndex: number, valueIndex: number, field: 'val' | 'desc' | 'color', value: string): void {
+  updateOptionValue(groupIndex: number, valueIndex: number, field: 'val' | 'desc' | 'color' | 'swatchImg', value: string): void {
     this.productOptions.update(list => list.map((g, i) => {
       if (i !== groupIndex) return g;
       return {
@@ -399,17 +400,34 @@ export class ProductDetailComponent implements OnInit {
           if (vi !== valueIndex) return v;
           const updated = { ...v, [field]: value };
           if (field === 'val' && (v.desc === '' || v.desc === v.val)) updated.desc = value;
+          if (field === 'color' && value) updated.swatchImg = '';
+          if (field === 'swatchImg' && value) updated.color = '';
           return updated;
         }),
       };
     }));
   }
 
+  async uploadSwatchImage(groupIndex: number, valueIndex: number, event: Event): Promise<void> {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file || !this.tpId) return;
+    const key = `${groupIndex}-${valueIndex}`;
+    this.uploadingSwatchIdx.set(key);
+    try {
+      const url = await this.uploadService.upload('swatch', file, this.tpId, { folder: 'swatches' });
+      this.updateOptionValue(groupIndex, valueIndex, 'swatchImg', url);
+    } catch { /* silent — user can retry */ }
+    finally {
+      this.uploadingSwatchIdx.set(null);
+      (event.target as HTMLInputElement).value = '';
+    }
+  }
+
   addOptionValue(groupIndex: number): void {
     this.productOptions.update(list => list.map((g, i) => {
       if (i !== groupIndex) return g;
       const nextSort = g.values.reduce((max, v) => Math.max(max, v.sortOrder), 0) + 1;
-      return { ...g, values: [...g.values, { optId: undefined, val: '', desc: '', color: '', sortOrder: nextSort }] };
+      return { ...g, values: [...g.values, { optId: undefined, val: '', desc: '', color: '', swatchImg: '', sortOrder: nextSort }] };
     }));
   }
 
@@ -434,12 +452,12 @@ export class ProductDetailComponent implements OnInit {
     this.savingProductOptions.set(true);
     const options = this.productOptions()
       .filter(g => g.name.trim())
-      .flatMap(g => g.values.map(v => ({ optId: v.optId, optName: g.name, optValue: v.val, optDescr: v.desc, optColor: v.color || null, sortOrder: v.sortOrder })));
+      .flatMap(g => g.values.map(v => ({ optId: v.optId, optName: g.name, optValue: v.val, optDescr: v.desc, optColor: v.color || null, optSwatchImg: v.swatchImg || null, sortOrder: v.sortOrder })));
     this.saveOptionsMessage.set(null);
     try {
       const msg = await this.optionsService.save(tpId, id, options);
       this.saveOptionsMessage.set({ text: msg, ok: true });
-      this.expandedGroupIndex.set(null);
+      await this.loadOptionsTab();
       setTimeout(() => this.saveOptionsMessage.set(null), 4000);
     } catch (err) {
       this.saveOptionsMessage.set({ text: err instanceof Error ? err.message : 'Save failed.', ok: false });
@@ -515,10 +533,16 @@ export class ProductDetailComponent implements OnInit {
       invTracker: '', invPolicy: 'deny',
       fulfillSvc: '', variantImgUrl: '', isDefault: 'N',
     };
+    const optionGroups = this.productOptions();
     let created = 0, failed = 0;
     for (const row of state.rows) {
+      const options = row.values.map((val, i) => {
+        const group = optionGroups.find(g => g.name === state.optionNames[i]);
+        const match = group?.values.find(v => v.val === val);
+        return { optId: match?.optId, optName: state.optionNames[i], optValue: val };
+      });
       try {
-        await this.skusService.create(tpId, id, { ...base, skuCode: row.skuCode, basePrice: row.price, msrp: row.msrp, mapPrice: row.mapPrice, points: row.points });
+        await this.skusService.create(tpId, id, { ...base, skuCode: row.skuCode, basePrice: row.price, msrp: row.msrp, mapPrice: row.mapPrice, points: row.points, options });
         created++;
       } catch { failed++; }
     }

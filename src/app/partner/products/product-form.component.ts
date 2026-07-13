@@ -42,7 +42,7 @@ export class ProductFormComponent implements OnInit {
     tags: '', pageTitle: '', seoDescr: '',
     orderNote: '', techSpec: '', techSpecImg: '',
     taxCode: '', erpProdCode: '', mfrProdCode: '',
-    manufacturerId: '', supplierCode: '',
+    manufacturerId: '', supplierCode: '', gender: '',
   };
 
   protected get tpId(): number | undefined {
@@ -109,6 +109,7 @@ export class ProductFormComponent implements OnInit {
       mfrProdCode:   p.mfrProdCode ?? '',
       manufacturerId: p.manufacturerId ?? '',
       supplierCode:  p.supplierCode ?? '',
+      gender:        p.gender ?? '',
     };
   }
 

@@ -293,6 +293,22 @@
 
           <div class="card mb-4">
             <div class="card-body">
+              <h6 class="card-title fw-semibold mb-3">Gender</h6>
+              <select class="form-select" [(ngModel)]="overviewForm.gender">
+                <option value="">— Unspecified —</option>
+                <option value="MEN">Men</option>
+                <option value="WOMEN">Women</option>
+                <option value="UNISEX">Unisex</option>
+                <option value="BOYS">Boys</option>
+                <option value="GIRLS">Girls</option>
+                <option value="KIDS">Kids</option>
+                <option value="INFANT">Infant</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="card mb-4">
+            <div class="card-body">
               <h6 class="card-title fw-semibold mb-3">Flags</h6>
               <div class="d-flex flex-column gap-2">
                 <div class="form-check form-switch">

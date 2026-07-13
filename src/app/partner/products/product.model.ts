@@ -30,6 +30,7 @@ export interface Product {
   mfrProdCode: string | null;
   manufacturerId: string | null;
   supplierCode: string | null;
+  gender: string | null;
   skuCount?: number;
   thumbnailUrl?: string | null;
   primaryCategoryName?: string | null;
@@ -69,6 +70,7 @@ export interface ProductForm {
   mfrProdCode: string;
   manufacturerId: string;
   supplierCode: string;
+  gender: string;
 }
 
 export interface ProductSku {

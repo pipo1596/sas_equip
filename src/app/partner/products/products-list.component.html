@@ -94,7 +94,7 @@
             (ngModelChange)="filterCatId.set($event ? +$event : null); onFilterChange()">
       <option [value]="null">All Categories</option>
       @for (cat of categories(); track cat.catId) {
-        <option [value]="cat.catId">{{ cat.catName }}</option>
+        <option [value]="cat.catId">{{ catBreadcrumb(cat) }}</option>
       }
     </select>
 

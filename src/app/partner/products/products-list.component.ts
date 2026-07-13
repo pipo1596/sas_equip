@@ -186,6 +186,17 @@ export class ProductsListComponent implements OnInit {
     { bg: '#f1f5f9', color: '#334155' },
   ];
 
+  catBreadcrumb(cat: Category): string {
+    const map = new Map(this.categories().map(c => [c.catId, c]));
+    const parts: string[] = [];
+    let current: Category | undefined = cat;
+    while (current) {
+      parts.unshift(current.catName);
+      current = current.parentCatId ? map.get(current.parentCatId) : undefined;
+    }
+    return parts.join(' › ');
+  }
+
   productAbbr(title: string): string {
     const words = title.trim().split(/\s+/);
     if (words.length >= 3) return (words[0][0] + words[1][0] + words[2][0]).toUpperCase();

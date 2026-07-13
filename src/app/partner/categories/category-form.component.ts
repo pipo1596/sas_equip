@@ -44,6 +44,17 @@ export class CategoryFormComponent implements OnInit {
     return this.partnerMode.activePartner()?.tpId;
   }
 
+  catBreadcrumb(cat: Category): string {
+    const map = new Map(this.allCategories().map(c => [c.catId, c]));
+    const parts: string[] = [];
+    let current: Category | undefined = cat;
+    while (current) {
+      parts.unshift(current.catName);
+      current = current.parentCatId ? map.get(current.parentCatId) : undefined;
+    }
+    return parts.join(' › ');
+  }
+
   slugify(name: string): string {
     return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
   }

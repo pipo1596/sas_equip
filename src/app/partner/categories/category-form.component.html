@@ -28,7 +28,7 @@
             <select class="form-select" name="parentCatId" [(ngModel)]="formData.parentCatId">
               <option [ngValue]="null">— Top level —</option>
               @for (cat of allCategories(); track cat.catId) {
-                <option [ngValue]="cat.catId">{{ cat.catName }}</option>
+                <option [ngValue]="cat.catId">{{ catBreadcrumb(cat) }}</option>
               }
             </select>
             <div class="form-text mt-2">Leave blank for a top-level category.</div>

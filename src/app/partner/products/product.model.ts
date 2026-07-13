@@ -174,15 +174,10 @@ export interface ProductImage {
 export interface ProductAttribute {
   attrId: number;
   productPk: number;
-  skuId: number | null;
-  tpId: number;
-  attrKey: string;
-  attrValue: string | null;
-  attrType: 'TEXT' | 'NUMBER' | 'BOOLEAN' | 'DATE' | 'URL' | 'JSON';
-  isVisible: 'Y' | 'N';
-  isSearchable: 'Y' | 'N';
-  sortOrder: number;
+  attrName: string;
+  attrValue: string;
   createdTs: string;
+  updatedTs: string;
 }
 
 export interface ProductInventory {

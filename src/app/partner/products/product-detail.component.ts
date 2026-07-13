@@ -152,7 +152,8 @@ export class ProductDetailComponent implements OnInit {
   readonly attributes = signal<ProductAttribute[]>([]);
   readonly loadingAttributes = signal(false);
   readonly editingAttr = signal<ProductAttribute | null>(null);
-  readonly attrForm = signal({ attrKey: '', attrValue: '', attrType: 'TEXT' as ProductAttribute['attrType'], isVisible: 'Y' as 'Y' | 'N', isSearchable: 'N' as 'Y' | 'N' });
+  readonly addingAttr = signal(false);
+  readonly attrForm = signal({ attrName: '', attrValue: '' });
   readonly savingAttr = signal(false);
 
 
@@ -715,45 +716,41 @@ export class ProductDetailComponent implements OnInit {
   }
 
   startEditAttr(attr: ProductAttribute | null): void {
-    this.editingAttr.set(attr);
     if (attr) {
-      this.attrForm.set({
-        attrKey: attr.attrKey,
-        attrValue: attr.attrValue ?? '',
-        attrType: attr.attrType,
-        isVisible: attr.isVisible,
-        isSearchable: attr.isSearchable,
-      });
+      this.addingAttr.set(false);
+      this.editingAttr.set(attr);
+      this.attrForm.set({ attrName: attr.attrName, attrValue: attr.attrValue });
     } else {
-      this.attrForm.set({ attrKey: '', attrValue: '', attrType: 'TEXT', isVisible: 'Y', isSearchable: 'N' });
+      this.editingAttr.set(null);
+      this.addingAttr.set(true);
+      this.attrForm.set({ attrName: '', attrValue: '' });
     }
   }
 
   cancelEditAttr(): void {
     this.editingAttr.set(null);
+    this.addingAttr.set(false);
   }
 
   async saveAttr(): Promise<void> {
     const tpId = this.tpId;
     const id = this.productPk();
     const form = this.attrForm();
-    if (!tpId || !id || !form.attrKey.trim()) return;
+    if (!tpId || !id || !form.attrName.trim() || !form.attrValue.trim()) return;
     this.savingAttr.set(true);
     try {
       const existing = this.editingAttr();
       if (existing) {
-        await this.service.updateAttribute(tpId, existing.attrId, { ...form, attrValue: form.attrValue });
+        await this.service.updateAttribute(tpId, existing.attrId, form);
         this.attributes.update(list =>
           list.map(a => a.attrId === existing.attrId ? { ...a, ...form } : a)
         );
       } else {
-        const created = await this.service.addAttribute(tpId, {
-          productPk: id, skuId: null,
-          ...form, attrValue: form.attrValue, sortOrder: this.attributes().length,
-        });
+        const created = await this.service.addAttribute(tpId, { productPk: id, ...form });
         this.attributes.update(list => [...list, created]);
       }
       this.editingAttr.set(null);
+      this.addingAttr.set(false);
     } catch { /* TODO: surface error */ }
     finally { this.savingAttr.set(false); }
   }

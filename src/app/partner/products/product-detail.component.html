@@ -797,72 +797,73 @@
         </div>
       } @else {
         <div class="table-responsive">
-          <table class="table table-hover align-middle mb-0 table-stacked">
+          <table class="table table-hover align-middle mb-0">
             <thead>
               <tr>
-                <th>Key</th>
+                <th style="width:220px;">Name</th>
                 <th>Value</th>
-                <th class="text-center">Type</th>
-                <th class="text-center">Visible</th>
-                <th class="text-end">Actions</th>
+                <th style="width:140px;">&nbsp;</th>
               </tr>
             </thead>
             <tbody>
               @for (attr of attributes(); track attr.attrId) {
                 @if (editingAttr()?.attrId === attr.attrId) {
                   <tr class="table-active">
-                    <td><input type="text" class="form-control form-control-sm" [ngModel]="attrForm().attrKey" (ngModelChange)="attrForm.update(f => ({...f, attrKey: $event}))" /></td>
-                    <td><input type="text" class="form-control form-control-sm" [ngModel]="attrForm().attrValue" (ngModelChange)="attrForm.update(f => ({...f, attrValue: $event}))" /></td>
-                    <td>
-                      <select class="form-select form-select-sm" [ngModel]="attrForm().attrType" (ngModelChange)="attrForm.update(f => ({...f, attrType: $event}))">
-                        <option value="TEXT">Text</option>
-                        <option value="NUMBER">Number</option>
-                        <option value="BOOLEAN">Boolean</option>
-                        <option value="DATE">Date</option>
-                        <option value="URL">URL</option>
-                        <option value="JSON">JSON</option>
-                      </select>
-                    </td>
-                    <td class="text-center">
-                      <input type="checkbox" class="form-check-input" [ngModel]="attrForm().isVisible === 'Y'" (ngModelChange)="attrForm.update(f => ({...f, isVisible: $event ? 'Y' : 'N'}))" />
-                    </td>
+                    <td><input type="text" class="form-control form-control-sm"
+                               [ngModel]="attrForm().attrName"
+                               (ngModelChange)="attrForm.update(f => ({...f, attrName: $event}))" /></td>
+                    <td><input type="text" class="form-control form-control-sm"
+                               [ngModel]="attrForm().attrValue"
+                               (ngModelChange)="attrForm.update(f => ({...f, attrValue: $event}))" /></td>
                     <td class="text-end">
-                      <button class="btn btn-sm btn-dark me-1" (click)="saveAttr()" [disabled]="savingAttr()"><i class="bi bi-check-lg"></i></button>
-                      <button class="btn btn-sm btn-outline-secondary" (click)="cancelEditAttr()"><i class="bi bi-x-lg"></i></button>
+                      <button class="btn btn-sm btn-dark me-1" (click)="saveAttr()" [disabled]="savingAttr()">
+                        <i class="bi bi-check-lg"></i>
+                      </button>
+                      <button class="btn btn-sm btn-outline-secondary" (click)="cancelEditAttr()">
+                        <i class="bi bi-x-lg"></i>
+                      </button>
                     </td>
                   </tr>
                 } @else {
                   <tr>
-                    <td><span class="font-monospace small">{{ attr.attrKey }}</span></td>
-                    <td class="text-truncate" style="max-width:200px;">{{ attr.attrValue || '—' }}</td>
-                    <td class="text-center"><span class="badge bg-light text-dark border small">{{ attr.attrType }}</span></td>
-                    <td class="text-center">
-                      @if (attr.isVisible === 'Y') { <i class="bi bi-eye text-success"></i> }
-                      @else { <i class="bi bi-eye-slash text-muted"></i> }
-                    </td>
+                    <td><span class="font-monospace small">{{ attr.attrName }}</span></td>
+                    <td class="small" style="white-space:pre-wrap; word-break:break-word;">{{ attr.attrValue || '—' }}</td>
                     <td class="text-end">
-                      <button class="btn btn-sm btn-outline-secondary m-1 px-3" (click)="startEditAttr(attr)"><i class="bi bi-pencil"></i></button>
-                      <button class="btn btn-sm btn-outline-danger m-1 px-3" (click)="deleteAttr(attr)"><i class="bi bi-trash"></i></button>
+                      <button class="btn btn-sm btn-outline-secondary me-1" (click)="startEditAttr(attr)"><i class="bi bi-pencil"></i></button>
+                      <button class="btn btn-sm btn-outline-danger" (click)="deleteAttr(attr)"><i class="bi bi-trash"></i></button>
                     </td>
                   </tr>
                 }
               }
-              @if (editingAttr() === null && attributes().length === 0) {
+              @if (!addingAttr() && attributes().length === 0) {
                 <tr>
-                  <td colspan="5" class="text-center py-4 text-muted">
+                  <td colspan="3" class="text-center py-4 text-muted">
                     <i class="bi bi-tags me-2"></i>No attributes. Click "Add Attribute" to begin.
+                  </td>
+                </tr>
+              }
+              @if (addingAttr()) {
+                <tr class="table-active">
+                  <td><input type="text" class="form-control form-control-sm" autofocus
+                             [ngModel]="attrForm().attrName"
+                             (ngModelChange)="attrForm.update(f => ({...f, attrName: $event}))"
+                             placeholder="Attribute name" /></td>
+                  <td><input type="text" class="form-control form-control-sm"
+                             [ngModel]="attrForm().attrValue"
+                             (ngModelChange)="attrForm.update(f => ({...f, attrValue: $event}))"
+                             placeholder="Value" /></td>
+                  <td class="text-end text-nowrap">
+                    <button class="btn btn-sm btn-dark me-1" (click)="saveAttr()"
+                            [disabled]="savingAttr() || !attrForm().attrName.trim() || !attrForm().attrValue.trim()">
+                      <i class="bi bi-plus-lg me-1"></i>Add
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary" (click)="cancelEditAttr()">Cancel</button>
                   </td>
                 </tr>
               }
             </tbody>
           </table>
         </div>
-
-        <!-- New attribute row (when adding) -->
-        @if (editingAttr() === null && savingAttr() || editingAttr() === null) {
-          <!-- Add row appears as an inline card below the table when triggered by startEditAttr(null) -->
-          <!-- Handled by checking if form values are set via the button click — simplified to a card -->
-        }
 
       }
     }

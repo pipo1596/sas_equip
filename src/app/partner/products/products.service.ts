@@ -123,7 +123,7 @@ export class ProductsService {
     return (data['data'] as unknown as ProductAttribute[]) ?? [];
   }
 
-  async addAttribute(tpId: number, attr: Omit<ProductAttribute, 'attrId' | 'tpId' | 'createdTs'>): Promise<ProductAttribute> {
+  async addAttribute(tpId: number, attr: Omit<ProductAttribute, 'attrId' | 'createdTs' | 'updatedTs'>): Promise<ProductAttribute> {
     const data = await this.post({ action: '*ADD_ATTR', tpId, ...attr });
     return data['attribute'] as unknown as ProductAttribute;
   }

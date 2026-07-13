@@ -55,6 +55,12 @@ export class CategoryFormComponent implements OnInit {
     return parts.join(' › ');
   }
 
+  sortedCatsByBreadcrumb(): Array<{ cat: Category; breadcrumb: string }> {
+    return this.allCategories()
+      .map(c => ({ cat: c, breadcrumb: this.catBreadcrumb(c) }))
+      .sort((a, b) => a.breadcrumb.localeCompare(b.breadcrumb));
+  }
+
   slugify(name: string): string {
     return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
   }

@@ -93,8 +93,8 @@
             [ngModel]="filterCatId()"
             (ngModelChange)="filterCatId.set($event ? +$event : null); onFilterChange()">
       <option [value]="null">All Categories</option>
-      @for (cat of categories(); track cat.catId) {
-        <option [value]="cat.catId">{{ catBreadcrumb(cat) }}</option>
+      @for (item of sortedCatsByBreadcrumb(); track item.cat.catId) {
+        <option [value]="item.cat.catId">{{ item.breadcrumb }}</option>
       }
     </select>
 
@@ -154,7 +154,7 @@
                     <div class="text-muted small font-monospace">
                       {{ product.productId }}
                       @if (product.primaryCategoryName) {
-                        <span class="text-muted"> · {{ product.primaryCategoryName }}</span>
+                        <span class="text-muted"> · {{ primaryCatBreadcrumb(product.primaryCategoryName) }}</span>
                       }
                     </div>
                   </div>
@@ -173,7 +173,7 @@
                 }
               </td>
               <td data-label="Dept">
-                <span class="text-muted small">{{ product.primaryCategoryName || '—' }}</span>
+                <span class="text-muted small">{{ primaryCatBreadcrumb(product.primaryCategoryName) }}</span>
               </td>
               <td data-label="SKUs" class="text-center">
                 <span class="fw-semibold">{{ product.skuCount ?? 0 }}</span>

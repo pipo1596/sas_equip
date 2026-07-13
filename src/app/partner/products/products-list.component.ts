@@ -197,6 +197,18 @@ export class ProductsListComponent implements OnInit {
     return parts.join(' › ');
   }
 
+  primaryCatBreadcrumb(categoryName: string | null | undefined): string {
+    if (!categoryName) return '—';
+    const cat = this.categories().find(c => c.catName === categoryName);
+    return cat ? this.catBreadcrumb(cat) : categoryName;
+  }
+
+  sortedCatsByBreadcrumb(): Array<{ cat: Category; breadcrumb: string }> {
+    return this.categories()
+      .map(c => ({ cat: c, breadcrumb: this.catBreadcrumb(c) }))
+      .sort((a, b) => a.breadcrumb.localeCompare(b.breadcrumb));
+  }
+
   productAbbr(title: string): string {
     const words = title.trim().split(/\s+/);
     if (words.length >= 3) return (words[0][0] + words[1][0] + words[2][0]).toUpperCase();

@@ -23,7 +23,7 @@ export class CategoriesComponent implements OnInit {
   readonly categories = signal<Category[]>([]);
   readonly total = signal(0);
   readonly page = signal(1);
-  readonly pageSize = signal(50);
+  readonly pageSize = signal(500);
   readonly search = signal('');
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);

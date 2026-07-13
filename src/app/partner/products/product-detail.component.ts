@@ -746,10 +746,10 @@ export class ProductDetailComponent implements OnInit {
           list.map(a => a.attrId === existing.attrId ? { ...a, ...form } : a)
         );
       } else {
-        const created = await this.service.addAttribute(tpId, { productPk: id, ...form });
-        this.attributes.update(list => [...list, created]);
+        await this.service.addAttribute(tpId, { productPk: id, ...form });
       }
       this.editingAttr.set(null);
+      await this.loadAttributes();
       this.addingAttr.set(false);
     } catch { /* TODO: surface error */ }
     finally { this.savingAttr.set(false); }
@@ -760,7 +760,7 @@ export class ProductDetailComponent implements OnInit {
     if (!tpId) return;
     try {
       await this.service.deleteAttribute(tpId, attr.attrId);
-      this.attributes.update(list => list.filter(a => a.attrId !== attr.attrId));
+      await this.loadAttributes();
     } catch { /* TODO: surface error */ }
   }
 

@@ -806,42 +806,6 @@
               </tr>
             </thead>
             <tbody>
-              @for (attr of attributes(); track attr.attrId) {
-                @if (editingAttr()?.attrId === attr.attrId) {
-                  <tr class="table-active">
-                    <td><input type="text" class="form-control form-control-sm"
-                               [ngModel]="attrForm().attrName"
-                               (ngModelChange)="attrForm.update(f => ({...f, attrName: $event}))" /></td>
-                    <td><input type="text" class="form-control form-control-sm"
-                               [ngModel]="attrForm().attrValue"
-                               (ngModelChange)="attrForm.update(f => ({...f, attrValue: $event}))" /></td>
-                    <td class="text-end">
-                      <button class="btn btn-sm btn-dark me-1" (click)="saveAttr()" [disabled]="savingAttr()">
-                        <i class="bi bi-check-lg"></i>
-                      </button>
-                      <button class="btn btn-sm btn-outline-secondary" (click)="cancelEditAttr()">
-                        <i class="bi bi-x-lg"></i>
-                      </button>
-                    </td>
-                  </tr>
-                } @else {
-                  <tr>
-                    <td><span class="font-monospace small">{{ attr.attrName }}</span></td>
-                    <td class="small" style="white-space:pre-wrap; word-break:break-word;">{{ attr.attrValue || '—' }}</td>
-                    <td class="text-end">
-                      <button class="btn btn-sm btn-outline-secondary me-1" (click)="startEditAttr(attr)"><i class="bi bi-pencil"></i></button>
-                      <button class="btn btn-sm btn-outline-danger" (click)="deleteAttr(attr)"><i class="bi bi-trash"></i></button>
-                    </td>
-                  </tr>
-                }
-              }
-              @if (!addingAttr() && attributes().length === 0) {
-                <tr>
-                  <td colspan="3" class="text-center py-4 text-muted">
-                    <i class="bi bi-tags me-2"></i>No attributes. Click "Add Attribute" to begin.
-                  </td>
-                </tr>
-              }
               @if (addingAttr()) {
                 <tr class="table-active">
                   <td><input type="text" class="form-control form-control-sm" autofocus
@@ -858,6 +822,22 @@
                       <i class="bi bi-plus-lg me-1"></i>Add
                     </button>
                     <button class="btn btn-sm btn-outline-secondary" (click)="cancelEditAttr()">Cancel</button>
+                  </td>
+                </tr>
+              }
+              @for (attr of attributes(); track attr.attrId) {
+                <tr>
+                  <td><span class="font-monospace small">{{ attr.attrName }}</span></td>
+                  <td class="small" style="white-space:pre-wrap; word-break:break-word;">{{ attr.attrValue || '—' }}</td>
+                  <td class="text-end">
+                    <button class="btn btn-sm btn-outline-danger" (click)="deleteAttr(attr)"><i class="bi bi-trash"></i></button>
+                  </td>
+                </tr>
+              }
+              @if (!addingAttr() && attributes().length === 0) {
+                <tr>
+                  <td colspan="3" class="text-center py-4 text-muted">
+                    <i class="bi bi-tags me-2"></i>No attributes. Click "Add Attribute" to begin.
                   </td>
                 </tr>
               }

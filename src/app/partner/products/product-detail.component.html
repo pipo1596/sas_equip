@@ -132,36 +132,69 @@
                 <textarea class="form-control" [(ngModel)]="overviewForm.descr" rows="2" placeholder="Brief description (max 255 chars)"></textarea>
               </div>
               <div class="mb-3">
-                <label class="form-label fw-medium">Long Description</label>
-                <quill-editor [(ngModel)]="overviewForm.longDescr" name="longDescr"
-                  [modules]="editorModules" [styles]="{ height: '200px' }"
-                  (onEditorCreated)="onEditorCreated($event, longDescrCount)"
-                  (onContentChanged)="onContentChanged($event, longDescrCount, LIMIT_1M)"
-                ></quill-editor>
+                <div class="d-flex align-items-center justify-content-between mb-1">
+                  <label class="form-label fw-medium mb-0">Long Description</label>
+                  <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-2" style="font-size:.75rem;"
+                          (click)="toggleHtmlSource('longDescr')">
+                    <i class="bi bi-code-slash me-1"></i>{{ htmlSourceField() === 'longDescr' ? 'Editor' : 'HTML' }}
+                  </button>
+                </div>
+                @if (htmlSourceField() === 'longDescr') {
+                  <textarea class="form-control font-monospace" style="height:200px; font-size:.78rem; white-space:pre;"
+                            [(ngModel)]="overviewForm.longDescr" name="longDescr_src"></textarea>
+                } @else {
+                  <quill-editor [(ngModel)]="overviewForm.longDescr" name="longDescr"
+                    [modules]="editorModules" [styles]="{ height: '200px' }"
+                    (onEditorCreated)="onEditorCreated($event, longDescrCount)"
+                    (onContentChanged)="onContentChanged($event, longDescrCount, LIMIT_1M)"
+                  ></quill-editor>
+                }
                 <div class="text-end small mt-1"
                      [ngClass]="longDescrCount() >= LIMIT_1M ? 'text-danger' : 'text-muted'">
                   {{ LIMIT_1M - longDescrCount() | number }} chars remaining
                 </div>
               </div>
               <div class="mb-3">
-                <label class="form-label fw-medium">Features</label>
-                <quill-editor [(ngModel)]="overviewForm.features" name="features"
-                  [modules]="editorModules" [styles]="{ height: '160px' }"
-                  (onEditorCreated)="onEditorCreated($event, featuresCount)"
-                  (onContentChanged)="onContentChanged($event, featuresCount, LIMIT_1M)"
-                ></quill-editor>
+                <div class="d-flex align-items-center justify-content-between mb-1">
+                  <label class="form-label fw-medium mb-0">Features</label>
+                  <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-2" style="font-size:.75rem;"
+                          (click)="toggleHtmlSource('features')">
+                    <i class="bi bi-code-slash me-1"></i>{{ htmlSourceField() === 'features' ? 'Editor' : 'HTML' }}
+                  </button>
+                </div>
+                @if (htmlSourceField() === 'features') {
+                  <textarea class="form-control font-monospace" style="height:160px; font-size:.78rem; white-space:pre;"
+                            [(ngModel)]="overviewForm.features" name="features_src"></textarea>
+                } @else {
+                  <quill-editor [(ngModel)]="overviewForm.features" name="features"
+                    [modules]="editorModules" [styles]="{ height: '160px' }"
+                    (onEditorCreated)="onEditorCreated($event, featuresCount)"
+                    (onContentChanged)="onContentChanged($event, featuresCount, LIMIT_1M)"
+                  ></quill-editor>
+                }
                 <div class="text-end small mt-1"
                      [ngClass]="featuresCount() >= LIMIT_1M ? 'text-danger' : 'text-muted'">
                   {{ LIMIT_1M - featuresCount() | number }} chars remaining
                 </div>
               </div>
               <div class="mb-0">
-                <label class="form-label fw-medium">Construction</label>
-                <quill-editor [(ngModel)]="overviewForm.construction" name="construction"
-                  [modules]="editorModules" [styles]="{ height: '160px' }"
-                  (onEditorCreated)="onEditorCreated($event, constructionCount)"
-                  (onContentChanged)="onContentChanged($event, constructionCount, LIMIT_1M)"
-                ></quill-editor>
+                <div class="d-flex align-items-center justify-content-between mb-1">
+                  <label class="form-label fw-medium mb-0">Construction</label>
+                  <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-2" style="font-size:.75rem;"
+                          (click)="toggleHtmlSource('construction')">
+                    <i class="bi bi-code-slash me-1"></i>{{ htmlSourceField() === 'construction' ? 'Editor' : 'HTML' }}
+                  </button>
+                </div>
+                @if (htmlSourceField() === 'construction') {
+                  <textarea class="form-control font-monospace" style="height:160px; font-size:.78rem; white-space:pre;"
+                            [(ngModel)]="overviewForm.construction" name="construction_src"></textarea>
+                } @else {
+                  <quill-editor [(ngModel)]="overviewForm.construction" name="construction"
+                    [modules]="editorModules" [styles]="{ height: '160px' }"
+                    (onEditorCreated)="onEditorCreated($event, constructionCount)"
+                    (onContentChanged)="onContentChanged($event, constructionCount, LIMIT_1M)"
+                  ></quill-editor>
+                }
                 <div class="text-end small mt-1"
                      [ngClass]="constructionCount() >= LIMIT_1M ? 'text-danger' : 'text-muted'">
                   {{ LIMIT_1M - constructionCount() | number }} chars remaining
@@ -179,12 +212,23 @@
                 <input type="text" class="form-control" [(ngModel)]="overviewForm.pageTitle" />
               </div>
               <div class="mb-0">
-                <label class="form-label fw-medium">Meta Description</label>
-                <quill-editor [(ngModel)]="overviewForm.seoDescr" name="seoDescr"
-                  [modules]="editorModules" [styles]="{ height: '130px' }"
-                  (onEditorCreated)="onEditorCreated($event, seoDescrCount)"
-                  (onContentChanged)="onContentChanged($event, seoDescrCount, LIMIT_64K)"
-                ></quill-editor>
+                <div class="d-flex align-items-center justify-content-between mb-1">
+                  <label class="form-label fw-medium mb-0">Meta Description</label>
+                  <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-2" style="font-size:.75rem;"
+                          (click)="toggleHtmlSource('seoDescr')">
+                    <i class="bi bi-code-slash me-1"></i>{{ htmlSourceField() === 'seoDescr' ? 'Editor' : 'HTML' }}
+                  </button>
+                </div>
+                @if (htmlSourceField() === 'seoDescr') {
+                  <textarea class="form-control font-monospace" style="height:130px; font-size:.78rem; white-space:pre;"
+                            [(ngModel)]="overviewForm.seoDescr" name="seoDescr_src"></textarea>
+                } @else {
+                  <quill-editor [(ngModel)]="overviewForm.seoDescr" name="seoDescr"
+                    [modules]="editorModules" [styles]="{ height: '130px' }"
+                    (onEditorCreated)="onEditorCreated($event, seoDescrCount)"
+                    (onContentChanged)="onContentChanged($event, seoDescrCount, LIMIT_64K)"
+                  ></quill-editor>
+                }
                 <div class="text-end small mt-1"
                      [ngClass]="seoDescrCount() >= LIMIT_64K ? 'text-danger' : 'text-muted'">
                   {{ LIMIT_64K - seoDescrCount() | number }} chars remaining
@@ -227,25 +271,48 @@
             <div class="card-body">
               <h6 class="card-title fw-semibold mb-3">Notes &amp; Docs</h6>
               <div class="mb-3">
-                <label class="form-label fw-medium">Order Note</label>
-                <quill-editor [(ngModel)]="overviewForm.orderNote" name="orderNote"
-                  [modules]="editorModules" [styles]="{ height: '130px' }"
-                  placeholder="Shown on order confirmations"
-                  (onEditorCreated)="onEditorCreated($event, orderNoteCount)"
-                  (onContentChanged)="onContentChanged($event, orderNoteCount, LIMIT_64K)"
-                ></quill-editor>
+                <div class="d-flex align-items-center justify-content-between mb-1">
+                  <label class="form-label fw-medium mb-0">Order Note</label>
+                  <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-2" style="font-size:.75rem;"
+                          (click)="toggleHtmlSource('orderNote')">
+                    <i class="bi bi-code-slash me-1"></i>{{ htmlSourceField() === 'orderNote' ? 'Editor' : 'HTML' }}
+                  </button>
+                </div>
+                @if (htmlSourceField() === 'orderNote') {
+                  <textarea class="form-control font-monospace" style="height:130px; font-size:.78rem; white-space:pre;"
+                            [(ngModel)]="overviewForm.orderNote" name="orderNote_src"
+                            placeholder="Shown on order confirmations"></textarea>
+                } @else {
+                  <quill-editor [(ngModel)]="overviewForm.orderNote" name="orderNote"
+                    [modules]="editorModules" [styles]="{ height: '130px' }"
+                    placeholder="Shown on order confirmations"
+                    (onEditorCreated)="onEditorCreated($event, orderNoteCount)"
+                    (onContentChanged)="onContentChanged($event, orderNoteCount, LIMIT_64K)"
+                  ></quill-editor>
+                }
                 <div class="text-end small mt-1"
                      [ngClass]="orderNoteCount() >= LIMIT_64K ? 'text-danger' : 'text-muted'">
                   {{ LIMIT_64K - orderNoteCount() | number }} chars remaining
                 </div>
               </div>
               <div class="mb-3">
-                <label class="form-label fw-medium">Tech Spec</label>
-                <quill-editor [(ngModel)]="overviewForm.techSpec" name="techSpec"
-                  [modules]="editorModules" [styles]="{ height: '160px' }"
-                  (onEditorCreated)="onEditorCreated($event, techSpecCount)"
-                  (onContentChanged)="onContentChanged($event, techSpecCount, LIMIT_64K)"
-                ></quill-editor>
+                <div class="d-flex align-items-center justify-content-between mb-1">
+                  <label class="form-label fw-medium mb-0">Tech Spec</label>
+                  <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-2" style="font-size:.75rem;"
+                          (click)="toggleHtmlSource('techSpec')">
+                    <i class="bi bi-code-slash me-1"></i>{{ htmlSourceField() === 'techSpec' ? 'Editor' : 'HTML' }}
+                  </button>
+                </div>
+                @if (htmlSourceField() === 'techSpec') {
+                  <textarea class="form-control font-monospace" style="height:160px; font-size:.78rem; white-space:pre;"
+                            [(ngModel)]="overviewForm.techSpec" name="techSpec_src"></textarea>
+                } @else {
+                  <quill-editor [(ngModel)]="overviewForm.techSpec" name="techSpec"
+                    [modules]="editorModules" [styles]="{ height: '160px' }"
+                    (onEditorCreated)="onEditorCreated($event, techSpecCount)"
+                    (onContentChanged)="onContentChanged($event, techSpecCount, LIMIT_64K)"
+                  ></quill-editor>
+                }
                 <div class="text-end small mt-1"
                      [ngClass]="techSpecCount() >= LIMIT_64K ? 'text-danger' : 'text-muted'">
                   {{ LIMIT_64K - techSpecCount() | number }} chars remaining

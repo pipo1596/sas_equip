@@ -36,18 +36,29 @@
           <div class="d-flex flex-column gap-4">
 
             <div>
-              <label class="form-label small fw-semibold text-uppercase text-muted">
-                <i class="bi bi-shield-lock me-2"></i>Privacy Policy
-              </label>
-              <quill-editor
-                [(ngModel)]="form.privcyinfo"
-                name="privcyinfo"
-                [modules]="editorModules"
-                [styles]="{ height: '280px' }"
-                placeholder="Enter the full privacy policy text…"
-                (onEditorCreated)="onEditorCreated($event, privacyCharCount)"
-                (onContentChanged)="onContentChanged($event, privacyCharCount)"
-              ></quill-editor>
+              <div class="d-flex align-items-center justify-content-between mb-1">
+                <label class="form-label small fw-semibold text-uppercase text-muted mb-0">
+                  <i class="bi bi-shield-lock me-2"></i>Privacy Policy
+                </label>
+                <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-2" style="font-size:.75rem;"
+                        (click)="toggleHtmlSource('privcyinfo')">
+                  <i class="bi bi-code-slash me-1"></i>{{ htmlSourceField() === 'privcyinfo' ? 'Editor' : 'HTML' }}
+                </button>
+              </div>
+              @if (htmlSourceField() === 'privcyinfo') {
+                <textarea class="form-control font-monospace" style="height:280px; font-size:.78rem; white-space:pre;"
+                          [(ngModel)]="form.privcyinfo" name="privcyinfo_src"></textarea>
+              } @else {
+                <quill-editor
+                  [(ngModel)]="form.privcyinfo"
+                  name="privcyinfo"
+                  [modules]="editorModules"
+                  [styles]="{ height: '280px' }"
+                  placeholder="Enter the full privacy policy text…"
+                  (onEditorCreated)="onEditorCreated($event, privacyCharCount)"
+                  (onContentChanged)="onContentChanged($event, privacyCharCount)"
+                ></quill-editor>
+              }
               <div class="text-end small mt-1"
                    [ngClass]="privacyCharCount() >= maxLength ? 'text-danger' : 'text-muted'">
                 {{ privacyCharCount() | number }} / {{ maxLength | number }}
@@ -55,18 +66,29 @@
             </div>
 
             <div>
-              <label class="form-label small fw-semibold text-uppercase text-muted">
-                <i class="bi bi-file-earmark-text me-2"></i>Terms &amp; Conditions
-              </label>
-              <quill-editor
-                [(ngModel)]="form.termsinfo"
-                name="termsinfo"
-                [modules]="editorModules"
-                [styles]="{ height: '280px' }"
-                placeholder="Enter the full terms &amp; conditions text…"
-                (onEditorCreated)="onEditorCreated($event, termsCharCount)"
-                (onContentChanged)="onContentChanged($event, termsCharCount)"
-              ></quill-editor>
+              <div class="d-flex align-items-center justify-content-between mb-1">
+                <label class="form-label small fw-semibold text-uppercase text-muted mb-0">
+                  <i class="bi bi-file-earmark-text me-2"></i>Terms &amp; Conditions
+                </label>
+                <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-2" style="font-size:.75rem;"
+                        (click)="toggleHtmlSource('termsinfo')">
+                  <i class="bi bi-code-slash me-1"></i>{{ htmlSourceField() === 'termsinfo' ? 'Editor' : 'HTML' }}
+                </button>
+              </div>
+              @if (htmlSourceField() === 'termsinfo') {
+                <textarea class="form-control font-monospace" style="height:280px; font-size:.78rem; white-space:pre;"
+                          [(ngModel)]="form.termsinfo" name="termsinfo_src"></textarea>
+              } @else {
+                <quill-editor
+                  [(ngModel)]="form.termsinfo"
+                  name="termsinfo"
+                  [modules]="editorModules"
+                  [styles]="{ height: '280px' }"
+                  placeholder="Enter the full terms &amp; conditions text…"
+                  (onEditorCreated)="onEditorCreated($event, termsCharCount)"
+                  (onContentChanged)="onContentChanged($event, termsCharCount)"
+                ></quill-editor>
+              }
               <div class="text-end small mt-1"
                    [ngClass]="termsCharCount() >= maxLength ? 'text-danger' : 'text-muted'">
                 {{ termsCharCount() | number }} / {{ maxLength | number }}
@@ -74,18 +96,29 @@
             </div>
 
             <div>
-              <label class="form-label small fw-semibold text-uppercase text-muted">
-                <i class="bi bi-arrow-return-left me-2"></i>Returns Policy
-              </label>
-              <quill-editor
-                [(ngModel)]="form.retnsinfo"
-                name="retnsinfo"
-                [modules]="editorModules"
-                [styles]="{ height: '280px' }"
-                placeholder="Enter the full returns policy text…"
-                (onEditorCreated)="onEditorCreated($event, returnsCharCount)"
-                (onContentChanged)="onContentChanged($event, returnsCharCount)"
-              ></quill-editor>
+              <div class="d-flex align-items-center justify-content-between mb-1">
+                <label class="form-label small fw-semibold text-uppercase text-muted mb-0">
+                  <i class="bi bi-arrow-return-left me-2"></i>Returns Policy
+                </label>
+                <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-2" style="font-size:.75rem;"
+                        (click)="toggleHtmlSource('retnsinfo')">
+                  <i class="bi bi-code-slash me-1"></i>{{ htmlSourceField() === 'retnsinfo' ? 'Editor' : 'HTML' }}
+                </button>
+              </div>
+              @if (htmlSourceField() === 'retnsinfo') {
+                <textarea class="form-control font-monospace" style="height:280px; font-size:.78rem; white-space:pre;"
+                          [(ngModel)]="form.retnsinfo" name="retnsinfo_src"></textarea>
+              } @else {
+                <quill-editor
+                  [(ngModel)]="form.retnsinfo"
+                  name="retnsinfo"
+                  [modules]="editorModules"
+                  [styles]="{ height: '280px' }"
+                  placeholder="Enter the full returns policy text…"
+                  (onEditorCreated)="onEditorCreated($event, returnsCharCount)"
+                  (onContentChanged)="onContentChanged($event, returnsCharCount)"
+                ></quill-editor>
+              }
               <div class="text-end small mt-1"
                    [ngClass]="returnsCharCount() >= maxLength ? 'text-danger' : 'text-muted'">
                 {{ returnsCharCount() | number }} / {{ maxLength | number }}

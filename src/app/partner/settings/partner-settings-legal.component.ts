@@ -31,6 +31,12 @@ export class PartnerSettingsLegalComponent implements OnInit {
   readonly termsCharCount   = signal(0);
   readonly returnsCharCount = signal(0);
 
+  readonly htmlSourceField = signal<string | null>(null);
+
+  toggleHtmlSource(field: string): void {
+    this.htmlSourceField.set(this.htmlSourceField() === field ? null : field);
+  }
+
   readonly editorModules = {
     toolbar: [
       [{ header: [1, 2, 3, false] }],

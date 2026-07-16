@@ -74,6 +74,12 @@ export class ProductDetailComponent implements OnInit {
   readonly orderNoteCount    = signal(0);
   readonly techSpecCount     = signal(0);
 
+  readonly htmlSourceField = signal<string | null>(null);
+
+  toggleHtmlSource(field: string): void {
+    this.htmlSourceField.set(this.htmlSourceField() === field ? null : field);
+  }
+
   onEditorCreated(quill: { getLength(): number }, count: WritableSignal<number>): void {
     count.set(Math.max(0, quill.getLength() - 1));
   }

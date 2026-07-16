@@ -65,6 +65,12 @@ export class ProductDetailComponent implements OnInit {
       [{ list: 'ordered' }, { list: 'bullet' }],
       ['link', 'clean'],
     ],
+    clipboard: { matchVisual: false },
+    keyboard: {
+      bindings: {
+        'list autofill': { prefix: /^\s{0,30}(1\.|[-*])\s$/, handler: () => false },
+      },
+    },
   };
 
   readonly longDescrCount    = signal(0);

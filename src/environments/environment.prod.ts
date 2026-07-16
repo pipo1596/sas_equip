@@ -17,5 +17,6 @@ export const environment = {
     categories: 'APICATEGS',
     productImages: 'APIPRDIMGS',
     imageUpload: '/cgi/SEPIMGUPL',
+    tpAddresses: 'APITPADDR',
   },
 };

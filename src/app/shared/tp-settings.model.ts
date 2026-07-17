@@ -19,6 +19,7 @@ export interface TpSettings {
   province:      string | null;
   postal_code:   string | null;
   country:       string;
+  meas_sys:      'METRIC' | 'IMPERIAL' | null;
   mfa_reqd:      'Y' | 'N';
   ses_timeout:   number | null;
   data_resid:    string | null;

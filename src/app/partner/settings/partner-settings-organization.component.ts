@@ -20,6 +20,8 @@ export class PartnerSettingsOrganizationComponent implements OnInit {
   readonly saveSuccess = signal(false);
   readonly companyNameTouched = signal(false);
 
+  readonly measSys = signal<'METRIC' | 'IMPERIAL'>('METRIC');
+
   readonly months = [
     { value: 1,  label: 'January'   }, { value: 2,  label: 'February'  },
     { value: 3,  label: 'March'     }, { value: 4,  label: 'April'     },
@@ -36,6 +38,7 @@ export class PartnerSettingsOrganizationComponent implements OnInit {
     timezone:   string;
     currency:   string;
     fisc_yr_mo: number;
+    meas_sys:   'METRIC' | 'IMPERIAL';
   } = {
     comp_name:  '',
     dflt_lang:  'EN',
@@ -43,6 +46,7 @@ export class PartnerSettingsOrganizationComponent implements OnInit {
     timezone:   'America/New_York',
     currency:   'USD',
     fisc_yr_mo: 1,
+    meas_sys:   'METRIC',
   };
 
   async ngOnInit(): Promise<void> {
@@ -58,7 +62,9 @@ export class PartnerSettingsOrganizationComponent implements OnInit {
         timezone:   s.timezone,
         currency:   s.currency,
         fisc_yr_mo: s.fisc_yr_mo,
+        meas_sys:   s.meas_sys === 'IMPERIAL' ? 'IMPERIAL' : 'METRIC',
       };
+      this.measSys.set(this.form.meas_sys);
     } catch (err) {
       this.loadError.set(err instanceof Error ? err.message : 'Failed to load organization details.');
     } finally {

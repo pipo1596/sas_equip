@@ -8,6 +8,10 @@
     </div>
     <div class="d-flex gap-2 align-items-center">
       <input #csvFileInput type="file" accept=".csv" class="d-none" (change)="onCsvSelected($event)" />
+      <a class="text-muted d-inline-flex align-items-center" href="/photos/sample/products.csv"
+         target="_blank" rel="noopener" title="Download sample CSV template">
+        <i class="bi bi-info-circle"></i>
+      </a>
       <button class="btn btn-outline-secondary" type="button"
               (click)="csvFileInput.click()"
               [disabled]="csvUploading() || csvInducing()">

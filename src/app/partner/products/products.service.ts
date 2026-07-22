@@ -74,6 +74,10 @@ export class ProductsService {
     await this.post({ action: '*DELETE', tpId, productPk });
   }
 
+  async inductFromCsv(tpId: number, csvUrl: string): Promise<void> {
+    await this.post({ action: '*INDUCT', tpId, csvUrl });
+  }
+
   // ── Options ───────────────────────────────────────────────────────────────
 
   async listOptions(tpId: number, productPk: number): Promise<ProductOption[]> {

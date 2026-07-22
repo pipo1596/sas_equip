@@ -6,9 +6,23 @@
       <h1 class="page-title">Products</h1>
       <p class="page-subtitle">Manage your product catalog.</p>
     </div>
-    <a class="btn btn-dark" [routerLink]="['/partner', tpId, 'products', 'new']">
-      <i class="bi bi-plus-lg me-2"></i>New Product
-    </a>
+    <div class="d-flex gap-2 align-items-center">
+      <input #csvFileInput type="file" accept=".csv" class="d-none" (change)="onCsvSelected($event)" />
+      <button class="btn btn-outline-secondary" type="button"
+              (click)="csvFileInput.click()"
+              [disabled]="csvUploading() || csvInducing()">
+        @if (csvUploading()) {
+          <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Uploading…
+        } @else if (csvInducing()) {
+          <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Processing…
+        } @else {
+          <i class="bi bi-file-earmark-arrow-up me-2"></i>Upload Products
+        }
+      </button>
+      <a class="btn btn-dark" [routerLink]="['/partner', tpId, 'products', 'new']">
+        <i class="bi bi-plus-lg me-2"></i>New Product
+      </a>
+    </div>
   </div>
 
   <!-- Summary stats -->
@@ -48,6 +62,21 @@
       <i class="bi bi-exclamation-triangle-fill"></i>
       <span>{{ error() }}</span>
       <button type="button" class="btn-close ms-auto" (click)="error.set(null)"></button>
+    </div>
+  }
+
+  <!-- CSV upload feedback -->
+  @if (csvError()) {
+    <div class="alert alert-danger d-flex align-items-center gap-2 mb-3" role="alert">
+      <i class="bi bi-exclamation-triangle-fill"></i>
+      <span>{{ csvError() }}</span>
+      <button type="button" class="btn-close ms-auto" (click)="csvError.set(null)"></button>
+    </div>
+  }
+  @if (csvSuccess()) {
+    <div class="alert alert-success d-flex align-items-center gap-2 mb-3" role="alert">
+      <i class="bi bi-patch-check-fill"></i>
+      <span>Product induction started successfully. Products will appear once processed.</span>
     </div>
   }
 

@@ -8,6 +8,7 @@ import { PartnerModeService } from '../partner-mode.service';
 import { ImageUploadService } from '../../shared/image-upload.service';
 import { ProductsService } from './products.service';
 import { ProductOptionsService } from './product-options.service';
+import { ProductImagesService } from './product-images.service';
 import { ProductSkusService } from './product-skus.service';
 import { BrandsService } from '../brands/brands.service';
 import { CategoriesService } from '../categories/categories.service';
@@ -15,7 +16,7 @@ import { Brand } from '../brands/brand.model';
 import { Category } from '../categories/category.model';
 import {
   Product, ProductForm, ProductSku, ProductSkuForm,
-  ProductAttribute,
+  ProductOption, ProductImage, ProductAttribute,
 } from './product.model';
 
 export type ProductTab = 'overview' | 'skus' | 'options' | 'images' | 'categories' | 'attributes';
@@ -36,6 +37,7 @@ export class ProductDetailComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly uploadService = inject(ImageUploadService);
+  private readonly imagesService = inject(ProductImagesService);
 
   // ── Core state ────────────────────────────────────────────────────────────
   readonly product = signal<Product | null>(null);
@@ -134,6 +136,26 @@ export class ProductDetailComponent implements OnInit {
   readonly creatingGeneratedSkus = signal(false);
   readonly createSkusMessage = signal<{ text: string; ok: boolean } | null>(null);
   readonly skusBannerMessage = signal<{ text: string; ok: boolean } | null>(null);
+
+  // ── Images (read-only, aggregated from SKU-level images) ───────────────────
+  readonly SHARED_IMAGE_GROUP = '__SHARED__';
+  readonly loadingImages = signal(false);
+  readonly imageColorGroups = signal<Array<{ value: string; color: string | null; swatchImg: string | null; images: ProductImage[] }>>([]);
+  readonly sharedImages = signal<ProductImage[]>([]);
+  readonly selectedImageGroup = signal<string | null>(null);
+  readonly selectedImageGroupMeta = computed(() => {
+    const sel = this.selectedImageGroup();
+    if (!sel || sel === this.SHARED_IMAGE_GROUP) return null;
+    return this.imageColorGroups().find(g => g.value === sel) ?? null;
+  });
+  readonly selectedImageGroupImages = computed(() => {
+    const sel = this.selectedImageGroup();
+    if (sel === this.SHARED_IMAGE_GROUP) return this.sharedImages();
+    return this.imageColorGroups().find(g => g.value === sel)?.images ?? [];
+  });
+  readonly colorsMissingPhotos = computed(() =>
+    this.imageColorGroups().filter(g => g.images.length === 0).map(g => g.value)
+  );
 
   // ── Categories ────────────────────────────────────────────────────────────
   readonly allCategories = signal<Category[]>([]);
@@ -245,6 +267,7 @@ export class ProductDetailComponent implements OnInit {
     this.activeTab.set(tab);
     if (tab === 'skus') { this.loadSkus(); return; }
     if (tab === 'options') { this.loadOptionsTab(); return; }
+    if (tab === 'images') { this.loadImagesTab(); return; }
     const loaded = this.loadedTabs();
     if (!loaded.has(tab)) {
       this.loadedTabs.set(new Set([...loaded, tab]));
@@ -555,6 +578,65 @@ export class ProductDetailComponent implements OnInit {
       setTimeout(() => this.skusBannerMessage.set(null), 5000);
     }
     this.creatingGeneratedSkus.set(false);
+  }
+
+  // ── Images ────────────────────────────────────────────────────────────────
+
+  private async loadImagesTab(): Promise<void> {
+    const tpId = this.tpId;
+    const id = this.productPk();
+    if (!tpId || !id) return;
+    this.loadingImages.set(true);
+    try {
+      const [options, skus, images] = await Promise.all([
+        this.optionsService.list(tpId, id),
+        this.skusService.list(tpId, id),
+        this.imagesService.get(tpId, id),
+      ]);
+      this.buildImageGroups(options, skus, images);
+    } catch { /* handled inline */ }
+    finally { this.loadingImages.set(false); }
+  }
+
+  private buildImageGroups(options: ProductOption[], skus: ProductSku[], images: ProductImage[]): void {
+    const colorMeta = new Map<string, { color: string | null; swatchImg: string | null; sortOrder: number }>();
+    for (const o of options) {
+      if (o.optName.toUpperCase() !== 'COLOR') continue;
+      const v = o.optValue?.trim();
+      if (v && !colorMeta.has(v)) {
+        colorMeta.set(v, { color: o.optColor ?? null, swatchImg: o.optSwatchImg ?? null, sortOrder: o.sortOrder });
+      }
+    }
+
+    const skuColor = new Map<number, string>();
+    for (const sku of skus) {
+      const colorOpt = sku.options?.find(o => o.optName.toUpperCase() === 'COLOR');
+      if (colorOpt?.optValue) skuColor.set(sku.skuId, colorOpt.optValue);
+    }
+
+    const groups = [...colorMeta.entries()]
+      .sort((a, b) => a[1].sortOrder - b[1].sortOrder)
+      .map(([value, meta]) => ({ value, color: meta.color, swatchImg: meta.swatchImg, images: [] as ProductImage[] }));
+    const groupByValue = new Map(groups.map(g => [g.value, g]));
+
+    const shared: ProductImage[] = [];
+    for (const img of images) {
+      const color = img.skuId != null ? skuColor.get(img.skuId) : undefined;
+      const group = color ? groupByValue.get(color) : undefined;
+      (group ? group.images : shared).push(img);
+    }
+    for (const g of groups) g.images.sort((a, b) => a.sortOrder - b.sortOrder);
+    shared.sort((a, b) => a.sortOrder - b.sortOrder);
+
+    this.imageColorGroups.set(groups);
+    this.sharedImages.set(shared);
+
+    const firstWithImages = groups.find(g => g.images.length > 0);
+    this.selectedImageGroup.set(firstWithImages?.value ?? groups[0]?.value ?? (shared.length ? this.SHARED_IMAGE_GROUP : null));
+  }
+
+  selectImageGroup(value: string): void {
+    this.selectedImageGroup.set(value);
   }
 
   // ── Categories ────────────────────────────────────────────────────────────

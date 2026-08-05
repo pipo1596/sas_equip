@@ -8,10 +8,22 @@ export class ProductImagesService {
     `${environment.apiBaseUrl}${environment.endpoints.productImages}`;
 
   async get(tpId: number, productPk: number, skuId?: number): Promise<ProductImage[]> {
-    const body: Record<string, unknown> = { action: '*LIST', tpId, productPk };
+    const body: Record<string, unknown> = { action: '*LIST_ALL', tpId, productPk };
     if (skuId != null) body['skuId'] = skuId;
     const data = await this.post(body);
-    return (data['data'] as unknown as ProductImage[]) ?? [];
+    const images = (data['data'] as unknown as ProductImage[]) ?? [];
+    return this.dedupe(images);
+  }
+
+  private dedupe(images: ProductImage[]): ProductImage[] {
+    const seenIds = new Set<number>();
+    const seenUrls = new Set<string>();
+    return images.filter(img => {
+      if (seenIds.has(img.imageId) || seenUrls.has(img.imageUrl)) return false;
+      seenIds.add(img.imageId);
+      seenUrls.add(img.imageUrl);
+      return true;
+    });
   }
 
   async add(tpId: number, productPk: number, imgUrl: string, imgType: string, imgDesc: string, sortOrder: number, skuId?: number): Promise<ProductImage> {

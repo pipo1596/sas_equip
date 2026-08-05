@@ -6,6 +6,7 @@ import { QuillEditorComponent } from 'ngx-quill';
 import type { ContentChange } from 'ngx-quill';
 import { PartnerModeService } from '../partner-mode.service';
 import { ImageUploadService } from '../../shared/image-upload.service';
+import { htmlEncodeNonAscii } from '../../shared/html-encode-non-ascii.util';
 import { ProductsService } from './products.service';
 import { ProductOptionsService } from './product-options.service';
 import { ProductImagesService } from './product-images.service';
@@ -301,7 +302,16 @@ export class ProductDetailComponent implements OnInit {
     this.saveError.set(null);
     this.saveSuccess.set(false);
     try {
-      await this.service.update(tpId, id, this.overviewForm);
+      const payload: ProductForm = {
+        ...this.overviewForm,
+        longDescr: htmlEncodeNonAscii(this.overviewForm.longDescr),
+        features: htmlEncodeNonAscii(this.overviewForm.features),
+        construction: htmlEncodeNonAscii(this.overviewForm.construction),
+        seoDescr: htmlEncodeNonAscii(this.overviewForm.seoDescr),
+        orderNote: htmlEncodeNonAscii(this.overviewForm.orderNote),
+        techSpec: htmlEncodeNonAscii(this.overviewForm.techSpec),
+      };
+      await this.service.update(tpId, id, payload);
       this.product.update(p => p ? { ...p, ...this.overviewForm } : p);
       this.saveSuccess.set(true);
       setTimeout(() => this.saveSuccess.set(false), 3000);

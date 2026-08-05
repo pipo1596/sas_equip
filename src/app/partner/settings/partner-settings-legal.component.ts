@@ -6,6 +6,7 @@ import type { ContentChange } from 'ngx-quill';
 import { PartnerModeService } from '../partner-mode.service';
 import { TpSettingsService } from '../../shared/tp-settings.service';
 import type { TpSettings } from '../../shared/tp-settings.model';
+import { htmlEncodeNonAscii } from '../../shared/html-encode-non-ascii.util';
 
 @Component({
   selector: 'app-partner-settings-legal',
@@ -102,9 +103,9 @@ export class PartnerSettingsLegalComponent implements OnInit {
     this.saveSuccess.set(false);
     try {
       const payload: Partial<TpSettings> = {
-        ...this.splitChunks('privcyinfo', this.form.privcyinfo),
-        ...this.splitChunks('termsinfo',  this.form.termsinfo),
-        ...this.splitChunks('retnsinfo',  this.form.retnsinfo),
+        ...this.splitChunks('privcyinfo', htmlEncodeNonAscii(this.form.privcyinfo)),
+        ...this.splitChunks('termsinfo',  htmlEncodeNonAscii(this.form.termsinfo)),
+        ...this.splitChunks('retnsinfo',  htmlEncodeNonAscii(this.form.retnsinfo)),
       };
       await this.service.update('*UPD_LEGAL', tpId, payload);
       this.saveSuccess.set(true);

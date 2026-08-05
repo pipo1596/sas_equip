@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
+import { repairCp1252MojibakeDeep, decodeWindows1252Text } from '../../shared/cp1252-mojibake.util';
 import { ProductImage } from './product.model';
 
 @Injectable({ providedIn: 'root' })
@@ -57,7 +58,7 @@ export class ProductImagesService {
 
   private async parseJson(response: Response): Promise<Record<string, unknown>> {
     try {
-      return JSON.parse(await response.text()) as Record<string, unknown>;
+      return repairCp1252MojibakeDeep(JSON.parse(await decodeWindows1252Text(response)) as Record<string, unknown>);
     } catch {
       return { success: false, message: 'Invalid server response.' };
     }

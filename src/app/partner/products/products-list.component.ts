@@ -275,7 +275,7 @@ export class ProductsListComponent implements OnInit {
 
     let csvUrl: string;
     try {
-      csvUrl = await this.imageUploadService.upload('product_csv', file, tpId, { tpId, subfolder: 'product_induction' });
+      csvUrl = await this.imageUploadService.upload('product_csv', file, tpId, { tpId, subfolder: 'product_induction' }, 'products.csv');
     } catch (err) {
       this.csvError.set(err instanceof Error ? err.message : 'CSV upload failed.');
       this.csvUploading.set(false);

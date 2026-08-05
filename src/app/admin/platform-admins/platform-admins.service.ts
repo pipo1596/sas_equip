@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
+import { repairCp1252MojibakeDeep, decodeWindows1252Text } from '../../shared/cp1252-mojibake.util';
 import { PlatformAdmin, PlatformAdminForm, PlatformAdminsPage } from './platform-admin.model';
 
 @Injectable({ providedIn: 'root' })
@@ -63,8 +64,8 @@ export class PlatformAdminsService {
 
   private async parseJson(response: Response): Promise<Record<string, unknown>> {
     try {
-      const text = await response.text();
-      return JSON.parse(text) as Record<string, unknown>;
+      const text = await decodeWindows1252Text(response);
+      return repairCp1252MojibakeDeep(JSON.parse(text) as Record<string, unknown>);
     } catch {
       return { success: false, message: 'Invalid server response.' };
     }

@@ -10,9 +10,10 @@ export class ImageUploadService {
     file: File,
     tpId: number,
     params?: Record<string, string | number>,
+    fileName?: string,
   ): Promise<string> {
     const body = new FormData();
-    body.append('file', file);
+    body.append('file', file, fileName ?? file.name);
     body.append('field_name', fieldName);
     body.append('tp_id', String(tpId));
 

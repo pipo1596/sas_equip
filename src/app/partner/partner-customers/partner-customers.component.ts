@@ -3,6 +3,7 @@ import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { PartnerModeService } from '../partner-mode.service';
 import { CustomersService } from './customers.service';
+import { CustomerModeService } from './customer-mode.service';
 import { Customer } from './customer.model';
 
 @Component({
@@ -14,6 +15,7 @@ import { Customer } from './customer.model';
 export class PartnerCustomersComponent implements OnInit {
   protected readonly partnerMode = inject(PartnerModeService);
   private readonly service = inject(CustomersService);
+  private readonly customerMode = inject(CustomerModeService);
   private readonly router = inject(Router);
 
   readonly customers = signal<Customer[]>([]);
@@ -98,6 +100,11 @@ export class PartnerCustomersComponent implements OnInit {
     this.router.navigate(['/partner', this.tpId, 'customers', customer.custId, 'edit'], {
       state: { customer },
     });
+  }
+
+  manageCustomer(customer: Customer): void {
+    this.customerMode.enter({ custId: customer.custId, customerName: customer.customerName });
+    this.router.navigate(['/partner', this.tpId, 'customers', customer.custId]);
   }
 
   openDeleteModal(customer: Customer): void {

@@ -1,8 +1,5 @@
 import { Routes } from '@angular/router';
 import { PartnerDashboardComponent } from './partner-dashboard/partner-dashboard.component';
-import { PartnerUniformProgramsComponent } from './partner-uniform-programs/partner-uniform-programs.component';
-import { PartnerRolesComponent } from './partner-roles/partner-roles.component';
-import { PartnerEmployeesComponent } from './partner-employees/partner-employees.component';
 
 export const PARTNER_ROUTES: Routes = [
   { path: ':id/dashboard', component: PartnerDashboardComponent },
@@ -13,16 +10,11 @@ export const PARTNER_ROUTES: Routes = [
     loadChildren: () => import('./products/products.routes').then(m => m.PRODUCT_ROUTES),
   },
 
-  { path: ':id/uniform-programs', component: PartnerUniformProgramsComponent },
-  { path: ':id/roles', component: PartnerRolesComponent },
-
-  // ── Customers (list + form — one shared chunk) ──────────────────────────────
+  // ── Customers (list + form + per-customer Uniform Programs/Roles/Employees — one shared chunk) ──
   {
     path: ':id/customers',
     loadChildren: () => import('./partner-customers/customers.routes').then(m => m.CUSTOMERS_ROUTES),
   },
-
-  { path: ':id/employees', component: PartnerEmployeesComponent },
 
   // ── Settings + users (one shared chunk) ────────────────────────────────────
   {

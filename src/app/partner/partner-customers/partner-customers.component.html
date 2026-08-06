@@ -53,9 +53,13 @@
           @for (customer of customers(); track customer.custId) {
             <tr>
               <td>
-                <div class="fw-semibold">{{ customer.customerName }}</div>
+                <button type="button" class="btn btn-link p-0 fw-semibold text-decoration-none" (click)="manageCustomer(customer)">
+                  {{ customer.customerName }}
+                </button>
                 @if (customer.customerUrl) {
-                  <a [href]="customer.customerUrl" target="_blank" class="small text-muted">{{ customer.customerUrl }}</a>
+                  <div>
+                    <a [href]="customer.customerUrl" target="_blank" class="small text-muted">{{ customer.customerUrl }}</a>
+                  </div>
                 }
               </td>
               <td class="font-monospace small">{{ customer.customerNmbr }}</td>
@@ -64,8 +68,9 @@
                 <span [class]="statusBadge(customer.status)"><span style="font-size:0.5rem;">&#9679;</span> {{ customer.status }}</span>
               </td>
               <td class="text-end">
-                <button class="btn btn-sm btn-outline-secondary m-1 px-3" (click)="editCustomer(customer)"><i class="bi bi-pencil"></i></button>
-                <button class="btn btn-sm btn-outline-danger m-1 px-3" (click)="openDeleteModal(customer)"><i class="bi bi-trash"></i></button>
+                <button class="btn btn-sm btn-outline-primary m-1 px-3" (click)="manageCustomer(customer)" title="Manage"><i class="bi bi-gear"></i></button>
+                <button class="btn btn-sm btn-outline-secondary m-1 px-3" (click)="editCustomer(customer)" title="Edit"><i class="bi bi-pencil"></i></button>
+                <button class="btn btn-sm btn-outline-danger m-1 px-3" (click)="openDeleteModal(customer)" title="Delete"><i class="bi bi-trash"></i></button>
               </td>
             </tr>
           }

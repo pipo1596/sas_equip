@@ -1,11 +1,22 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { PartnerModeService } from '../partner-mode.service';
+import { CustomerModeService } from '../partner-customers/customer-mode.service';
 
 @Component({
   selector: 'app-partner-uniform-programs',
   standalone: true,
   templateUrl: './partner-uniform-programs.component.html',
 })
-export class PartnerUniformProgramsComponent {
+export class PartnerUniformProgramsComponent implements OnInit {
   protected readonly partnerMode = inject(PartnerModeService);
+  protected readonly customerMode = inject(CustomerModeService);
+  private readonly route = inject(ActivatedRoute);
+
+  async ngOnInit(): Promise<void> {
+    const tpId = this.partnerMode.activePartner()?.tpId;
+    const customerId = Number(this.route.snapshot.paramMap.get('customerId'));
+    if (!tpId || !customerId) return;
+    await this.customerMode.ensure(tpId, customerId);
+  }
 }

@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { PartnerModeService } from '../partner-mode.service';
+import { CustomerModeService } from '../partner-customers/customer-mode.service';
 
 @Component({
   selector: 'app-partner-sidebar',
@@ -11,24 +12,41 @@ import { PartnerModeService } from '../partner-mode.service';
 })
 export class PartnerSidebarComponent {
   protected readonly partnerMode = inject(PartnerModeService);
+  protected readonly customerMode = inject(CustomerModeService);
   private readonly router = inject(Router);
 
   readonly inSettingsMode = signal(this.checkSettingsMode());
+  readonly inCustomerMode = signal(this.checkCustomerMode());
 
   constructor() {
     this.router.events
       .pipe(filter(e => e instanceof NavigationEnd))
-      .subscribe(() => this.inSettingsMode.set(this.checkSettingsMode()));
+      .subscribe(() => {
+        this.inSettingsMode.set(this.checkSettingsMode());
+        this.inCustomerMode.set(this.checkCustomerMode());
+      });
   }
 
   private checkSettingsMode(): boolean {
     return this.router.url.includes('/settings/') || this.router.url.endsWith('/settings');
   }
 
+  private checkCustomerMode(): boolean {
+    return /\/customers\/\d+\/(uniform-programs|roles|employees)(\/|$|\?)/.test(this.router.url);
+  }
+
   exitSettingsMode(): void {
     const partner = this.partnerMode.activePartner();
     if (partner) {
       this.router.navigate(['/partner', partner.tpId, 'dashboard']);
+    }
+  }
+
+  exitCustomerMode(): void {
+    const partner = this.partnerMode.activePartner();
+    this.customerMode.exit();
+    if (partner) {
+      this.router.navigate(['/partner', partner.tpId, 'customers']);
     }
   }
 

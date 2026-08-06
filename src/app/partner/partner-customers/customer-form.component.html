@@ -1,0 +1,178 @@
+<section class="page-shell">
+
+  <div class="page-shell-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div>
+      <h1 class="page-title">{{ isEdit ? 'Edit Customer' : 'New Customer' }}</h1>
+    </div>
+    <button type="button" class="btn btn-outline-secondary" (click)="cancel()">
+      <i class="bi bi-arrow-left me-2"></i>Back to Customers
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="d-flex justify-content-center align-items-center py-5">
+      <div class="spinner-border text-secondary" role="status">
+        <span class="visually-hidden">Loading…</span>
+      </div>
+    </div>
+  } @else {
+
+  @if (error()) {
+    <div class="alert alert-danger d-flex align-items-center gap-2 mb-3">
+      <i class="bi bi-exclamation-triangle-fill"></i><span>{{ error() }}</span>
+      <button class="btn-close ms-auto" (click)="error.set(null)"></button>
+    </div>
+  }
+
+  <form #customerForm="ngForm" (ngSubmit)="save()" novalidate>
+    <div class="row g-4">
+
+      <div class="col-12 col-lg-8">
+
+        <div class="card mb-4">
+          <div class="card-body">
+            <h6 class="card-title fw-semibold mb-3">Customer Information</h6>
+            <div class="row g-3">
+              <div class="col-12 col-sm-6">
+                <label class="form-label fw-medium">Customer Name <span class="text-danger">*</span></label>
+                <input type="text" class="form-control"
+                       name="customerName" [(ngModel)]="formData.customerName"
+                       required #nameCtrl="ngModel"
+                       [class.is-invalid]="nameCtrl.invalid && nameCtrl.touched" />
+                @if (nameCtrl.invalid && nameCtrl.touched) {
+                  <div class="invalid-feedback">Customer name is required.</div>
+                }
+              </div>
+              <div class="col-12 col-sm-6">
+                <label class="form-label fw-medium">Customer Number <span class="text-danger">*</span></label>
+                <input type="text" class="form-control font-monospace"
+                       name="customerNmbr" [(ngModel)]="formData.customerNmbr"
+                       required #nmbrCtrl="ngModel"
+                       [class.is-invalid]="nmbrCtrl.invalid && nmbrCtrl.touched" />
+                @if (nmbrCtrl.invalid && nmbrCtrl.touched) {
+                  <div class="invalid-feedback">Customer number is required.</div>
+                }
+              </div>
+              <div class="col-12 col-sm-6">
+                <label class="form-label fw-medium">Customer Type <span class="text-danger">*</span></label>
+                <input type="text" class="form-control"
+                       name="customerType" [(ngModel)]="formData.customerType"
+                       required #typeCtrl="ngModel"
+                       [class.is-invalid]="typeCtrl.invalid && typeCtrl.touched" />
+                @if (typeCtrl.invalid && typeCtrl.touched) {
+                  <div class="invalid-feedback">Customer type is required.</div>
+                }
+              </div>
+              <div class="col-12 col-sm-6">
+                <label class="form-label fw-medium">ERP Account Number</label>
+                <input type="text" class="form-control font-monospace"
+                       name="erpAccountNmbr" [(ngModel)]="formData.erpAccountNmbr" />
+              </div>
+              <div class="col-12">
+                <label class="form-label fw-medium">Customer URL</label>
+                <input type="url" class="form-control" name="customerUrl" [(ngModel)]="formData.customerUrl" placeholder="https://…" />
+              </div>
+              <div class="col-12">
+                <label class="form-label fw-medium">Notes</label>
+                <textarea class="form-control" name="notes" [(ngModel)]="formData.notes" rows="3"></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        @if (isEdit) {
+          <div class="card mb-4">
+            <div class="card-body">
+              <h6 class="card-title fw-semibold mb-3">Main Contact</h6>
+              <div class="row g-3">
+                <div class="col-12 col-sm-4">
+                  <label class="form-label fw-medium">Name</label>
+                  <input type="text" class="form-control" name="mainContactName" [(ngModel)]="formData.mainContactName" />
+                </div>
+                <div class="col-12 col-sm-4">
+                  <label class="form-label fw-medium">Email</label>
+                  <input type="email" class="form-control" name="mainContactEmail" [(ngModel)]="formData.mainContactEmail" />
+                </div>
+                <div class="col-12 col-sm-4">
+                  <label class="form-label fw-medium">Phone</label>
+                  <input type="tel" class="form-control" name="mainContactPhone" [(ngModel)]="formData.mainContactPhone" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card mb-4">
+            <div class="card-body">
+              <h6 class="card-title fw-semibold mb-3">Customer Service Rep</h6>
+              <div class="row g-3">
+                <div class="col-12 col-sm-4">
+                  <label class="form-label fw-medium">Name</label>
+                  <input type="text" class="form-control" name="csrName" [(ngModel)]="formData.csrName" />
+                </div>
+                <div class="col-12 col-sm-4">
+                  <label class="form-label fw-medium">Email</label>
+                  <input type="email" class="form-control" name="csrEmail" [(ngModel)]="formData.csrEmail" />
+                </div>
+                <div class="col-12 col-sm-4">
+                  <label class="form-label fw-medium">Phone</label>
+                  <input type="tel" class="form-control" name="csrPhone" [(ngModel)]="formData.csrPhone" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card mb-4">
+            <div class="card-body">
+              <h6 class="card-title fw-semibold mb-3">Department Support Contact</h6>
+              <div class="row g-3">
+                <div class="col-12 col-sm-4">
+                  <label class="form-label fw-medium">Name</label>
+                  <input type="text" class="form-control" name="supportName" [(ngModel)]="formData.supportName" />
+                </div>
+                <div class="col-12 col-sm-4">
+                  <label class="form-label fw-medium">Email</label>
+                  <input type="email" class="form-control" name="supportEmail" [(ngModel)]="formData.supportEmail" />
+                </div>
+                <div class="col-12 col-sm-4">
+                  <label class="form-label fw-medium">Phone</label>
+                  <input type="tel" class="form-control" name="supportPhone" [(ngModel)]="formData.supportPhone" />
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+
+      </div>
+
+      <div class="col-12 col-lg-4">
+
+        <div class="card mb-4">
+          <div class="card-body">
+            <h6 class="card-title fw-semibold mb-3">Status</h6>
+            <select class="form-select" name="status" [(ngModel)]="formData.status">
+              <option value="ACTIVE">Active</option>
+              <option value="INACTIVE">Inactive</option>
+            </select>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="d-flex justify-content-end gap-2 mt-2">
+      <button type="submit" class="btn btn-dark" [disabled]="saving()">
+        @if (saving()) {
+          <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving…
+        } @else {
+          <i class="bi bi-check-lg me-2"></i>{{ isEdit ? 'Save Changes' : 'Create Customer' }}
+        }
+      </button>
+      <button type="button" class="btn btn-outline-secondary" (click)="cancel()" [disabled]="saving()">Cancel</button>
+    </div>
+
+  </form>
+
+  } <!-- end @else loading -->
+
+</section>

@@ -18,5 +18,6 @@ export const environment = {
     productImages: 'APIPRDIMGS',
     imageUpload: '/cgi/SEPIMGUPL',
     tpAddresses: 'APITPADDR',
+    customers: 'APITPCSTMR',
   },
 };

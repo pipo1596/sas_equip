@@ -180,33 +180,30 @@
 
           <li class="nav-item">
             <a class="sidebar-nav-link"
-               [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'uniform-programs']"
-               routerLinkActive="active">
-              <i class="bi bi-person-badge nav-icon"></i>
-              <span>Uniform Programs</span>
-            </a>
-          </li>
-
-          <li class="nav-item">
-            <a class="sidebar-nav-link"
-               [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'roles']"
-               routerLinkActive="active">
-              <i class="bi bi-shield-check nav-icon"></i>
-              <span>Roles</span>
-            </a>
-          </li>
-
-          <li class="nav-item">
-            <a class="sidebar-nav-link"
                [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'customers']"
                routerLinkActive="active">
               <i class="bi bi-people nav-icon"></i>
               <span>Customers</span>
             </a>
           </li>
-
           <li class="nav-item">
-            <a class="sidebar-nav-link"
+            <a class="sidebar-nav-link sidebar-nav-sublink"
+               [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'uniform-programs']"
+               routerLinkActive="active">
+              <i class="bi bi-person-badge nav-icon"></i>
+              <span>Uniform Programs</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="sidebar-nav-link sidebar-nav-sublink"
+               [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'roles']"
+               routerLinkActive="active">
+              <i class="bi bi-shield-check nav-icon"></i>
+              <span>Roles</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="sidebar-nav-link sidebar-nav-sublink"
                [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'employees']"
                routerLinkActive="active">
               <i class="bi bi-person-vcard nav-icon"></i>

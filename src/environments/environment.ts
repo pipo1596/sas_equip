@@ -19,5 +19,6 @@ export const environment = {
     imageUpload: '/cgi/SEPIMGUPL',
     tpAddresses: 'APITPADDR',
     customers: 'APITPCSTMR',
+    customerEmployees: 'APITPCEMP',
   },
 };

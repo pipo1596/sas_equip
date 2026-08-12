@@ -5,6 +5,7 @@ import { PartnerModeService } from '../partner-mode.service';
 import { CustomerModeService } from '../partner-customers/customer-mode.service';
 import { CustomerEmployeesService } from './customer-employees.service';
 import { CustomerEmployee } from './customer-employee.model';
+import { DataResidencyRegion } from '../../shared/data-residency.service';
 
 @Component({
   selector: 'app-customer-employees',
@@ -30,6 +31,8 @@ export class CustomerEmployeesComponent implements OnInit {
   readonly showDeleteModal = signal(false);
   readonly deleting = signal(false);
   readonly deleteTarget = signal<CustomerEmployee | null>(null);
+
+  readonly region = signal<DataResidencyRegion | null>(null);
 
   readonly totalPages = computed(() => Math.max(1, Math.ceil(this.total() / this.pageSize())));
 
@@ -64,6 +67,7 @@ export class CustomerEmployeesComponent implements OnInit {
     const tpId = this.tpId;
     const custId = this.customerId;
     if (tpId && custId) await this.customerMode.ensure(tpId, custId);
+    if (tpId) this.region.set(await this.service.regionFor(tpId));
     this.loadEmployees();
   }
 
@@ -163,6 +167,10 @@ export class CustomerEmployeesComponent implements OnInit {
   avatarColor(employee: CustomerEmployee): string {
     const hash = (employee.empId ?? 0) % this.avatarColors.length;
     return this.avatarColors[hash];
+  }
+
+  regionLabel(): string {
+    return this.region() === 'CA' ? 'Canada' : 'United States';
   }
 
   statusBadgeClass(status: string): string {

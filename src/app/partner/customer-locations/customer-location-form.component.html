@@ -1,0 +1,134 @@
+<section class="page-shell">
+
+  <div class="page-shell-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div>
+      <h1 class="page-title">{{ isEdit ? 'Edit Location' : 'New Location' }}</h1>
+      <p class="page-subtitle">for <strong>{{ customerMode.activeCustomer()?.customerName }}</strong></p>
+    </div>
+    <button type="button" class="btn btn-outline-secondary" (click)="cancel()">
+      <i class="bi bi-arrow-left me-2"></i>Back to Locations
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="d-flex justify-content-center align-items-center py-5">
+      <div class="spinner-border text-secondary" role="status">
+        <span class="visually-hidden">Loading…</span>
+      </div>
+    </div>
+  } @else {
+
+  <form #locationForm="ngForm" (ngSubmit)="save()" novalidate>
+    <div class="row g-4">
+      <div class="col-12 col-lg-8">
+
+        <div class="card mb-4">
+          <div class="card-body">
+            <h6 class="card-title fw-semibold mb-3">Hierarchy</h6>
+            <label class="form-label fw-medium">Parent Region</label>
+            <select class="form-select" name="parentId" [(ngModel)]="formData.parentId">
+              <option [ngValue]="null">— Top level (Region) —</option>
+              @for (region of regions(); track region.locId) {
+                <option [ngValue]="region.locId">{{ region.locName }}</option>
+              }
+            </select>
+            <div class="form-text mt-2">Leave blank if this location is itself a region.</div>
+          </div>
+        </div>
+
+        <div class="card mb-4">
+          <div class="card-body">
+            <h6 class="card-title fw-semibold mb-3">Location Information</h6>
+
+            <div class="row g-3">
+              <div class="col-12 col-sm-6">
+                <label class="form-label fw-medium">Location Name <span class="text-danger">*</span></label>
+                <input type="text" class="form-control"
+                       name="locName" [(ngModel)]="formData.locName"
+                       required #nameCtrl="ngModel"
+                       [class.is-invalid]="nameCtrl.invalid && nameCtrl.touched" />
+                @if (nameCtrl.invalid && nameCtrl.touched) {
+                  <div class="invalid-feedback">Location name is required.</div>
+                }
+              </div>
+              <div class="col-12 col-sm-6">
+                <label class="form-label fw-medium">Location Code <span class="text-danger">*</span></label>
+                <input type="text" class="form-control font-monospace"
+                       name="locCode" [(ngModel)]="formData.locCode"
+                       required #codeCtrl="ngModel"
+                       [class.is-invalid]="codeCtrl.invalid && codeCtrl.touched" />
+                @if (codeCtrl.invalid && codeCtrl.touched) {
+                  <div class="invalid-feedback">Location code is required.</div>
+                }
+              </div>
+              <div class="col-12 col-sm-6">
+                <label class="form-label fw-medium">Type <span class="text-danger">*</span></label>
+                <select class="form-select" name="locType" [(ngModel)]="formData.locType">
+                  <option value="REGION">Region</option>
+                  <option value="STATION">Station</option>
+                  <option value="DEPOT">Depot</option>
+                </select>
+              </div>
+              <div class="col-12 col-sm-6"></div>
+              <div class="col-12 col-sm-6">
+                <label class="form-label fw-medium">City <span class="text-danger">*</span></label>
+                <input type="text" class="form-control"
+                       name="city" [(ngModel)]="formData.city"
+                       required #cityCtrl="ngModel"
+                       [class.is-invalid]="cityCtrl.invalid && cityCtrl.touched" />
+                @if (cityCtrl.invalid && cityCtrl.touched) {
+                  <div class="invalid-feedback">City is required.</div>
+                }
+              </div>
+              <div class="col-12 col-sm-6">
+                <label class="form-label fw-medium">Province / State <span class="text-danger">*</span></label>
+                <input type="text" class="form-control"
+                       name="province" [(ngModel)]="formData.province"
+                       required #provinceCtrl="ngModel"
+                       [class.is-invalid]="provinceCtrl.invalid && provinceCtrl.touched" />
+                @if (provinceCtrl.invalid && provinceCtrl.touched) {
+                  <div class="invalid-feedback">Province/state is required.</div>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="col-12 col-lg-4">
+
+        <div class="card mb-4">
+          <div class="card-body">
+            <h6 class="card-title fw-semibold mb-3">Status</h6>
+            <select class="form-select" name="status" [(ngModel)]="formData.status">
+              <option value="ACTIVE">Active</option>
+              <option value="INACTIVE">Inactive</option>
+            </select>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="d-flex align-items-center justify-content-end gap-2 mt-2">
+      @if (error()) {
+        <div class="alert alert-danger d-flex align-items-center gap-2 mb-0 py-2 px-3 me-auto" role="alert">
+          <i class="bi bi-exclamation-triangle-fill"></i>
+          <span>{{ error() }}</span>
+        </div>
+      }
+      <button type="button" class="btn btn-outline-secondary" (click)="cancel()" [disabled]="saving()">Cancel</button>
+      <button type="submit" class="btn btn-dark" [disabled]="saving()">
+        @if (saving()) {
+          <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving…
+        } @else {
+          <i class="bi bi-check-lg me-2"></i>{{ isEdit ? 'Save Changes' : 'Create Location' }}
+        }
+      </button>
+    </div>
+
+  </form>
+
+  } <!-- end @else loading -->
+
+</section>

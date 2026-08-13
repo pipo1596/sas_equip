@@ -5,6 +5,8 @@ import { PartnerUniformProgramsComponent } from '../partner-uniform-programs/par
 import { PartnerRolesComponent } from '../partner-roles/partner-roles.component';
 import { CustomerEmployeesComponent } from '../customer-employees/customer-employees.component';
 import { CustomerEmployeeFormComponent } from '../customer-employees/customer-employee-form.component';
+import { CustomerLocationsComponent } from '../customer-locations/customer-locations.component';
+import { CustomerLocationFormComponent } from '../customer-locations/customer-location-form.component';
 
 // All routes are relative to partner/:id/customers
 export const CUSTOMERS_ROUTES: Routes = [
@@ -17,4 +19,7 @@ export const CUSTOMERS_ROUTES: Routes = [
   { path: ':customerId/employees', component: CustomerEmployeesComponent },
   { path: ':customerId/employees/new', component: CustomerEmployeeFormComponent },
   { path: ':customerId/employees/:employeeId/edit', component: CustomerEmployeeFormComponent },
+  { path: ':customerId/locations', component: CustomerLocationsComponent },
+  { path: ':customerId/locations/new', component: CustomerLocationFormComponent },
+  { path: ':customerId/locations/:locationId/edit', component: CustomerLocationFormComponent },
 ];

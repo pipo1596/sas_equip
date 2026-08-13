@@ -82,9 +82,8 @@
                     </button>
                   } @else if (loc.level > 0) {
                     <i class="bi bi-arrow-return-right text-muted" style="font-size:0.75rem; width:1rem;"></i>
-                  } @else {
-                    <i [class]="typeIcon(loc.locType) + ' text-muted'" style="width:1rem;"></i>
                   }
+                  <i [class]="typeIcon(loc.locType) + ' text-muted'" style="width:1rem;"></i>
                   <div>
                     <div class="fw-medium">{{ loc.locName }}</div>
                     <div class="text-muted small font-monospace">{{ loc.locCode }}</div>

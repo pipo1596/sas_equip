@@ -71,24 +71,14 @@
               </div>
               <div class="col-12 col-sm-6"></div>
               <div class="col-12 col-sm-6">
-                <label class="form-label fw-medium">City <span class="text-danger">*</span></label>
+                <label class="form-label fw-medium">City</label>
                 <input type="text" class="form-control"
-                       name="city" [(ngModel)]="formData.city"
-                       required #cityCtrl="ngModel"
-                       [class.is-invalid]="cityCtrl.invalid && cityCtrl.touched" />
-                @if (cityCtrl.invalid && cityCtrl.touched) {
-                  <div class="invalid-feedback">City is required.</div>
-                }
+                       name="city" [(ngModel)]="formData.city" />
               </div>
               <div class="col-12 col-sm-6">
-                <label class="form-label fw-medium">Province / State <span class="text-danger">*</span></label>
+                <label class="form-label fw-medium">Province / State</label>
                 <input type="text" class="form-control"
-                       name="province" [(ngModel)]="formData.province"
-                       required #provinceCtrl="ngModel"
-                       [class.is-invalid]="provinceCtrl.invalid && provinceCtrl.touched" />
-                @if (provinceCtrl.invalid && provinceCtrl.touched) {
-                  <div class="invalid-feedback">Province/state is required.</div>
-                }
+                       name="province" [(ngModel)]="formData.province" />
               </div>
             </div>
           </div>

@@ -23,5 +23,6 @@ export const environment = {
     customerEmployeesCa: 'APITPCEMCA',
     customerEmployeesLockCheck: 'APITPCEMCK',
     customerLocations: 'APITPCLOC',
+    customerRoles: 'APITPCROLE',
   },
 };

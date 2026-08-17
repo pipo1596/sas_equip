@@ -25,14 +25,14 @@
         <div class="card mb-4">
           <div class="card-body">
             <h6 class="card-title fw-semibold mb-3">Hierarchy</h6>
-            <label class="form-label fw-medium">Parent Region</label>
+            <label class="form-label fw-medium">Parent Location</label>
             <select class="form-select" name="parentId" [(ngModel)]="formData.parentId">
-              <option [ngValue]="null">— Top level (Region) —</option>
-              @for (region of regions(); track region.locId) {
-                <option [ngValue]="region.locId">{{ region.locName }}</option>
+              <option [ngValue]="null">— Top level —</option>
+              @for (loc of parentOptions(); track loc.locId) {
+                <option [ngValue]="loc.locId">{{ loc.locName }} ({{ loc.locType }})</option>
               }
             </select>
-            <div class="form-text mt-2">Leave blank if this location is itself a region.</div>
+            <div class="form-text mt-2">Leave blank if this is a top-level location.</div>
           </div>
         </div>
 

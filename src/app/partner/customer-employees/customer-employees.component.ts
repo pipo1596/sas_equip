@@ -173,6 +173,10 @@ export class CustomerEmployeesComponent implements OnInit {
     return this.region() === 'CA' ? 'Canada' : 'United States';
   }
 
+  regionCountryShort(): string {
+    return this.region() === 'CA' ? 'Canada' : 'USA';
+  }
+
   statusBadgeClass(status: string): string {
     switch (status) {
       case 'ACTIVE': return 'badge bg-success-subtle text-success border border-success-subtle';

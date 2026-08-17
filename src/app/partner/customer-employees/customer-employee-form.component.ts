@@ -33,6 +33,7 @@ export class CustomerEmployeeFormComponent implements OnInit {
   customerId: number | null = null;
 
   formData: CustomerEmployeeForm = {
+    locIds: [],
     empNum: '', internalId: '', badgeNum: '',
     firstName: '', lastName: '', phoneNumber: '', emailAddress: '',
     role: '', empRank: '', hireDate: '',
@@ -82,6 +83,7 @@ export class CustomerEmployeeFormComponent implements OnInit {
 
   private prefill(employee: CustomerEmployee): void {
     this.formData = {
+      locIds:         employee.locIds ?? [],
       empNum:         employee.empNum ?? '',
       internalId:     employee.internalId ?? '',
       badgeNum:       employee.badgeNum ?? '',

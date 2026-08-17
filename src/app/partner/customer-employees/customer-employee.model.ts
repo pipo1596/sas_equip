@@ -2,6 +2,7 @@ export interface CustomerEmployee {
   empId: number;
   tpId: number;
   custId: number;
+  locIds: number[];
   empNum: string | null;
   internalId: string | null;
   badgeNum: string | null;
@@ -26,6 +27,7 @@ export interface CustomerEmployee {
 }
 
 export interface CustomerEmployeeForm {
+  locIds: number[];
   empNum: string;
   internalId: string;
   badgeNum: string;

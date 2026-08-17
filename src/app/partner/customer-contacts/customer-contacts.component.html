@@ -1,0 +1,258 @@
+<section class="page-shell">
+
+  <div class="page-shell-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div>
+      <h1 class="page-title">Contacts</h1>
+      <p class="page-subtitle">Manage contacts for <strong>{{ customerMode.activeCustomer()?.customerName }}</strong></p>
+    </div>
+    @if (contacts().length > 0) {
+      <button class="btn btn-dark" type="button" (click)="openAddModal()">
+        <i class="bi bi-plus-lg me-2"></i>Add contact
+      </button>
+    }
+  </div>
+
+  @if (loading()) {
+    <div class="text-center py-5 text-muted">
+      <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>
+      Loading…
+    </div>
+  } @else if (loadError()) {
+    <div class="alert alert-danger d-flex align-items-center gap-2 mt-3" role="alert">
+      <i class="bi bi-exclamation-triangle-fill"></i>
+      <span>{{ loadError() }}</span>
+    </div>
+  } @else if (contacts().length === 0) {
+    <div class="text-center py-5 text-muted mt-3">
+      <i class="bi bi-person-lines-fill fs-2 d-block mb-3 opacity-25"></i>
+      <p class="mb-3">No contacts on file yet.</p>
+      <button class="btn btn-outline-dark btn-sm" type="button" (click)="openAddModal()">
+        <i class="bi bi-plus-lg me-2"></i>Add first contact
+      </button>
+    </div>
+  } @else {
+    <div class="row g-3 mt-1" (click)="closeMenu()">
+      @for (contact of contacts(); track contact.contactId) {
+        <div class="col-12 col-lg-6">
+        <div class="card border shadow-sm rounded-3 overflow-hidden">
+
+          <!-- Header row -->
+          <div class="d-flex align-items-center gap-2 px-4 py-3 border-bottom bg-white">
+            <span class="badge rounded-pill px-3 py-2 fw-semibold"
+                  style="background:#EDE9FE; color:#6D28D9; border:1px solid #DDD6FE; font-size:.75rem;">
+              <i class="bi {{ typeIcon(contact.contactType) }} me-1"></i>
+              {{ typeLabel(contact.contactType) }}
+            </span>
+            @if (contact.isPrimary === 'Y') {
+              <span class="badge rounded-pill fw-semibold px-2 py-1"
+                    style="background:#FEF3C7; color:#B45309; border:1px solid #FDE68A; font-size:.7rem;">
+                <i class="bi bi-star-fill me-1" style="font-size:.6rem;"></i>Primary
+              </span>
+            }
+            <span class="badge rounded-pill fw-semibold px-2 py-1"
+                  [class]="contact.status === 'ACTIVE'
+                    ? 'bg-success-subtle text-success border border-success-subtle'
+                    : 'bg-secondary-subtle text-secondary border border-secondary-subtle'"
+                  style="font-size:.7rem;">
+              <span class="me-1" style="font-size:.45rem; vertical-align:middle;">&#9679;</span>
+              {{ contact.status === 'ACTIVE' ? 'Active' : 'Inactive' }}
+            </span>
+            <div class="ms-auto position-relative">
+              <button class="btn btn-sm btn-link text-muted p-0 lh-1" type="button"
+                      (click)="toggleMenu(contact.contactId, $event)">
+                <i class="bi bi-three-dots-vertical"></i>
+              </button>
+              @if (openMenuId() === contact.contactId) {
+                <div class="dropdown-menu show shadow-sm border"
+                     style="position:absolute; right:0; top:calc(100% + 4px); min-width:130px; z-index:1050;">
+                  <button class="dropdown-item text-danger small" type="button"
+                          (click)="openDeleteModal(contact); closeMenu()">
+                    <i class="bi bi-trash me-2"></i>Delete
+                  </button>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Contact body -->
+          <div class="px-4 py-3 bg-white">
+            <p class="fw-bold mb-1">{{ contact.contactName }}</p>
+            @if (contact.contactTitle) {
+              <p class="text-muted small mb-1">{{ contact.contactTitle }}</p>
+            }
+            <p class="text-muted small mb-1">
+              <i class="bi bi-envelope me-1"></i>{{ contact.contactEmail }}
+            </p>
+            @if (contact.contactPhone) {
+              <p class="text-muted small mb-1">
+                <i class="bi bi-telephone me-1"></i>{{ contact.contactPhone }}
+              </p>
+            }
+            @if (contact.notes) {
+              <p class="text-muted small mb-0 fst-italic">{{ contact.notes }}</p>
+            }
+          </div>
+
+          <!-- Footer row -->
+          <div class="d-flex align-items-center justify-content-end px-4 py-3 border-top bg-white">
+            <button class="btn btn-sm btn-outline-secondary" type="button" (click)="openEditModal(contact)">
+              <i class="bi bi-pencil me-1"></i>Edit
+            </button>
+          </div>
+
+        </div>
+        </div>
+      }
+    </div>
+  }
+
+</section>
+
+<!-- Add / Edit Modal -->
+@if (showFormModal()) {
+  <div class="modal-backdrop fade show"></div>
+  <div class="modal d-block" tabindex="-1" role="dialog" aria-modal="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title">
+            <i class="bi bi-person-lines-fill me-2 text-muted"></i>
+            {{ editingId() === null ? 'Add contact' : 'Edit contact' }}
+          </h5>
+          <button class="btn-close" (click)="closeFormModal()" [disabled]="saving()"></button>
+        </div>
+
+        <div class="modal-body pt-3">
+          <form (ngSubmit)="saveContact()" id="contactForm" novalidate>
+
+            <div class="row g-3">
+
+              <div class="col-md-8">
+                <label class="form-label small fw-semibold text-uppercase text-muted" for="cf-name">Contact Name</label>
+                <input id="cf-name" type="text" name="contactName" maxlength="150" placeholder="Full name"
+                       class="form-control" [class.is-invalid]="submitted() && !form.contactName"
+                       [(ngModel)]="form.contactName" />
+                <div class="invalid-feedback">Contact name is required.</div>
+              </div>
+
+              <div class="col-md-4 d-flex align-items-end flex-column justify-content-end">
+                <div class="form-check mb-2">
+                  <input id="cf-primary" type="checkbox" class="form-check-input" [(ngModel)]="form.isPrimary" name="isPrimary" />
+                  <label class="form-check-label" for="cf-primary">Primary</label>
+                </div>
+                @if (primaryConflict) {
+                  <div class="text-danger small mb-1">Another contact is already primary.</div>
+                }
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label small fw-semibold text-uppercase text-muted" for="cf-title">Title <span class="fw-normal text-muted">(optional)</span></label>
+                <input id="cf-title" type="text" class="form-control" [(ngModel)]="form.contactTitle" name="contactTitle"
+                       maxlength="100" placeholder="e.g. Operations Manager" />
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label small fw-semibold text-uppercase text-muted" for="cf-type">Contact Type</label>
+                <select id="cf-type" class="form-select" [(ngModel)]="form.contactType" name="contactType">
+                  @for (t of contactTypes; track t.value) {
+                    <option [value]="t.value">{{ t.label }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label small fw-semibold text-uppercase text-muted" for="cf-email">Email</label>
+                <input id="cf-email" type="email" name="contactEmail" maxlength="150" placeholder="name@example.com"
+                       class="form-control" [class.is-invalid]="submitted() && (!form.contactEmail || emailError())"
+                       [(ngModel)]="form.contactEmail" />
+                <div class="invalid-feedback">
+                  @if (!form.contactEmail) { Email is required. }
+                  @else { Enter a valid email address. }
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label small fw-semibold text-uppercase text-muted" for="cf-phone">Phone <span class="fw-normal text-muted">(optional)</span></label>
+                <input id="cf-phone" type="tel" class="form-control" [(ngModel)]="form.contactPhone" name="contactPhone"
+                       maxlength="20" placeholder="(555) 555-5555" />
+              </div>
+
+              <div class="col-12">
+                <label class="form-label small fw-semibold text-uppercase text-muted" for="cf-notes">Notes <span class="fw-normal text-muted">(optional)</span></label>
+                <textarea id="cf-notes" class="form-control" [(ngModel)]="form.notes" name="notes"
+                          maxlength="500" rows="2" placeholder="Additional notes"></textarea>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label small fw-semibold text-uppercase text-muted" for="cf-status">Status</label>
+                <select id="cf-status" class="form-select" [(ngModel)]="form.status" name="status">
+                  <option value="ACTIVE">Active</option>
+                  <option value="INACTIVE">Inactive</option>
+                </select>
+              </div>
+
+            </div>
+
+            @if (saveError()) {
+              <div class="alert alert-danger d-flex align-items-center gap-2 mt-3 mb-0" role="alert">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <span>{{ saveError() }}</span>
+              </div>
+            }
+
+          </form>
+        </div>
+
+        <div class="modal-footer border-0 pt-0">
+          <button class="btn btn-outline-secondary" type="button" (click)="closeFormModal()" [disabled]="saving()">Cancel</button>
+          <button class="btn btn-dark" type="submit" form="contactForm" [disabled]="saving()">
+            @if (saving()) {
+              <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving…
+            } @else {
+              <i class="bi bi-check-lg me-1"></i>{{ editingId() === null ? 'Add contact' : 'Save changes' }}
+            }
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Delete Confirm Modal -->
+@if (showDeleteModal()) {
+  <div class="modal-backdrop fade show"></div>
+  <div class="modal d-block" tabindex="-1" role="dialog" aria-modal="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i>Delete Contact</h5>
+          <button class="btn-close" (click)="closeDeleteModal()" [disabled]="deleting()"></button>
+        </div>
+        <div class="modal-body pt-2">
+          @if (deleteTarget(); as target) {
+            <p class="mb-1">Delete <strong>{{ target.contactName }}</strong>?</p>
+            <p class="text-muted small mb-0">{{ target.contactEmail }}</p>
+          }
+          @if (deleteError()) {
+            <div class="alert alert-danger d-flex align-items-center gap-2 mt-3 mb-0" role="alert">
+              <i class="bi bi-exclamation-triangle-fill"></i>
+              <span>{{ deleteError() }}</span>
+            </div>
+          }
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button class="btn btn-outline-secondary" type="button" (click)="closeDeleteModal()" [disabled]="deleting()">Cancel</button>
+          <button class="btn btn-danger" type="button" (click)="confirmDelete()" [disabled]="deleting()">
+            @if (deleting()) {
+              <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Deleting…
+            } @else {
+              <i class="bi bi-trash me-2"></i>Delete
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

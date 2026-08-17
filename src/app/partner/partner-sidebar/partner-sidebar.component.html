@@ -151,10 +151,19 @@
 
           <li class="nav-item">
             <a class="sidebar-nav-link"
-               [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'customers', customerMode.activeCustomer()?.custId, 'uniform-programs']"
+               [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'customers', customerMode.activeCustomer()?.custId, 'addresses']"
                routerLinkActive="active">
-              <i class="bi bi-person-badge nav-icon"></i>
-              <span>Uniform Programs</span>
+              <i class="bi bi-geo-alt nav-icon"></i>
+              <span>Addresses</span>
+            </a>
+          </li>
+
+          <li class="nav-item">
+            <a class="sidebar-nav-link"
+               [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'customers', customerMode.activeCustomer()?.custId, 'contacts']"
+               routerLinkActive="active">
+              <i class="bi bi-person-lines-fill nav-icon"></i>
+              <span>Contacts</span>
             </a>
           </li>
 
@@ -182,6 +191,15 @@
                routerLinkActive="active">
               <i class="bi bi-map nav-icon"></i>
               <span>Locations</span>
+            </a>
+          </li>
+
+          <li class="nav-item">
+            <a class="sidebar-nav-link"
+               [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'customers', customerMode.activeCustomer()?.custId, 'uniform-programs']"
+               routerLinkActive="active">
+              <i class="bi bi-person-badge nav-icon"></i>
+              <span>Uniform Programs</span>
             </a>
           </li>
 

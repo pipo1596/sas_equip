@@ -24,7 +24,7 @@ export class CustomerLocationFormComponent implements OnInit {
   readonly loading = signal(false);
   readonly saving = signal(false);
   readonly error = signal<string | null>(null);
-  readonly regions = signal<CustomerLocation[]>([]);
+  readonly parentOptions = signal<CustomerLocation[]>([]);
 
   isEdit = false;
   locId: number | null = null;
@@ -52,7 +52,7 @@ export class CustomerLocationFormComponent implements OnInit {
 
     const tpId = this.tpId;
     if (tpId && this.customerId) await this.customerMode.ensure(tpId, this.customerId);
-    if (tpId && this.customerId) await this.loadRegions();
+    if (tpId && this.customerId) await this.loadParentOptions();
 
     if (idParam) {
       if (!tpId || !this.customerId || this.locId == null) return;
@@ -74,12 +74,12 @@ export class CustomerLocationFormComponent implements OnInit {
     }
   }
 
-  private async loadRegions(): Promise<void> {
+  private async loadParentOptions(): Promise<void> {
     const tpId = this.tpId;
     if (!tpId || !this.customerId) return;
     try {
       const locs = await this.service.listAll(tpId, this.customerId);
-      this.regions.set(locs.filter(l => l.locType === 'REGION' && l.locId !== this.locId));
+      this.parentOptions.set(locs.filter(l => l.locId !== this.locId));
     } catch { /* non-critical */ }
   }
 

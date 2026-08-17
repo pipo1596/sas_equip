@@ -5,6 +5,8 @@ import { PartnerModeService } from '../partner-mode.service';
 import { CustomerModeService } from '../partner-customers/customer-mode.service';
 import { CustomerLocationsService } from './customer-locations.service';
 import { CustomerLocation } from './customer-location.model';
+import { CustomerEmployeesService } from '../customer-employees/customer-employees.service';
+import { CustomerEmployee } from '../customer-employees/customer-employee.model';
 
 interface LocationRow extends CustomerLocation {
   level: number;
@@ -23,6 +25,7 @@ export class CustomerLocationsComponent implements OnInit {
   protected readonly partnerMode = inject(PartnerModeService);
   protected readonly customerMode = inject(CustomerModeService);
   private readonly service = inject(CustomerLocationsService);
+  private readonly employeesService = inject(CustomerEmployeesService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
 
@@ -39,6 +42,17 @@ export class CustomerLocationsComponent implements OnInit {
   readonly deleting = signal(false);
   readonly deleteTarget = signal<CustomerLocation | null>(null);
 
+  readonly showAssignModal = signal(false);
+  readonly assignTarget = signal<CustomerLocation | null>(null);
+  readonly loadingEmployees = signal(false);
+  readonly savingAssignments = signal(false);
+  readonly assignError = signal<string | null>(null);
+  readonly allEmployees = signal<CustomerEmployee[]>([]);
+  readonly assignedIds = signal<Set<number>>(new Set());
+  readonly assignSearch = signal('');
+  readonly assignRoleFilter = signal('ALL');
+
+  private assignSearchTimer: ReturnType<typeof setTimeout> | null = null;
   private searchTimer: ReturnType<typeof setTimeout> | null = null;
 
   protected get tpId(): number | undefined {
@@ -85,6 +99,27 @@ export class CustomerLocationsComponent implements OnInit {
   readonly employeeTotal = computed(() =>
     this.locations().reduce((sum, l) => sum + (l.employeeCount ?? 0), 0)
   );
+
+  readonly assignRoles = computed(() => {
+    const roles = new Set<string>();
+    for (const emp of this.allEmployees()) {
+      if (emp.role) roles.add(emp.role);
+    }
+    return Array.from(roles).sort();
+  });
+
+  readonly filteredAssignEmployees = computed(() => {
+    const term = this.assignSearch().trim().toLowerCase();
+    const role = this.assignRoleFilter();
+    return this.allEmployees().filter(emp => {
+      if (role !== 'ALL' && emp.role !== role) return false;
+      if (term) {
+        const name = `${emp.firstName ?? ''} ${emp.lastName ?? ''}`.toLowerCase();
+        if (!name.includes(term) && !emp.emailAddress.toLowerCase().includes(term)) return false;
+      }
+      return true;
+    });
+  });
 
   async ngOnInit(): Promise<void> {
     const tpId = this.tpId;
@@ -231,6 +266,83 @@ export class CustomerLocationsComponent implements OnInit {
       this.closeDeleteModal();
     } finally {
       this.deleting.set(false);
+    }
+  }
+
+  async openAssignModal(location: CustomerLocation): Promise<void> {
+    const tpId = this.tpId;
+    const custId = this.customerId;
+    if (!tpId || !custId) return;
+    this.assignTarget.set(location);
+    this.assignSearch.set('');
+    this.assignRoleFilter.set('ALL');
+    this.assignError.set(null);
+    this.showAssignModal.set(true);
+    this.loadingEmployees.set(true);
+    try {
+      const [employees, assignedEmpIds] = await Promise.all([
+        this.employeesService.listAll(tpId, custId),
+        this.service.getAssignedEmployeeIds(tpId, custId, location.locId),
+      ]);
+      this.allEmployees.set(employees);
+      this.assignedIds.set(new Set(assignedEmpIds));
+    } catch (err) {
+      this.assignError.set(err instanceof Error ? err.message : 'Failed to load employees.');
+    } finally {
+      this.loadingEmployees.set(false);
+    }
+  }
+
+  closeAssignModal(): void {
+    this.showAssignModal.set(false);
+    this.assignTarget.set(null);
+    this.allEmployees.set([]);
+    this.assignedIds.set(new Set());
+  }
+
+  onAssignSearchChange(value: string): void {
+    if (this.assignSearchTimer) clearTimeout(this.assignSearchTimer);
+    this.assignSearchTimer = setTimeout(() => this.assignSearch.set(value), 200);
+  }
+
+  clearAssignFilters(): void {
+    this.assignSearch.set('');
+    this.assignRoleFilter.set('ALL');
+  }
+
+  toggleAssign(empId: number): void {
+    this.assignedIds.update(set => {
+      const next = new Set(set);
+      next.has(empId) ? next.delete(empId) : next.add(empId);
+      return next;
+    });
+  }
+
+  employeeName(emp: CustomerEmployee): string {
+    const parts = [emp.firstName, emp.lastName].filter(Boolean);
+    return parts.length ? parts.join(' ') : emp.emailAddress;
+  }
+
+  employeeSubtitle(emp: CustomerEmployee): string {
+    return [emp.role, emp.empRank, emp.emailAddress].filter(Boolean).join(' · ');
+  }
+
+  async saveAssignments(): Promise<void> {
+    const tpId = this.tpId;
+    const custId = this.customerId;
+    const target = this.assignTarget();
+    if (!tpId || !custId || !target) return;
+
+    this.savingAssignments.set(true);
+    this.assignError.set(null);
+    try {
+      await this.service.assignEmployees(tpId, custId, target.locId, Array.from(this.assignedIds()));
+      this.closeAssignModal();
+      await this.loadLocations();
+    } catch (err) {
+      this.assignError.set(err instanceof Error ? err.message : 'Failed to save assignments.');
+    } finally {
+      this.savingAssignments.set(false);
     }
   }
 

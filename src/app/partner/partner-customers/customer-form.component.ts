@@ -31,9 +31,6 @@ export class CustomerFormComponent implements OnInit {
     customerName: '', customerNmbr: '', erpAccountNmbr: '',
     customerType: '', status: 'ACTIVE',
     customerUrl: '', notes: '',
-    mainContactName: '', mainContactEmail: '', mainContactPhone: '',
-    csrName: '', csrEmail: '', csrPhone: '',
-    supportName: '', supportEmail: '', supportPhone: '',
   };
 
   protected get tpId(): number | undefined {
@@ -68,15 +65,6 @@ export class CustomerFormComponent implements OnInit {
       status:          customer.status ?? 'ACTIVE',
       customerUrl:     customer.customerUrl ?? '',
       notes:           customer.notes ?? '',
-      mainContactName:  customer.mainContactName ?? '',
-      mainContactEmail: customer.mainContactEmail ?? '',
-      mainContactPhone: customer.mainContactPhone ?? '',
-      csrName:  customer.csrName ?? '',
-      csrEmail: customer.csrEmail ?? '',
-      csrPhone: customer.csrPhone ?? '',
-      supportName:  customer.supportName ?? '',
-      supportEmail: customer.supportEmail ?? '',
-      supportPhone: customer.supportPhone ?? '',
     };
     this.cdr.markForCheck();
   }

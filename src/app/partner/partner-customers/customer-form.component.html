@@ -80,68 +80,6 @@
           </div>
         </div>
 
-        @if (isEdit) {
-          <div class="card mb-4">
-            <div class="card-body">
-              <h6 class="card-title fw-semibold mb-3">Main Contact</h6>
-              <div class="row g-3">
-                <div class="col-12 col-sm-4">
-                  <label class="form-label fw-medium">Name</label>
-                  <input type="text" class="form-control" name="mainContactName" [(ngModel)]="formData.mainContactName" />
-                </div>
-                <div class="col-12 col-sm-4">
-                  <label class="form-label fw-medium">Email</label>
-                  <input type="email" class="form-control" name="mainContactEmail" [(ngModel)]="formData.mainContactEmail" />
-                </div>
-                <div class="col-12 col-sm-4">
-                  <label class="form-label fw-medium">Phone</label>
-                  <input type="tel" class="form-control" name="mainContactPhone" [(ngModel)]="formData.mainContactPhone" />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="card mb-4">
-            <div class="card-body">
-              <h6 class="card-title fw-semibold mb-3">Customer Service Rep</h6>
-              <div class="row g-3">
-                <div class="col-12 col-sm-4">
-                  <label class="form-label fw-medium">Name</label>
-                  <input type="text" class="form-control" name="csrName" [(ngModel)]="formData.csrName" />
-                </div>
-                <div class="col-12 col-sm-4">
-                  <label class="form-label fw-medium">Email</label>
-                  <input type="email" class="form-control" name="csrEmail" [(ngModel)]="formData.csrEmail" />
-                </div>
-                <div class="col-12 col-sm-4">
-                  <label class="form-label fw-medium">Phone</label>
-                  <input type="tel" class="form-control" name="csrPhone" [(ngModel)]="formData.csrPhone" />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="card mb-4">
-            <div class="card-body">
-              <h6 class="card-title fw-semibold mb-3">Department Support Contact</h6>
-              <div class="row g-3">
-                <div class="col-12 col-sm-4">
-                  <label class="form-label fw-medium">Name</label>
-                  <input type="text" class="form-control" name="supportName" [(ngModel)]="formData.supportName" />
-                </div>
-                <div class="col-12 col-sm-4">
-                  <label class="form-label fw-medium">Email</label>
-                  <input type="email" class="form-control" name="supportEmail" [(ngModel)]="formData.supportEmail" />
-                </div>
-                <div class="col-12 col-sm-4">
-                  <label class="form-label fw-medium">Phone</label>
-                  <input type="tel" class="form-control" name="supportPhone" [(ngModel)]="formData.supportPhone" />
-                </div>
-              </div>
-            </div>
-          </div>
-        }
-
       </div>
 
       <div class="col-12 col-lg-4">

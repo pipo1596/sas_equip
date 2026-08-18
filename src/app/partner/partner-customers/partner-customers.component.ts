@@ -5,6 +5,8 @@ import { PartnerModeService } from '../partner-mode.service';
 import { CustomersService } from './customers.service';
 import { CustomerModeService } from './customer-mode.service';
 import { Customer } from './customer.model';
+import { ImageUploadService } from '../../shared/image-upload.service';
+import { CustomerEmployeesService } from '../customer-employees/customer-employees.service';
 
 @Component({
   selector: 'app-partner-customers',
@@ -16,6 +18,8 @@ export class PartnerCustomersComponent implements OnInit {
   protected readonly partnerMode = inject(PartnerModeService);
   private readonly service = inject(CustomersService);
   private readonly customerMode = inject(CustomerModeService);
+  private readonly imageUploadService = inject(ImageUploadService);
+  private readonly employeesService = inject(CustomerEmployeesService);
   private readonly router = inject(Router);
 
   readonly customers = signal<Customer[]>([]);
@@ -29,6 +33,11 @@ export class PartnerCustomersComponent implements OnInit {
   readonly showDeleteModal = signal(false);
   readonly deleting = signal(false);
   readonly deleteTarget = signal<Customer | null>(null);
+
+  readonly csvUploading = signal(false);
+  readonly csvInducing = signal(false);
+  readonly csvError = signal<string | null>(null);
+  readonly csvSuccess = signal(false);
 
   readonly totalPages = computed(() => Math.max(1, Math.ceil(this.total() / this.pageSize())));
 
@@ -56,6 +65,45 @@ export class PartnerCustomersComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadCustomers();
+  }
+
+  async onCsvSelected(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+    const tpId = this.tpId;
+    if (!tpId) return;
+
+    this.csvError.set(null);
+    this.csvSuccess.set(false);
+    this.csvUploading.set(true);
+
+    let csvUrl: string;
+    try {
+      csvUrl = await this.imageUploadService.upload(
+        'employee_csv', file, tpId,
+        { tpId, subfolder: 'employee_induction' },
+        'employees.csv',
+      );
+    } catch (err) {
+      this.csvError.set(err instanceof Error ? err.message : 'CSV upload failed.');
+      this.csvUploading.set(false);
+      return;
+    }
+
+    this.csvUploading.set(false);
+    this.csvInducing.set(true);
+
+    try {
+      await this.employeesService.inductFromCsv(tpId, csvUrl);
+      this.csvSuccess.set(true);
+      setTimeout(() => this.csvSuccess.set(false), 6000);
+    } catch (err) {
+      this.csvError.set(err instanceof Error ? err.message : 'Employee induction failed.');
+    } finally {
+      this.csvInducing.set(false);
+    }
   }
 
   async loadCustomers(): Promise<void> {

@@ -40,6 +40,10 @@ export class CustomerEmployeesService {
     await this.post(tpId, { action: '*DELETE', tpId, custId, empId });
   }
 
+  async inductFromCsv(tpId: number, csvUrl: string): Promise<void> {
+    await this.post(tpId, { action: '*INDUCT', tpId, csvUrl });
+  }
+
   // Two IBM i programs serve the same TP_CUST_EMPLOYEES data, split by the
   // tenant partner's data residency setting (partner-settings-mfa.component.ts)
   // — US-resident partners must hit APITPCEMP, Canadian ones APITPCEMCA.

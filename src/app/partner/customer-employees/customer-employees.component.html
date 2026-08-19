@@ -3,7 +3,9 @@
   <div class="page-shell-header d-flex align-items-center justify-content-between flex-wrap gap-2">
     <div>
       <h1 class="page-title">Employees</h1>
-      <p class="page-subtitle">Manage employees for <strong>{{ customerMode.activeCustomer()?.customerName }}</strong></p>
+      <p class="page-subtitle">
+        Manage employees for <strong>{{ customerMode.activeCustomer()?.customerName }}</strong> · {{ total() }} {{ total() === 1 ? 'employee' : 'employees' }}
+      </p>
     </div>
     <div class="d-flex align-items-center gap-2">
       @if (region()) {
@@ -55,6 +57,22 @@
           <span style="font-size:0.7rem;">Data Residency · {{ regionCountryShort() }}</span>
         </span>
       }
+      <input #csvFileInput type="file" accept=".csv" class="d-none" (change)="onCsvSelected($event)" />
+      <a class="text-muted d-inline-flex align-items-center" href="/photos/sample/employees.csv"
+         target="_blank" rel="noopener" title="Download sample CSV template">
+        <i class="bi bi-info-circle"></i>
+      </a>
+      <button class="btn btn-outline-secondary" type="button"
+              (click)="csvFileInput.click()"
+              [disabled]="csvUploading() || csvInducing()">
+        @if (csvUploading()) {
+          <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Uploading…
+        } @else if (csvInducing()) {
+          <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Processing…
+        } @else {
+          <i class="bi bi-file-earmark-arrow-up me-2"></i>Import Employees
+        }
+      </button>
       <a class="btn btn-dark" [routerLink]="['/partner', tpId, 'customers', customerId, 'employees', 'new']">
         <i class="bi bi-person-plus me-2"></i>New Employee
       </a>
@@ -65,6 +83,20 @@
     <div class="alert alert-danger d-flex align-items-center gap-2 mb-3">
       <i class="bi bi-exclamation-triangle-fill"></i><span>{{ error() }}</span>
       <button class="btn-close ms-auto" (click)="error.set(null)"></button>
+    </div>
+  }
+
+  @if (csvError()) {
+    <div class="alert alert-danger d-flex align-items-center gap-2 mb-3" role="alert">
+      <i class="bi bi-exclamation-triangle-fill"></i>
+      <span>{{ csvError() }}</span>
+      <button type="button" class="btn-close ms-auto" (click)="csvError.set(null)"></button>
+    </div>
+  }
+  @if (csvSuccess()) {
+    <div class="alert alert-success d-flex align-items-center gap-2 mb-3" role="alert">
+      <i class="bi bi-patch-check-fill"></i>
+      <span>Employee induction started successfully. Employees will appear once processed.</span>
     </div>
   }
 

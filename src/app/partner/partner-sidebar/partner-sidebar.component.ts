@@ -32,7 +32,7 @@ export class PartnerSidebarComponent {
   }
 
   private checkCustomerMode(): boolean {
-    return /\/customers\/\d+\/(uniform-programs|roles|employees|locations|addresses|contacts)(\/|$|\?)/.test(this.router.url);
+    return /\/customers\/\d+\/(overview|uniform-programs|roles|employees|locations|addresses|contacts)(\/|$|\?)/.test(this.router.url);
   }
 
   exitSettingsMode(): void {

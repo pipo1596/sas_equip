@@ -5,6 +5,8 @@ import { PartnerModeService } from '../partner-mode.service';
 import { CustomerModeService } from '../partner-customers/customer-mode.service';
 import { CustomerEmployeesService } from './customer-employees.service';
 import { CustomerEmployee, CustomerEmployeeForm } from './customer-employee.model';
+import { CustomerRolesService } from '../customer-roles/customer-roles.service';
+import { CustomerRole } from '../customer-roles/customer-role.model';
 
 @Component({
   selector: 'app-customer-employee-form',
@@ -18,6 +20,7 @@ export class CustomerEmployeeFormComponent implements OnInit {
   protected readonly partnerMode = inject(PartnerModeService);
   protected readonly customerMode = inject(CustomerModeService);
   private readonly service = inject(CustomerEmployeesService);
+  private readonly rolesService = inject(CustomerRolesService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
 
@@ -27,6 +30,7 @@ export class CustomerEmployeeFormComponent implements OnInit {
   readonly showPassword = signal(false);
   readonly emailTouched = signal(false);
   readonly emailError = signal(false);
+  readonly roles = signal<CustomerRole[]>([]);
 
   isEdit = false;
   empId: number | null = null;
@@ -63,6 +67,7 @@ export class CustomerEmployeeFormComponent implements OnInit {
 
     const tpId = this.tpId;
     if (tpId && this.customerId) await this.customerMode.ensure(tpId, this.customerId);
+    if (tpId && this.customerId) await this.loadRoles();
 
     const idParam = this.route.snapshot.paramMap.get('employeeId');
     if (!idParam) return;
@@ -79,6 +84,14 @@ export class CustomerEmployeeFormComponent implements OnInit {
     } finally {
       this.loading.set(false);
     }
+  }
+
+  private async loadRoles(): Promise<void> {
+    const tpId = this.tpId;
+    if (!tpId || !this.customerId) return;
+    try {
+      this.roles.set(await this.rolesService.listAll(tpId, this.customerId));
+    } catch { /* non-critical */ }
   }
 
   private prefill(employee: CustomerEmployee): void {

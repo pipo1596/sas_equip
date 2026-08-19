@@ -130,10 +130,15 @@
                   <label class="form-label fw-semibold" for="f-role">
                     Role <span class="text-danger">*</span>
                   </label>
-                  <input id="f-role" type="text" class="form-control"
-                         [(ngModel)]="formData.role" name="role" #role="ngModel"
-                         required maxlength="30"
-                         [class.is-invalid]="role.invalid && role.touched" />
+                  <select id="f-role" class="form-select"
+                          [(ngModel)]="formData.role" name="role" #role="ngModel"
+                          required
+                          [class.is-invalid]="role.invalid && role.touched">
+                    <option value="">Select role…</option>
+                    @for (r of roles(); track r.roleId) {
+                      <option [value]="r.roleName">{{ r.roleName }}</option>
+                    }
+                  </select>
                   <div class="invalid-feedback" [class.show]="role.invalid && role.touched">
                     Role is required.
                   </div>

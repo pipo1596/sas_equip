@@ -1,0 +1,201 @@
+<section class="page-shell">
+
+  <div class="page-shell-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div>
+      <h1 class="page-title">Overview</h1>
+      <p class="page-subtitle">Customer information for <strong>{{ customerMode.activeCustomer()?.customerName }}</strong></p>
+    </div>
+    <a class="btn btn-outline-secondary" [routerLink]="['/partner', tpId, 'customers', customerId, 'edit']">
+      <i class="bi bi-pencil me-2"></i>Edit
+    </a>
+  </div>
+
+  @if (loading()) {
+    <div class="d-flex justify-content-center align-items-center py-5">
+      <div class="spinner-border text-secondary" role="status">
+        <span class="visually-hidden">Loading…</span>
+      </div>
+    </div>
+  } @else if (error()) {
+    <div class="alert alert-danger d-flex align-items-center gap-2 mb-3">
+      <i class="bi bi-exclamation-triangle-fill"></i><span>{{ error() }}</span>
+    </div>
+  } @else if (customer(); as c) {
+
+    <div class="row g-4">
+
+      <div class="col-12 col-lg-8">
+
+        <div class="card mb-4">
+          <div class="card-body">
+            <h6 class="card-title fw-semibold mb-3">Customer Information</h6>
+            <div class="row g-3">
+              <div class="col-12 col-sm-6">
+                <div class="text-muted small text-uppercase" style="font-size:0.7rem; letter-spacing:0.04em;">Customer Name</div>
+                <div class="fw-medium">{{ c.customerName }}</div>
+              </div>
+              <div class="col-12 col-sm-6">
+                <div class="text-muted small text-uppercase" style="font-size:0.7rem; letter-spacing:0.04em;">Customer Number</div>
+                <div class="fw-medium font-monospace">{{ c.customerNmbr }}</div>
+              </div>
+              <div class="col-12 col-sm-6">
+                <div class="text-muted small text-uppercase" style="font-size:0.7rem; letter-spacing:0.04em;">Customer Type</div>
+                <div class="fw-medium">{{ c.customerType || '—' }}</div>
+              </div>
+              <div class="col-12 col-sm-6">
+                <div class="text-muted small text-uppercase" style="font-size:0.7rem; letter-spacing:0.04em;">ERP Account Number</div>
+                <div class="fw-medium font-monospace">{{ c.erpAcctNmbr || '—' }}</div>
+              </div>
+              <div class="col-12">
+                <div class="text-muted small text-uppercase" style="font-size:0.7rem; letter-spacing:0.04em;">Customer URL</div>
+                @if (c.customerUrl) {
+                  <a [href]="c.customerUrl" target="_blank" rel="noopener" class="fw-medium">{{ c.customerUrl }}</a>
+                } @else {
+                  <div class="fw-medium">—</div>
+                }
+              </div>
+              <div class="col-12">
+                <div class="text-muted small text-uppercase" style="font-size:0.7rem; letter-spacing:0.04em;">Notes</div>
+                <div class="fw-medium" style="white-space:pre-wrap;">{{ c.notes || '—' }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="col-12 col-lg-4">
+
+        <div class="card mb-4">
+          <div class="card-body">
+            <h6 class="card-title fw-semibold mb-3">Status</h6>
+            <span [class]="statusBadge(c.status)">
+              <span style="font-size:0.5rem;">&#9679;</span> {{ c.status === 'ACTIVE' ? 'Active' : 'Inactive' }}
+            </span>
+          </div>
+        </div>
+
+        <div class="card mb-4">
+          <div class="card-body">
+            <h6 class="card-title fw-semibold mb-3">Record Info</h6>
+            <div class="mb-2">
+              <div class="text-muted small text-uppercase" style="font-size:0.7rem; letter-spacing:0.04em;">Created</div>
+              <div class="small">{{ formatDate(c.createdTs) }}{{ c.createdBy ? ' · ' + c.createdBy : '' }}</div>
+            </div>
+            <div>
+              <div class="text-muted small text-uppercase" style="font-size:0.7rem; letter-spacing:0.04em;">Last Updated</div>
+              <div class="small">{{ formatDate(c.updatedTs) }}{{ c.updatedBy ? ' · ' + c.updatedBy : '' }}</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="card mb-4">
+      <div class="card-header bg-light d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <span class="text-muted small text-uppercase fw-semibold" style="letter-spacing:0.04em;">
+          <i class="bi bi-paperclip me-2"></i>Attachments
+        </span>
+        <button type="button" class="btn btn-dark btn-sm" (click)="attachFileInput.click()" [disabled]="uploadingFile()">
+          @if (uploadingFile()) {
+            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Uploading…
+          } @else {
+            <i class="bi bi-upload me-2"></i>Upload file
+          }
+        </button>
+      </div>
+      <div class="card-body">
+
+        @if (attachError()) {
+          <div class="alert alert-danger d-flex align-items-center gap-2 mb-3" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <span>{{ attachError() }}</span>
+            <button type="button" class="btn-close ms-auto" (click)="attachError.set(null)"></button>
+          </div>
+        }
+
+        <input #attachFileInput type="file" multiple class="d-none"
+               accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"
+               (change)="onFileInputChange($event)" />
+
+        <div class="border rounded-3 text-center py-4 mb-3"
+             [class.border-primary]="dragActive()"
+             style="border-style:dashed !important; background:#faf9f7; cursor:pointer;"
+             (click)="attachFileInput.click()"
+             (dragover)="onDragOver($event)"
+             (dragleave)="onDragLeave($event)"
+             (drop)="onDrop($event)">
+          <i class="bi bi-cloud-arrow-up text-muted" style="font-size:1.75rem;"></i>
+          <p class="mb-1 mt-2">
+            Drag &amp; drop files here, or <span class="text-primary fw-semibold">browse</span>
+          </p>
+          <p class="text-muted small mb-0">
+            Contracts, signed agreements, PO documents, artwork — PDF, DOCX, XLSX, PNG/JPG · up to 25 MB each
+          </p>
+        </div>
+
+        @if (loadingAttachments()) {
+          <div class="text-center py-3 text-muted">
+            <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>Loading…
+          </div>
+        } @else if (attachments().length === 0) {
+          <p class="text-muted small text-center mb-0 py-2">No attachments yet.</p>
+        } @else {
+          @for (a of attachments(); track a.attachmentId; let first = $first) {
+            <div class="d-flex align-items-center gap-3 py-2" [class.border-top]="!first">
+              <span class="d-inline-flex align-items-center justify-content-center rounded flex-shrink-0"
+                    style="width:36px; height:36px; background:color-mix(in srgb, {{ fileIconColor(a.fileName) }} 12%, white);">
+                <i [class]="'bi ' + fileIcon(a.fileName)" [style.color]="fileIconColor(a.fileName)" style="font-size:1.1rem;"></i>
+              </span>
+              <div class="flex-grow-1">
+                <div class="fw-medium">{{ a.fileName }}</div>
+                <div class="text-muted small">
+                  {{ formatFileSize(a.fileSizeBytes) }}
+                  @if (a.createdBy) { · uploaded by {{ a.createdBy }} }
+                  · {{ formatShortDate(a.createdTs) }}
+                </div>
+              </div>
+              <a class="btn btn-sm btn-link text-muted" [href]="a.fileUrl" target="_blank" rel="noopener" title="Download">
+                <i class="bi bi-download"></i>
+              </a>
+              <button type="button" class="btn btn-sm btn-link text-muted" title="Delete" (click)="openDeleteAttachModal(a)">
+                <i class="bi bi-trash"></i>
+              </button>
+            </div>
+          }
+        }
+
+      </div>
+    </div>
+
+  }
+
+</section>
+
+@if (showDeleteAttachModal()) {
+  <div class="modal-backdrop fade show"></div>
+  <div class="modal d-block" tabindex="-1" role="dialog" aria-modal="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i>Delete Attachment</h5>
+          <button class="btn-close" (click)="closeDeleteAttachModal()" [disabled]="deletingAttach()"></button>
+        </div>
+        <div class="modal-body pt-2">
+          @if (deleteAttachTarget(); as target) {
+            <p class="mb-0">Delete <strong>{{ target.fileName }}</strong>? This cannot be undone.</p>
+          }
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button class="btn btn-outline-secondary" (click)="closeDeleteAttachModal()" [disabled]="deletingAttach()">Cancel</button>
+          <button class="btn btn-danger" (click)="confirmDeleteAttach()" [disabled]="deletingAttach()">
+            @if (deletingAttach()) { <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Deleting… }
+            @else { <i class="bi bi-trash me-2"></i>Delete }
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

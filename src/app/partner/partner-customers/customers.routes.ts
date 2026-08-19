@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { PartnerCustomersComponent } from './partner-customers.component';
 import { CustomerFormComponent } from './customer-form.component';
+import { CustomerOverviewComponent } from './customer-overview.component';
 import { PartnerUniformProgramsComponent } from '../partner-uniform-programs/partner-uniform-programs.component';
 import { CustomerRolesComponent } from '../customer-roles/customer-roles.component';
 import { CustomerRoleFormComponent } from '../customer-roles/customer-role-form.component';
@@ -16,7 +17,8 @@ export const CUSTOMERS_ROUTES: Routes = [
   { path: '', pathMatch: 'full', component: PartnerCustomersComponent },
   { path: 'new', component: CustomerFormComponent },
   { path: ':customerId/edit', component: CustomerFormComponent },
-  { path: ':customerId', pathMatch: 'full', redirectTo: ':customerId/uniform-programs' },
+  { path: ':customerId', pathMatch: 'full', redirectTo: ':customerId/overview' },
+  { path: ':customerId/overview', component: CustomerOverviewComponent },
   { path: ':customerId/uniform-programs', component: PartnerUniformProgramsComponent },
   { path: ':customerId/roles', component: CustomerRolesComponent },
   { path: ':customerId/roles/new', component: CustomerRoleFormComponent },

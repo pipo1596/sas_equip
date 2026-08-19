@@ -3,6 +3,7 @@ import { NgForm, FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { PartnerModeService } from '../partner-mode.service';
 import { CustomersService } from './customers.service';
+import { ImageUploadService } from '../../shared/image-upload.service';
 import { Customer, CustomerForm } from './customer.model';
 
 @Component({
@@ -16,6 +17,7 @@ export class CustomerFormComponent implements OnInit {
 
   protected readonly partnerMode = inject(PartnerModeService);
   private readonly service = inject(CustomersService);
+  private readonly uploadService = inject(ImageUploadService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly cdr = inject(ChangeDetectorRef);
@@ -23,14 +25,16 @@ export class CustomerFormComponent implements OnInit {
   readonly loading = signal(false);
   readonly saving = signal(false);
   readonly error = signal<string | null>(null);
+  readonly uploadingLogo = signal(false);
+  readonly uploadError = signal<string | null>(null);
 
   isEdit = false;
   custId: number | null = null;
 
   formData: CustomerForm = {
-    customerName: '', customerNmbr: '', erpAccountNmbr: '',
+    customerName: '', customerNmbr: '', erpAcctNmbr: '',
     customerType: '', status: 'ACTIVE',
-    customerUrl: '', notes: '',
+    customerUrl: '', notes: '', logoUrl: '',
   };
 
   protected get tpId(): number | undefined {
@@ -60,13 +64,36 @@ export class CustomerFormComponent implements OnInit {
     this.formData = {
       customerName:    customer.customerName ?? '',
       customerNmbr:    customer.customerNmbr ?? '',
-      erpAccountNmbr:  customer.erpAccountNmbr ?? '',
+      erpAcctNmbr:  customer.erpAcctNmbr ?? '',
       customerType:    customer.customerType ?? '',
       status:          customer.status ?? 'ACTIVE',
       customerUrl:     customer.customerUrl ?? '',
       notes:           customer.notes ?? '',
+      logoUrl:         customer.logoUrl ?? '',
     };
     this.cdr.markForCheck();
+  }
+
+  async onLogoSelected(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+    const tpId = this.tpId;
+    if (!tpId) return;
+    this.uploadingLogo.set(true);
+    this.uploadError.set(null);
+    try {
+      this.formData.logoUrl = await this.uploadService.upload('customer_logo', file, tpId, { tpId, subfolder: 'customers' });
+    } catch (err) {
+      this.uploadError.set(err instanceof Error ? err.message : 'Upload failed.');
+    } finally {
+      this.uploadingLogo.set(false);
+    }
+  }
+
+  removeLogo(): void {
+    this.formData.logoUrl = '';
   }
 
   cancel(): void {

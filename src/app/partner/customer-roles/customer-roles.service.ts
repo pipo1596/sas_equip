@@ -13,6 +13,11 @@ export class CustomerRolesService {
     return data as unknown as CustomerRolesPage;
   }
 
+  async listAll(tpId: number, custId: number): Promise<CustomerRole[]> {
+    const data = await this.post({ action: '*LIST_ALL', tpId, custId });
+    return (data['data'] as unknown as CustomerRole[]) ?? [];
+  }
+
   async get(tpId: number, custId: number, roleId: number): Promise<CustomerRole> {
     const data = await this.post({ action: '*GET', tpId, custId, roleId });
     return data as unknown as CustomerRole;

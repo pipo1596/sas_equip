@@ -3,11 +3,12 @@ export interface Customer {
   custId: number;
   customerName: string;
   customerNmbr: string;
-  erpAccountNmbr: string | null;
+  erpAcctNmbr: string | null;
   customerType: string;
   status: 'ACTIVE' | 'INACTIVE';
   customerUrl: string | null;
   notes: string | null;
+  logoUrl: string | null;
   createdTs: string;
   createdBy: string | null;
   updatedTs: string;
@@ -17,11 +18,12 @@ export interface Customer {
 export interface CustomerForm {
   customerName: string;
   customerNmbr: string;
-  erpAccountNmbr: string;
+  erpAcctNmbr: string;
   customerType: string;
   status: 'ACTIVE' | 'INACTIVE';
   customerUrl: string;
   notes: string;
+  logoUrl: string;
 }
 
 export interface CustomersPage {

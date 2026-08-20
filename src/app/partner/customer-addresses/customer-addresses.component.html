@@ -72,11 +72,20 @@
 
           <!-- Address body -->
           <div class="px-4 py-3 bg-white">
+            @if (addr.attention) {
+              <p class="text-muted small mb-1"><i class="bi bi-person me-1"></i>Attn: {{ addr.attention }}</p>
+            }
             <p class="fw-bold mb-1">{{ addr.addressLine1 }}</p>
             @if (addr.addressLine2) {
               <p class="text-muted small mb-1">{{ addr.addressLine2 }}</p>
             }
+            @if (addr.addressLine3) {
+              <p class="text-muted small mb-1">{{ addr.addressLine3 }}</p>
+            }
             <p class="text-muted small mb-1">{{ addr.city }}, {{ addr.province }} {{ addr.postalCode }}</p>
+            @if (addr.phone) {
+              <p class="text-muted small mb-1"><i class="bi bi-telephone me-1"></i>{{ addr.phone }}</p>
+            }
             <p class="mb-0 text-uppercase" style="font-size:.7rem; color:#adb5bd; letter-spacing:.05em;">
               {{ addr.country }} {{ countryName(addr.country) }}
             </p>
@@ -120,28 +129,37 @@
         <div class="modal-body pt-3">
           <form (ngSubmit)="saveAddress()" id="addrForm" novalidate>
 
-            <div class="row g-3">
+            <div class="row gy-2 gx-3">
 
-              <div class="col-md-8">
-                <label class="form-label small fw-semibold text-uppercase text-muted" for="af-type">Address Type</label>
-                <select id="af-type" class="form-select" [(ngModel)]="form.addressType" name="addressType">
-                  @for (t of addrTypes; track t.value) {
-                    <option [value]="t.value">{{ t.label }}</option>
-                  }
-                </select>
-              </div>
-
-              <div class="col-md-4 d-flex align-items-end flex-column justify-content-end">
-                <div class="form-check mb-2">
-                  <input id="af-primary" type="checkbox" class="form-check-input" [(ngModel)]="form.isPrimary" name="isPrimary" />
-                  <label class="form-check-label" for="af-primary">Primary</label>
-                </div>
-                @if (primaryConflict) {
-                  <div class="text-danger small mb-1">Another address is already primary.</div>
-                }
-              </div>
-
+              <!-- Recipient -->
               <div class="col-12">
+                <div class="d-flex align-items-center gap-2">
+                  <span class="text-muted fw-bold text-uppercase" style="font-size:0.65rem; letter-spacing:0.06em; white-space:nowrap;">Recipient</span>
+                  <hr class="flex-grow-1 my-0" />
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label small fw-semibold text-uppercase text-muted" for="af-attention">Attention <span class="fw-normal text-muted">(optional)</span></label>
+                <input id="af-attention" type="text" class="form-control" [(ngModel)]="form.attention" name="attention"
+                       maxlength="100" placeholder="Recipient name" />
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label small fw-semibold text-uppercase text-muted" for="af-phone">Phone <span class="fw-normal text-muted">(optional)</span></label>
+                <input id="af-phone" type="tel" class="form-control" [(ngModel)]="form.phone" name="phone"
+                       maxlength="20" placeholder="(555) 555-5555" />
+              </div>
+
+              <!-- Address -->
+              <div class="col-12 mt-2">
+                <div class="d-flex align-items-center gap-2">
+                  <span class="text-muted fw-bold text-uppercase" style="font-size:0.65rem; letter-spacing:0.06em; white-space:nowrap;">Address</span>
+                  <hr class="flex-grow-1 my-0" />
+                </div>
+              </div>
+
+              <div class="col-md-6">
                 <label class="form-label small fw-semibold text-uppercase text-muted" for="af-line1">Address Line 1</label>
                 <input id="af-line1" type="text" name="addressLine1" maxlength="150" placeholder="Street address"
                        class="form-control" [class.is-invalid]="submitted() && !form.addressLine1"
@@ -149,13 +167,19 @@
                 <div class="invalid-feedback">Address line 1 is required.</div>
               </div>
 
-              <div class="col-12">
+              <div class="col-md-6">
                 <label class="form-label small fw-semibold text-uppercase text-muted" for="af-line2">Address Line 2 <span class="fw-normal text-muted">(optional)</span></label>
                 <input id="af-line2" type="text" class="form-control" [(ngModel)]="form.addressLine2" name="addressLine2"
                        maxlength="150" placeholder="Apt, suite, unit, etc." />
               </div>
 
-              <div class="col-md-5">
+              <div class="col-md-6">
+                <label class="form-label small fw-semibold text-uppercase text-muted" for="af-line3">Address Line 3 <span class="fw-normal text-muted">(optional)</span></label>
+                <input id="af-line3" type="text" class="form-control" [(ngModel)]="form.addressLine3" name="addressLine3"
+                       maxlength="150" placeholder="Additional address info" />
+              </div>
+
+              <div class="col-md-6">
                 <label class="form-label small fw-semibold text-uppercase text-muted" for="af-city">City</label>
                 <input id="af-city" type="text" name="city" maxlength="80" placeholder="City"
                        class="form-control" [class.is-invalid]="submitted() && !form.city"
@@ -163,7 +187,7 @@
                 <div class="invalid-feedback">City is required.</div>
               </div>
 
-              <div class="col-md-3">
+              <div class="col-md-4">
                 <label class="form-label small fw-semibold text-uppercase text-muted" for="af-province">Province / State</label>
                 <input id="af-province" type="text" name="province" maxlength="60" placeholder="Province or state"
                        class="form-control" [class.is-invalid]="submitted() && !form.province"
@@ -179,7 +203,7 @@
                 <div class="invalid-feedback">Postal code is required.</div>
               </div>
 
-              <div class="col-md-6">
+              <div class="col-md-4">
                 <label class="form-label small fw-semibold text-uppercase text-muted" for="af-country">Country</label>
                 <select id="af-country" name="country"
                         class="form-select" [class.is-invalid]="submitted() && !form.country"
@@ -191,12 +215,39 @@
                 <div class="invalid-feedback">Country is required.</div>
               </div>
 
-              <div class="col-md-6">
+              <!-- Settings -->
+              <div class="col-12 mt-2">
+                <div class="d-flex align-items-center gap-2">
+                  <span class="text-muted fw-bold text-uppercase" style="font-size:0.65rem; letter-spacing:0.06em; white-space:nowrap;">Settings</span>
+                  <hr class="flex-grow-1 my-0" />
+                </div>
+              </div>
+
+              <div class="col-md-5">
+                <label class="form-label small fw-semibold text-uppercase text-muted" for="af-type">Address Type</label>
+                <select id="af-type" class="form-select" [(ngModel)]="form.addressType" name="addressType">
+                  @for (t of addrTypes; track t.value) {
+                    <option [value]="t.value">{{ t.label }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="col-md-4">
                 <label class="form-label small fw-semibold text-uppercase text-muted" for="af-status">Status</label>
                 <select id="af-status" class="form-select" [(ngModel)]="form.status" name="status">
                   <option value="ACTIVE">Active</option>
                   <option value="INACTIVE">Inactive</option>
                 </select>
+              </div>
+
+              <div class="col-md-3 d-flex align-items-end flex-column justify-content-end">
+                <div class="form-check mb-2">
+                  <input id="af-primary" type="checkbox" class="form-check-input" [(ngModel)]="form.isPrimary" name="isPrimary" />
+                  <label class="form-check-label" for="af-primary">Primary</label>
+                </div>
+                @if (primaryConflict) {
+                  <div class="text-danger small mb-1">Another address is already primary.</div>
+                }
               </div>
 
             </div>

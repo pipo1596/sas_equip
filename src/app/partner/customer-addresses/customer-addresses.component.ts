@@ -10,17 +10,22 @@ interface AddressForm {
   addressType: 'BILL-TO' | 'SHIP-TO' | 'BOTH';
   addressLine1: string;
   addressLine2: string;
+  addressLine3: string;
   city: string;
   province: string;
   postalCode: string;
   country: string;
+  attention: string;
+  phone: string;
   isPrimary: boolean;
   status: 'ACTIVE' | 'INACTIVE';
 }
 
 const BLANK_FORM: AddressForm = {
-  addressType: 'BILL-TO', addressLine1: '', addressLine2: '',
-  city: '', province: '', postalCode: '', country: 'US', isPrimary: false, status: 'ACTIVE',
+  addressType: 'BILL-TO', addressLine1: '', addressLine2: '', addressLine3: '',
+  city: '', province: '', postalCode: '', country: 'US',
+  attention: '', phone: '',
+  isPrimary: false, status: 'ACTIVE',
 };
 
 const TYPE_LABELS: Record<string, string> = {
@@ -135,10 +140,13 @@ export class CustomerAddressesComponent implements OnInit {
       addressType:  addr.addressType,
       addressLine1: addr.addressLine1,
       addressLine2: addr.addressLine2 ?? '',
+      addressLine3: addr.addressLine3 ?? '',
       city:         addr.city,
       province:     addr.province,
       postalCode:   addr.postalCode,
       country:      addr.country,
+      attention:    addr.attention ?? '',
+      phone:        addr.phone ?? '',
       isPrimary:    addr.isPrimary === 'Y',
       status:       addr.status,
     };
@@ -170,10 +178,13 @@ export class CustomerAddressesComponent implements OnInit {
         addressType:  this.form.addressType,
         addressLine1: this.form.addressLine1,
         addressLine2: this.form.addressLine2,
+        addressLine3: this.form.addressLine3,
         city:         this.form.city,
         province:     this.form.province,
         postalCode:   this.form.postalCode,
         country:      this.form.country,
+        attention:    this.form.attention,
+        phone:        this.form.phone,
         isPrimary:    this.form.isPrimary ? 'Y' : 'N',
         status:       this.form.status,
       };
@@ -227,7 +238,7 @@ export class CustomerAddressesComponent implements OnInit {
   }
 
   formatAddress(addr: CustomerAddress): string {
-    return [addr.addressLine1, addr.addressLine2, addr.city, addr.province, addr.postalCode]
+    return [addr.addressLine1, addr.addressLine2, addr.addressLine3, addr.city, addr.province, addr.postalCode]
       .filter(Boolean)
       .join(', ');
   }

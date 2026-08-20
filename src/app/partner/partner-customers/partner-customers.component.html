@@ -68,17 +68,16 @@
           <th>Customer #</th>
           <th>Type</th>
           <th class="text-center">Status</th>
-          <th class="text-center">Customer Mode</th>
           <th class="text-end">Actions</th>
         </tr>
       </thead>
       <tbody>
         @if (loading()) {
-          <tr><td colspan="6" class="text-center py-4 text-muted">
+          <tr><td colspan="5" class="text-center py-4 text-muted">
             <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>Loading…
           </td></tr>
         } @else if (customers().length === 0) {
-          <tr><td colspan="6" class="text-center py-4 text-muted">
+          <tr><td colspan="5" class="text-center py-4 text-muted">
             <i class="bi bi-people me-2"></i>
             @if (search()) { No customers match your search. } @else { No customers yet. }
           </td></tr>
@@ -96,17 +95,8 @@
               <td class="text-center">
                 <span [class]="statusBadge(customer.status)"> {{ customer.status }}</span>
               </td>
-              <td class="text-center">
-                <button
-                  class="btn btn-sm btn-primary rounded"
-                  title="Enter Customer Mode"
-                  (click)="manageCustomer(customer)"
-                >
-                  <i class="bi bi-person-vcard-fill"></i>
-                </button>
-              </td>
               <td class="text-end">
-                <button class="btn btn-sm btn-outline-secondary m-1 px-3" (click)="editCustomer(customer)" title="Edit"><i class="bi bi-pencil"></i></button>
+                <button class="btn btn-sm btn-outline-secondary m-1 px-3" (click)="manageCustomer(customer)" title="Edit"><i class="bi bi-pencil"></i></button>
                 <button class="btn btn-sm btn-outline-danger m-1 px-3" (click)="openDeleteModal(customer)" title="Delete"><i class="bi bi-trash"></i></button>
               </td>
             </tr>

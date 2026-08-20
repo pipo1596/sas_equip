@@ -144,12 +144,6 @@ export class PartnerCustomersComponent implements OnInit {
     this.loadCustomers();
   }
 
-  editCustomer(customer: Customer): void {
-    this.router.navigate(['/partner', this.tpId, 'customers', customer.custId, 'edit'], {
-      state: { customer },
-    });
-  }
-
   manageCustomer(customer: Customer): void {
     this.customerMode.enter({ custId: customer.custId, customerName: customer.customerName });
     this.router.navigate(['/partner', this.tpId, 'customers', customer.custId]);

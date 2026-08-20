@@ -185,7 +185,12 @@
                 <option [value]="r">{{ r }}</option>
               }
             </select>
-            @if (assignSearch() || assignRoleFilter() !== 'ALL') {
+            <select class="form-select" style="max-width: 180px;" [ngModel]="assignStatusFilter()" (ngModelChange)="assignStatusFilter.set($event)">
+              <option value="ALL">All users</option>
+              <option value="ASSIGNED">Assigned users</option>
+              <option value="UNASSIGNED">Unassigned users</option>
+            </select>
+            @if (assignSearch() || assignRoleFilter() !== 'ALL' || assignStatusFilter() !== 'ASSIGNED') {
               <button type="button" class="btn btn-link" (click)="clearAssignFilters()">Clear</button>
             }
           </div>

@@ -51,9 +51,11 @@ export class CustomerLocationsComponent implements OnInit {
   readonly assignedIds = signal<Set<number>>(new Set());
   readonly assignSearch = signal('');
   readonly assignRoleFilter = signal('ALL');
+  readonly assignStatusFilter = signal<'ALL' | 'ASSIGNED' | 'UNASSIGNED'>('ASSIGNED');
 
   private assignSearchTimer: ReturnType<typeof setTimeout> | null = null;
   private searchTimer: ReturnType<typeof setTimeout> | null = null;
+  private employeesPromise: Promise<void> | null = null;
 
   protected get tpId(): number | undefined {
     return this.partnerMode.activePartner()?.tpId;
@@ -111,8 +113,12 @@ export class CustomerLocationsComponent implements OnInit {
   readonly filteredAssignEmployees = computed(() => {
     const term = this.assignSearch().trim().toLowerCase();
     const role = this.assignRoleFilter();
+    const status = this.assignStatusFilter();
+    const assignedIds = this.assignedIds();
     return this.allEmployees().filter(emp => {
       if (role !== 'ALL' && emp.role !== role) return false;
+      if (status === 'ASSIGNED' && !assignedIds.has(emp.empId)) return false;
+      if (status === 'UNASSIGNED' && assignedIds.has(emp.empId)) return false;
       if (term) {
         const name = `${emp.firstName ?? ''} ${emp.lastName ?? ''}`.toLowerCase();
         if (!name.includes(term) && !emp.emailAddress.toLowerCase().includes(term)) return false;
@@ -126,6 +132,19 @@ export class CustomerLocationsComponent implements OnInit {
     const custId = this.customerId;
     if (tpId && custId) await this.customerMode.ensure(tpId, custId);
     this.loadLocations();
+    this.prefetchEmployees();
+  }
+
+  private prefetchEmployees(): Promise<void> {
+    const tpId = this.tpId;
+    const custId = this.customerId;
+    if (!tpId || !custId) return Promise.resolve();
+    if (!this.employeesPromise) {
+      this.employeesPromise = this.employeesService.listAll(tpId, custId)
+        .then(employees => { this.allEmployees.set(employees); })
+        .catch(() => { this.employeesPromise = null; });
+    }
+    return this.employeesPromise;
   }
 
   async loadLocations(): Promise<void> {
@@ -276,15 +295,15 @@ export class CustomerLocationsComponent implements OnInit {
     this.assignTarget.set(location);
     this.assignSearch.set('');
     this.assignRoleFilter.set('ALL');
+    this.assignStatusFilter.set('ASSIGNED');
     this.assignError.set(null);
     this.showAssignModal.set(true);
     this.loadingEmployees.set(true);
     try {
-      const [employees, assignedEmpIds] = await Promise.all([
-        this.employeesService.listAll(tpId, custId),
+      const [, assignedEmpIds] = await Promise.all([
+        this.prefetchEmployees(),
         this.service.getAssignedEmployeeIds(tpId, custId, location.locId),
       ]);
-      this.allEmployees.set(employees);
       this.assignedIds.set(new Set(assignedEmpIds));
     } catch (err) {
       this.assignError.set(err instanceof Error ? err.message : 'Failed to load employees.');
@@ -296,7 +315,6 @@ export class CustomerLocationsComponent implements OnInit {
   closeAssignModal(): void {
     this.showAssignModal.set(false);
     this.assignTarget.set(null);
-    this.allEmployees.set([]);
     this.assignedIds.set(new Set());
   }
 
@@ -308,6 +326,7 @@ export class CustomerLocationsComponent implements OnInit {
   clearAssignFilters(): void {
     this.assignSearch.set('');
     this.assignRoleFilter.set('ALL');
+    this.assignStatusFilter.set('ASSIGNED');
   }
 
   toggleAssign(empId: number): void {

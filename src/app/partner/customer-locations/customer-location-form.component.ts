@@ -5,6 +5,8 @@ import { PartnerModeService } from '../partner-mode.service';
 import { CustomerModeService } from '../partner-customers/customer-mode.service';
 import { CustomerLocationsService } from './customer-locations.service';
 import { CustomerLocation, CustomerLocationForm } from './customer-location.model';
+import { CustomerAddressesService } from '../customer-addresses/customer-addresses.service';
+import { CustomerAddress } from '../customer-addresses/customer-address.model';
 
 @Component({
   selector: 'app-customer-location-form',
@@ -18,6 +20,7 @@ export class CustomerLocationFormComponent implements OnInit {
   protected readonly partnerMode = inject(PartnerModeService);
   protected readonly customerMode = inject(CustomerModeService);
   private readonly service = inject(CustomerLocationsService);
+  private readonly addressesService = inject(CustomerAddressesService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
 
@@ -25,6 +28,7 @@ export class CustomerLocationFormComponent implements OnInit {
   readonly saving = signal(false);
   readonly error = signal<string | null>(null);
   readonly parentOptions = signal<CustomerLocation[]>([]);
+  readonly addresses = signal<CustomerAddress[]>([]);
 
   isEdit = false;
   locId: number | null = null;
@@ -33,7 +37,7 @@ export class CustomerLocationFormComponent implements OnInit {
   formData: CustomerLocationForm = {
     parentId: null,
     locCode: '', locName: '', locType: 'REGION',
-    city: '', province: '',
+    addressId: null,
     status: 'ACTIVE',
   };
 
@@ -53,6 +57,7 @@ export class CustomerLocationFormComponent implements OnInit {
     const tpId = this.tpId;
     if (tpId && this.customerId) await this.customerMode.ensure(tpId, this.customerId);
     if (tpId && this.customerId) await this.loadParentOptions();
+    if (tpId && this.customerId) await this.loadAddresses();
 
     if (idParam) {
       if (!tpId || !this.customerId || this.locId == null) return;
@@ -83,15 +88,26 @@ export class CustomerLocationFormComponent implements OnInit {
     } catch { /* non-critical */ }
   }
 
+  private async loadAddresses(): Promise<void> {
+    const tpId = this.tpId;
+    if (!tpId || !this.customerId) return;
+    try {
+      this.addresses.set(await this.addressesService.list(tpId, this.customerId));
+    } catch { /* non-critical */ }
+  }
+
+  addressLabel(address: CustomerAddress): string {
+    return [address.addressLine1, address.city, address.province].filter(Boolean).join(', ');
+  }
+
   private prefill(location: CustomerLocation): void {
     this.formData = {
-      parentId: location.parentId ?? null,
-      locCode:  location.locCode ?? '',
-      locName:  location.locName ?? '',
-      locType:  location.locType ?? 'REGION',
-      city:     location.city ?? '',
-      province: location.province ?? '',
-      status:   location.status ?? 'ACTIVE',
+      parentId:  location.parentId ?? null,
+      locCode:   location.locCode ?? '',
+      locName:   location.locName ?? '',
+      locType:   location.locType ?? 'REGION',
+      addressId: location.addressId ?? null,
+      status:    location.status ?? 'ACTIVE',
     };
   }
 

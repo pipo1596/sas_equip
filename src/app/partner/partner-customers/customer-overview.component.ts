@@ -7,6 +7,7 @@ import { Customer } from './customer.model';
 import { CustomerAttachmentsService } from './customer-attachments.service';
 import { CustomerAttachment } from './customer-attachment.model';
 import { ImageUploadService } from '../../shared/image-upload.service';
+import { TenantPartnersService } from '../../admin/tenant-partners/tenant-partners.service';
 
 const FILE_ICONS: Record<string, string> = {
   pdf: 'bi-filetype-pdf',
@@ -42,11 +43,13 @@ export class CustomerOverviewComponent implements OnInit {
   private readonly service = inject(CustomersService);
   private readonly attachmentsService = inject(CustomerAttachmentsService);
   private readonly uploadService = inject(ImageUploadService);
+  private readonly tenantPartnersService = inject(TenantPartnersService);
   private readonly route = inject(ActivatedRoute);
 
   readonly customer = signal<Customer | null>(null);
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
+  readonly portalBaseDomain = signal<string | null>(null);
 
   readonly attachments = signal<CustomerAttachment[]>([]);
   readonly loadingAttachments = signal(false);
@@ -81,7 +84,19 @@ export class CustomerOverviewComponent implements OnInit {
     } finally {
       this.loading.set(false);
     }
+    try {
+      const partner = await this.tenantPartnersService.get(tpId);
+      this.portalBaseDomain.set(partner.portalBaseDomain);
+    } catch { /* non-critical */ }
     await this.loadAttachments();
+  }
+
+  fullCustomerUrl(customerUrl: string): string {
+    const base = this.portalBaseDomain();
+    if (!base) return customerUrl;
+    const normalizedBase = base.replace(/\/+$/, '');
+    const normalizedSuffix = customerUrl.replace(/^\/+/, '');
+    return `${normalizedBase}/${normalizedSuffix}`;
   }
 
   async loadAttachments(): Promise<void> {

@@ -5,9 +5,10 @@ export interface CustomerLocation {
   parentId: number | null;
   locCode: string;
   locName: string;
-  locType: 'REGION' | 'STATION' | 'DEPOT';
+  locType: 'REGION' | 'STATION' | 'DEPOT' | 'DEPARTMENT' | 'BRANCH';
   city: string;
   province: string;
+  addressId: number | null;
   status: 'ACTIVE' | 'INACTIVE';
   // Not a TP_CUST_LOCATIONS column — populated only if the API aggregates it
   // from employee-location assignments (no such link exists yet in TP_CUST_EMPLOYEES).
@@ -22,9 +23,8 @@ export interface CustomerLocationForm {
   parentId: number | null;
   locCode: string;
   locName: string;
-  locType: 'REGION' | 'STATION' | 'DEPOT';
-  city: string;
-  province: string;
+  locType: 'REGION' | 'STATION' | 'DEPOT' | 'DEPARTMENT' | 'BRANCH';
+  addressId: number | null;
   status: 'ACTIVE' | 'INACTIVE';
 }
 

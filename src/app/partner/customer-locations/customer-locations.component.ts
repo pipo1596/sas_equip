@@ -12,7 +12,7 @@ interface LocationRow extends CustomerLocation {
   level: number;
 }
 
-type TypeFilter = 'ALL' | 'REGION' | 'STATION' | 'DEPOT';
+type TypeFilter = 'ALL' | 'REGION' | 'STATION' | 'DEPOT' | 'DEPARTMENT' | 'BRANCH';
 type StatusFilter = 'ALL' | 'ACTIVE' | 'INACTIVE';
 
 @Component({
@@ -351,6 +351,8 @@ export class CustomerLocationsComponent implements OnInit {
       case 'REGION': return 'badge bg-primary-subtle text-primary border border-primary-subtle';
       case 'STATION': return 'badge bg-success-subtle text-success border border-success-subtle';
       case 'DEPOT': return 'badge bg-info-subtle text-info border border-info-subtle';
+      case 'DEPARTMENT': return 'badge bg-warning-subtle text-warning border border-warning-subtle';
+      case 'BRANCH': return 'badge bg-secondary-subtle text-secondary border border-secondary-subtle';
       default: return 'badge bg-light text-dark';
     }
   }
@@ -360,6 +362,8 @@ export class CustomerLocationsComponent implements OnInit {
       case 'REGION': return 'bi bi-map';
       case 'STATION': return 'bi bi-building';
       case 'DEPOT': return 'bi bi-house-gear';
+      case 'DEPARTMENT': return 'bi bi-diagram-3';
+      case 'BRANCH': return 'bi bi-signpost-split';
       default: return 'bi bi-geo-alt';
     }
   }

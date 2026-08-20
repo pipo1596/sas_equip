@@ -67,18 +67,19 @@
                   <option value="REGION">Region</option>
                   <option value="STATION">Station</option>
                   <option value="DEPOT">Depot</option>
+                  <option value="DEPARTMENT">Department</option>
+                  <option value="BRANCH">Branch</option>
                 </select>
               </div>
-              <div class="col-12 col-sm-6"></div>
-              <div class="col-12 col-sm-6">
-                <label class="form-label fw-medium">City</label>
-                <input type="text" class="form-control"
-                       name="city" [(ngModel)]="formData.city" />
-              </div>
-              <div class="col-12 col-sm-6">
-                <label class="form-label fw-medium">Province / State</label>
-                <input type="text" class="form-control"
-                       name="province" [(ngModel)]="formData.province" />
+              <div class="col-12">
+                <label class="form-label fw-medium">Address</label>
+                <select class="form-select" name="addressId" [(ngModel)]="formData.addressId">
+                  <option [ngValue]="null">— No address —</option>
+                  @for (address of addresses(); track address.addressId) {
+                    <option [ngValue]="address.addressId">{{ addressLabel(address) }}</option>
+                  }
+                </select>
+                <div class="form-text mt-2">Pick from this customer's existing addresses.</div>
               </div>
             </div>
           </div>

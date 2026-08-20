@@ -4,6 +4,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { PartnerModeService } from '../partner-mode.service';
 import { CustomersService } from './customers.service';
 import { ImageUploadService } from '../../shared/image-upload.service';
+import { TenantPartnersService } from '../../admin/tenant-partners/tenant-partners.service';
 import { Customer, CustomerForm } from './customer.model';
 
 @Component({
@@ -18,6 +19,7 @@ export class CustomerFormComponent implements OnInit {
   protected readonly partnerMode = inject(PartnerModeService);
   private readonly service = inject(CustomersService);
   private readonly uploadService = inject(ImageUploadService);
+  private readonly tenantPartnersService = inject(TenantPartnersService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly cdr = inject(ChangeDetectorRef);
@@ -27,6 +29,7 @@ export class CustomerFormComponent implements OnInit {
   readonly error = signal<string | null>(null);
   readonly uploadingLogo = signal(false);
   readonly uploadError = signal<string | null>(null);
+  readonly portalBaseDomain = signal<string | null>(null);
 
   isEdit = false;
   custId: number | null = null;
@@ -42,13 +45,15 @@ export class CustomerFormComponent implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
+    const tpId = this.tpId;
+    if (tpId) this.loadPortalBaseDomain(tpId);
+
     const idParam = this.route.snapshot.paramMap.get('customerId');
     if (!idParam) return;
 
     this.isEdit = true;
     this.custId = Number(idParam);
 
-    const tpId = this.tpId;
     if (!tpId) return;
     this.loading.set(true);
     try {
@@ -58,6 +63,13 @@ export class CustomerFormComponent implements OnInit {
     } finally {
       this.loading.set(false);
     }
+  }
+
+  private async loadPortalBaseDomain(tpId: number): Promise<void> {
+    try {
+      const partner = await this.tenantPartnersService.get(tpId);
+      this.portalBaseDomain.set(partner.portalBaseDomain);
+    } catch { /* non-critical */ }
   }
 
   private prefill(customer: Customer): void {

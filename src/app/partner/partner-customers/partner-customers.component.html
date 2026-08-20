@@ -94,7 +94,7 @@
               <td class="font-monospace small">{{ customer.customerNmbr }}</td>
               <td>{{ customer.customerType || '—' }}</td>
               <td class="text-center">
-                <span [class]="statusBadge(customer.status)"><span style="font-size:0.5rem;">&#9679;</span> {{ customer.status }}</span>
+                <span [class]="statusBadge(customer.status)"> {{ customer.status }}</span>
               </td>
               <td class="text-center">
                 <button

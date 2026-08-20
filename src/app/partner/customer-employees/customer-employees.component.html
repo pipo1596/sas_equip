@@ -151,7 +151,7 @@
               <td class="font-monospace small">{{ employee.empNum || '—' }}</td>
               <td>{{ employee.role || '—' }}</td>
               <td class="text-center">
-                <span [class]="statusBadgeClass(employee.status)"><span style="font-size:0.5rem;">&#9679;</span> {{ employee.status }}</span>
+                <span [class]="statusBadgeClass(employee.status)">{{ employee.status }}</span>
               </td>
               <td class="text-end">
                 <button class="btn btn-sm btn-outline-secondary m-1 px-3" (click)="editEmployee(employee)" title="Edit"><i class="bi bi-pencil"></i></button>

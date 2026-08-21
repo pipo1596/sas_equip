@@ -35,17 +35,18 @@
           <th>Role</th>
           <th class="text-center">Access Level</th>
           <th class="text-center">Allotment</th>
+          <th class="text-center">Employees</th>
           <th class="text-center">Status</th>
           <th class="text-end">Actions</th>
         </tr>
       </thead>
       <tbody>
         @if (loading()) {
-          <tr><td colspan="5" class="text-center py-4 text-muted">
+          <tr><td colspan="6" class="text-center py-4 text-muted">
             <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>Loading…
           </td></tr>
         } @else if (roles().length === 0) {
-          <tr><td colspan="5" class="text-center py-4 text-muted">
+          <tr><td colspan="6" class="text-center py-4 text-muted">
             <i class="bi bi-shield-check me-2"></i>
             @if (search()) { No roles match your search. } @else { No roles yet. }
           </td></tr>
@@ -62,6 +63,9 @@
                 <span [class]="accessLevelBadge(role.accessLevel)">{{ role.accessLevel }}</span>
               </td>
               <td class="text-center text-muted small">{{ allotmentLabel(role.allotmentType) }}</td>
+              <td class="text-center">
+                <span class="badge bg-light text-dark border">{{ employeeCountFor(role.roleId) }}</span>
+              </td>
               <td class="text-center">
                 <span [class]="statusBadge(role.isActive)">
                    {{ role.isActive === 'Y' ? 'Active' : 'Inactive' }}

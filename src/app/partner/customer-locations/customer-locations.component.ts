@@ -7,6 +7,8 @@ import { CustomerLocationsService } from './customer-locations.service';
 import { CustomerLocation } from './customer-location.model';
 import { CustomerEmployeesService } from '../customer-employees/customer-employees.service';
 import { CustomerEmployee } from '../customer-employees/customer-employee.model';
+import { CustomerRolesService } from '../customer-roles/customer-roles.service';
+import { CustomerRole } from '../customer-roles/customer-role.model';
 
 interface LocationRow extends CustomerLocation {
   level: number;
@@ -26,6 +28,7 @@ export class CustomerLocationsComponent implements OnInit {
   protected readonly customerMode = inject(CustomerModeService);
   private readonly service = inject(CustomerLocationsService);
   private readonly employeesService = inject(CustomerEmployeesService);
+  private readonly rolesService = inject(CustomerRolesService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
 
@@ -48,6 +51,7 @@ export class CustomerLocationsComponent implements OnInit {
   readonly savingAssignments = signal(false);
   readonly assignError = signal<string | null>(null);
   readonly allEmployees = signal<CustomerEmployee[]>([]);
+  readonly roleOptions = signal<CustomerRole[]>([]);
   readonly assignedIds = signal<Set<number>>(new Set());
   readonly assignSearch = signal('');
   readonly assignRoleFilter = signal('ALL');
@@ -56,6 +60,7 @@ export class CustomerLocationsComponent implements OnInit {
   private assignSearchTimer: ReturnType<typeof setTimeout> | null = null;
   private searchTimer: ReturnType<typeof setTimeout> | null = null;
   private employeesPromise: Promise<void> | null = null;
+  private rolesPromise: Promise<void> | null = null;
 
   protected get tpId(): number | undefined {
     return this.partnerMode.activePartner()?.tpId;
@@ -102,21 +107,13 @@ export class CustomerLocationsComponent implements OnInit {
     this.locations().reduce((sum, l) => sum + (l.employeeCount ?? 0), 0)
   );
 
-  readonly assignRoles = computed(() => {
-    const roles = new Set<string>();
-    for (const emp of this.allEmployees()) {
-      if (emp.role) roles.add(emp.role);
-    }
-    return Array.from(roles).sort();
-  });
-
   readonly filteredAssignEmployees = computed(() => {
     const term = this.assignSearch().trim().toLowerCase();
     const role = this.assignRoleFilter();
     const status = this.assignStatusFilter();
     const assignedIds = this.assignedIds();
     return this.allEmployees().filter(emp => {
-      if (role !== 'ALL' && emp.role !== role) return false;
+      if (role !== 'ALL' && String(emp.roleId ?? '') !== role) return false;
       if (status === 'ASSIGNED' && !assignedIds.has(emp.empId)) return false;
       if (status === 'UNASSIGNED' && assignedIds.has(emp.empId)) return false;
       if (term) {
@@ -133,6 +130,7 @@ export class CustomerLocationsComponent implements OnInit {
     if (tpId && custId) await this.customerMode.ensure(tpId, custId);
     this.loadLocations();
     this.prefetchEmployees();
+    this.prefetchRoles();
   }
 
   private prefetchEmployees(): Promise<void> {
@@ -145,6 +143,18 @@ export class CustomerLocationsComponent implements OnInit {
         .catch(() => { this.employeesPromise = null; });
     }
     return this.employeesPromise;
+  }
+
+  private prefetchRoles(): Promise<void> {
+    const tpId = this.tpId;
+    const custId = this.customerId;
+    if (!tpId || !custId) return Promise.resolve();
+    if (!this.rolesPromise) {
+      this.rolesPromise = this.rolesService.listAll(tpId, custId)
+        .then(roles => { this.roleOptions.set(roles); })
+        .catch(() => { this.rolesPromise = null; });
+    }
+    return this.rolesPromise;
   }
 
   async loadLocations(): Promise<void> {
@@ -300,8 +310,9 @@ export class CustomerLocationsComponent implements OnInit {
     this.showAssignModal.set(true);
     this.loadingEmployees.set(true);
     try {
-      const [, assignedEmpIds] = await Promise.all([
+      const [, , assignedEmpIds] = await Promise.all([
         this.prefetchEmployees(),
+        this.prefetchRoles(),
         this.service.getAssignedEmployeeIds(tpId, custId, location.locId),
       ]);
       this.assignedIds.set(new Set(assignedEmpIds));

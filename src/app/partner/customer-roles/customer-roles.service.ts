@@ -36,6 +36,16 @@ export class CustomerRolesService {
     await this.post({ action: '*DELETE', tpId, custId, roleId });
   }
 
+  // Employee headcount per role, always against APITPCROLE — unlike the
+  // employee records themselves, roles aren't split by data residency.
+  async getRoleEmployeeCounts(tpId: number, custId: number): Promise<Record<number, number>> {
+    const data = await this.post({ action: '*ROLE_CNT', tpId, custId });
+    const rows = (data['data'] as unknown as Array<{ roleId: number; empCount: number }>) ?? [];
+    const counts: Record<number, number> = {};
+    for (const row of rows) counts[row.roleId] = row.empCount;
+    return counts;
+  }
+
   private async post(body: Record<string, unknown>): Promise<Record<string, unknown>> {
     const response = await fetch(this.endpoint, {
       method: 'POST',

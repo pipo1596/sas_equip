@@ -20,6 +20,7 @@ export class CustomerRolesComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
 
   readonly roles = signal<CustomerRole[]>([]);
+  readonly roleEmployeeCounts = signal<Record<number, number>>({});
   readonly total = signal(0);
   readonly page = signal(1);
   readonly pageSize = signal(20);
@@ -65,6 +66,22 @@ export class CustomerRolesComponent implements OnInit {
     const custId = this.customerId;
     if (tpId && custId) await this.customerMode.ensure(tpId, custId);
     this.loadRoles();
+    this.loadRoleEmployeeCounts();
+  }
+
+  async loadRoleEmployeeCounts(): Promise<void> {
+    const tpId = this.tpId;
+    const custId = this.customerId;
+    if (!tpId || !custId) return;
+    try {
+      this.roleEmployeeCounts.set(await this.service.getRoleEmployeeCounts(tpId, custId));
+    } catch {
+      // Non-critical — the column just falls back to 0 for every role.
+    }
+  }
+
+  employeeCountFor(roleId: number): number {
+    return this.roleEmployeeCounts()[roleId] ?? 0;
   }
 
   async loadRoles(): Promise<void> {

@@ -181,8 +181,8 @@
             </div>
             <select class="form-select" style="max-width: 160px;" [ngModel]="assignRoleFilter()" (ngModelChange)="assignRoleFilter.set($event)">
               <option value="ALL">All roles</option>
-              @for (r of assignRoles(); track r) {
-                <option [value]="r">{{ r }}</option>
+              @for (r of roleOptions(); track r.roleId) {
+                <option [value]="r.roleId">{{ r.roleName }}</option>
               }
             </select>
             <select class="form-select" style="max-width: 180px;" [ngModel]="assignStatusFilter()" (ngModelChange)="assignStatusFilter.set($event)">

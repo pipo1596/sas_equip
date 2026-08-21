@@ -7,6 +7,8 @@ import { CustomerEmployeesService } from './customer-employees.service';
 import { CustomerEmployee } from './customer-employee.model';
 import { DataResidencyRegion } from '../../shared/data-residency.service';
 import { ImageUploadService } from '../../shared/image-upload.service';
+import { CustomerRolesService } from '../customer-roles/customer-roles.service';
+import { CustomerRole } from '../customer-roles/customer-role.model';
 
 @Component({
   selector: 'app-customer-employees',
@@ -19,6 +21,7 @@ export class CustomerEmployeesComponent implements OnInit {
   protected readonly customerMode = inject(CustomerModeService);
   private readonly service = inject(CustomerEmployeesService);
   private readonly imageUploadService = inject(ImageUploadService);
+  private readonly rolesService = inject(CustomerRolesService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
 
@@ -27,6 +30,10 @@ export class CustomerEmployeesComponent implements OnInit {
   readonly page = signal(1);
   readonly pageSize = signal(20);
   readonly search = signal('');
+  readonly roleFilter = signal<number | null>(null);
+  readonly hireFrom = signal('');
+  readonly hireTo = signal('');
+  readonly roleOptions = signal<CustomerRole[]>([]);
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
 
@@ -59,6 +66,10 @@ export class CustomerEmployeesComponent implements OnInit {
     Math.min(this.page() * this.pageSize(), this.total())
   );
 
+  readonly hasActiveFilters = computed(() =>
+    !!this.search() || this.roleFilter() !== null || !!this.hireFrom() || !!this.hireTo()
+  );
+
   private searchTimer: ReturnType<typeof setTimeout> | null = null;
 
   protected get tpId(): number | undefined {
@@ -75,7 +86,14 @@ export class CustomerEmployeesComponent implements OnInit {
     const custId = this.customerId;
     if (tpId && custId) await this.customerMode.ensure(tpId, custId);
     if (tpId) this.region.set(await this.service.regionFor(tpId));
+    if (tpId && custId) this.loadRoleOptions(tpId, custId);
     this.loadEmployees();
+  }
+
+  private async loadRoleOptions(tpId: number, custId: number): Promise<void> {
+    try {
+      this.roleOptions.set(await this.rolesService.listAll(tpId, custId));
+    } catch { /* non-critical — role filter just shows no options */ }
   }
 
   async loadEmployees(): Promise<void> {
@@ -89,6 +107,9 @@ export class CustomerEmployeesComponent implements OnInit {
         page: this.page(),
         pageSize: this.pageSize(),
         search: this.search(),
+        roleId: this.roleFilter(),
+        hireFrom: this.hireFrom(),
+        hireTo: this.hireTo(),
       });
       this.employees.set(result.data);
       this.total.set(result.pagination.totalRows);
@@ -142,6 +163,33 @@ export class CustomerEmployeesComponent implements OnInit {
     this.search.set(value);
     if (this.searchTimer) clearTimeout(this.searchTimer);
     this.searchTimer = setTimeout(() => { this.page.set(1); this.loadEmployees(); }, 350);
+  }
+
+  onRoleFilterChange(value: string): void {
+    this.roleFilter.set(value === 'ALL' ? null : Number(value));
+    this.page.set(1);
+    this.loadEmployees();
+  }
+
+  onHireFromChange(value: string): void {
+    this.hireFrom.set(value);
+    this.page.set(1);
+    this.loadEmployees();
+  }
+
+  onHireToChange(value: string): void {
+    this.hireTo.set(value);
+    this.page.set(1);
+    this.loadEmployees();
+  }
+
+  clearFilters(): void {
+    this.search.set('');
+    this.roleFilter.set(null);
+    this.hireFrom.set('');
+    this.hireTo.set('');
+    this.page.set(1);
+    this.loadEmployees();
   }
 
   onPageSizeChange(value: string): void {
@@ -221,6 +269,12 @@ export class CustomerEmployeesComponent implements OnInit {
 
   regionCountryShort(): string {
     return this.region() === 'CA' ? 'Canada' : 'USA';
+  }
+
+  locationNames(employee: CustomerEmployee): string {
+    return employee.locations.length
+      ? employee.locations.map(l => l.locationName).join('\n')
+      : 'No locations assigned';
   }
 
   statusBadgeClass(status: string): string {

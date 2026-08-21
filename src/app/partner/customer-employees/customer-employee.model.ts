@@ -1,3 +1,8 @@
+export interface CustomerEmployeeLocation {
+  locationId: number;
+  locationName: string;
+}
+
 export interface CustomerEmployee {
   empId: number;
   tpId: number;
@@ -11,7 +16,10 @@ export interface CustomerEmployee {
   phoneNumber: string | null;
   emailAddress: string;
   role: string | null;
+  roleId: number | null;
+  roleName: string | null;
   empRank: string | null;
+  locations: CustomerEmployeeLocation[];
   hireDate: string | null;
   status: 'ACTIVE' | 'INACTIVE' | 'TERMINATED' | 'ON-LEAVE';
   mfaEnabled: 'Y' | 'N';

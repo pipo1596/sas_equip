@@ -104,7 +104,7 @@ export class CustomerEmployeeFormComponent implements OnInit {
       lastName:       employee.lastName ?? '',
       phoneNumber:    employee.phoneNumber ?? '',
       emailAddress:   employee.emailAddress ?? '',
-      role:           employee.role ?? '',
+      role:           employee.roleId?.toString() ?? '',
       empRank:        employee.empRank ?? '',
       hireDate:       employee.hireDate ?? '',
       status:         employee.status ?? 'ACTIVE',

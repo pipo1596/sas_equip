@@ -136,7 +136,7 @@
                           [class.is-invalid]="role.invalid && role.touched">
                     <option value="">Select role…</option>
                     @for (r of roles(); track r.roleId) {
-                      <option [value]="r.roleName">{{ r.roleName }}</option>
+                      <option [value]="r.roleId">{{ r.roleName }}</option>
                     }
                   </select>
                   <div class="invalid-feedback" [class.show]="role.invalid && role.touched">

@@ -12,7 +12,10 @@ export class CustomerEmployeesService {
     return this.dataResidency.resolve(tpId);
   }
 
-  async list(tpId: number, custId: number, params: { page: number; pageSize: number; search: string }): Promise<CustomerEmployeesPage> {
+  async list(tpId: number, custId: number, params: {
+    page: number; pageSize: number; search: string;
+    roleId?: number | null; hireFrom?: string; hireTo?: string;
+  }): Promise<CustomerEmployeesPage> {
     const data = await this.post(tpId, { action: '*LIST', tpId, custId, ...params });
     return data as unknown as CustomerEmployeesPage;
   }

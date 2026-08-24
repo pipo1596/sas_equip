@@ -1,0 +1,231 @@
+<section class="page-shell">
+
+  <div class="page-shell-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div>
+      <h1 class="page-title">Price List Items</h1>
+      @if (priceList(); as pl) {
+        <p class="page-subtitle">
+          <strong>{{ pl.listName }}</strong> · {{ pl.versionCode }} · {{ pl.currency }} · {{ total() }} {{ total() === 1 ? 'item' : 'items' }}
+        </p>
+      }
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <button type="button" class="btn btn-outline-secondary" (click)="backToPriceLists()">
+        <i class="bi bi-arrow-left me-2"></i>Back to Price Lists
+      </button>
+      <button type="button" class="btn btn-dark" (click)="openAddItemModal()">
+        <i class="bi bi-plus-lg me-2"></i>Add Item
+      </button>
+    </div>
+  </div>
+
+  @if (error()) {
+    <div class="alert alert-danger d-flex align-items-center gap-2 mb-3">
+      <i class="bi bi-exclamation-triangle-fill"></i><span>{{ error() }}</span>
+      <button class="btn-close ms-auto" (click)="error.set(null)"></button>
+    </div>
+  }
+
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+    <div class="input-group" style="max-width: 360px;">
+      <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+      <input type="text" class="form-control border-start-0 ps-0" placeholder="Search by SKU or product…"
+             [value]="search()" (input)="onSearchChange($any($event.target).value)" />
+      @if (search()) {
+        <button class="btn btn-outline-secondary" type="button" (click)="onSearchChange('')"><i class="bi bi-x-lg"></i></button>
+      }
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0 table-stacked">
+      <thead>
+        <tr>
+          <th>SKU</th>
+          <th class="text-end">Price</th>
+          <th class="text-end">Compare-At</th>
+          <th class="text-center">Status</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (loading()) {
+          <tr><td colspan="5" class="text-center py-4 text-muted">
+            <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>Loading…
+          </td></tr>
+        } @else if (items().length === 0) {
+          <tr><td colspan="5" class="text-center py-4 text-muted">
+            <i class="bi bi-tag me-2"></i>
+            @if (search()) { No items match your search. } @else { No items in this price list yet. }
+          </td></tr>
+        } @else {
+          @for (item of items(); track item.itemId) {
+            <tr>
+              <td>
+                <div class="fw-semibold">{{ item.productTitle || '—' }}</div>
+                <div class="text-muted small font-monospace">{{ item.skuCode || ('SKU #' + item.skuId) }}</div>
+              </td>
+              <td class="text-end font-monospace">{{ item.price | number:'1.2-2' }}</td>
+              <td class="text-end font-monospace text-muted">
+                {{ item.compareAtPrc != null ? (item.compareAtPrc | number:'1.2-2') : '—' }}
+              </td>
+              <td class="text-center">
+                <span [class]="statusBadge(item.status)">{{ item.status === 'ACTIVE' ? 'Active' : 'Inactive' }}</span>
+              </td>
+              <td class="text-end">
+                <button class="btn btn-sm btn-outline-secondary m-1 px-3" (click)="openEditItemModal(item)" title="Edit"><i class="bi bi-pencil"></i></button>
+                <button class="btn btn-sm btn-outline-danger m-1 px-3" (click)="openDeleteModal(item)" title="Delete"><i class="bi bi-trash"></i></button>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+
+  @if (!loading() && totalPages() > 1) {
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mt-3">
+      <p class="small text-muted mb-0">{{ startRecord() }}–{{ endRecord() }} of {{ total() }} items</p>
+      <div class="d-flex align-items-center gap-1">
+        @if (page() > 1) {
+          <button class="btn btn-sm btn-outline-secondary" (click)="goToPage(page() - 1)"><i class="bi bi-chevron-left"></i></button>
+        }
+        <span class="small text-muted px-2">Page {{ page() }} of {{ totalPages() }}</span>
+        @if (page() < totalPages()) {
+          <button class="btn btn-sm btn-outline-secondary" (click)="goToPage(page() + 1)"><i class="bi bi-chevron-right"></i></button>
+        }
+      </div>
+    </div>
+  }
+
+</section>
+
+@if (showItemModal()) {
+  <div class="modal-backdrop fade show"></div>
+  <div class="modal d-block" tabindex="-1" role="dialog" aria-modal="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title">{{ editingItem() ? 'Edit Item' : 'Add Item' }}</h5>
+          <button class="btn-close" (click)="closeItemModal()" [disabled]="savingItem()"></button>
+        </div>
+        <div class="modal-body pt-2">
+
+          @if (itemError()) {
+            <div class="alert alert-danger d-flex align-items-center gap-2 mb-3 py-2 px-3" role="alert">
+              <i class="bi bi-exclamation-triangle-fill"></i>
+              <span>{{ itemError() }}</span>
+            </div>
+          }
+
+          <div class="mb-3">
+            <label class="form-label fw-medium">SKU <span class="text-danger">*</span></label>
+
+            @if (selectedSku(); as sku) {
+              <div class="border rounded-3 p-2 d-flex align-items-center justify-content-between gap-2">
+                <div>
+                  <div class="fw-medium">{{ sku.productTitle || '—' }}</div>
+                  <div class="text-muted small font-monospace">{{ sku.skuCode }}</div>
+                </div>
+                @if (!editingItem()) {
+                  <button type="button" class="btn btn-sm btn-outline-secondary" (click)="clearSelectedSku()">
+                    <i class="bi bi-x-lg"></i>
+                  </button>
+                }
+              </div>
+            } @else {
+              <div class="position-relative">
+                <input type="text" class="form-control" placeholder="Search by SKU code or product name…"
+                       [value]="skuSearchTerm()" (input)="onSkuSearchChange($any($event.target).value)" />
+                @if (skuSearching()) {
+                  <div class="text-muted small mt-1">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>Searching…
+                  </div>
+                } @else if (skuSearchResults().length > 0) {
+                  <div class="border rounded-3 mt-1" style="max-height: 220px; overflow-y: auto;">
+                    @for (sku of skuSearchResults(); track sku.skuId) {
+                      <button type="button" class="btn btn-light w-100 text-start rounded-0 border-bottom d-flex justify-content-between align-items-center"
+                              (click)="pickSku(sku)">
+                        <span>
+                          <span class="fw-medium">{{ sku.productTitle }}</span>
+                          <span class="text-muted small font-monospace ms-2">{{ sku.skuCode }}</span>
+                        </span>
+                        <span class="text-muted small">{{ sku.basePrice | number:'1.2-2' }}</span>
+                      </button>
+                    }
+                  </div>
+                } @else if (skuSearchTerm().trim()) {
+                  <div class="text-muted small mt-1">No matching SKUs.</div>
+                }
+              </div>
+            }
+          </div>
+
+          <div class="row g-3">
+            <div class="col-6">
+              <label class="form-label fw-medium">Price <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <span class="input-group-text">$</span>
+                <input type="number" class="form-control" step="0.01" min="0"
+                       [ngModel]="itemForm().price" (ngModelChange)="itemForm.update(f => ({...f, price: $event}))" />
+              </div>
+            </div>
+            <div class="col-6">
+              <label class="form-label fw-medium">Compare-At Price</label>
+              <div class="input-group">
+                <span class="input-group-text">$</span>
+                <input type="number" class="form-control" step="0.01" min="0"
+                       [ngModel]="itemForm().compareAtPrc" (ngModelChange)="itemForm.update(f => ({...f, compareAtPrc: $event}))" />
+              </div>
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-medium">Status</label>
+              <select class="form-select"
+                      [ngModel]="itemForm().status" (ngModelChange)="itemForm.update(f => ({...f, status: $event}))">
+                <option value="ACTIVE">Active</option>
+                <option value="INACTIVE">Inactive</option>
+              </select>
+            </div>
+          </div>
+
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button class="btn btn-outline-secondary" (click)="closeItemModal()" [disabled]="savingItem()">Cancel</button>
+          <button class="btn btn-dark" (click)="saveItem()" [disabled]="savingItem()">
+            @if (savingItem()) {
+              <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving…
+            } @else {
+              <i class="bi bi-check-lg me-2"></i>{{ editingItem() ? 'Save Changes' : 'Add Item' }}
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+@if (showDeleteModal()) {
+  <div class="modal-backdrop fade show"></div>
+  <div class="modal d-block" tabindex="-1" role="dialog" aria-modal="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i>Delete Item</h5>
+          <button class="btn-close" (click)="closeDeleteModal()" [disabled]="deleting()"></button>
+        </div>
+        <div class="modal-body pt-2">
+          @if (deleteTarget(); as target) {
+            <p class="mb-0">Remove <strong>{{ target.productTitle || target.skuCode || ('SKU #' + target.skuId) }}</strong> from this price list?</p>
+          }
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button class="btn btn-outline-secondary" (click)="closeDeleteModal()" [disabled]="deleting()">Cancel</button>
+          <button class="btn btn-danger" (click)="confirmDelete()" [disabled]="deleting()">
+            @if (deleting()) { <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Deleting… }
+            @else { <i class="bi bi-trash me-2"></i>Delete }
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

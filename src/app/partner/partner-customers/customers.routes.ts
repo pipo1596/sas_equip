@@ -11,6 +11,9 @@ import { CustomerLocationsComponent } from '../customer-locations/customer-locat
 import { CustomerLocationFormComponent } from '../customer-locations/customer-location-form.component';
 import { CustomerAddressesComponent } from '../customer-addresses/customer-addresses.component';
 import { CustomerContactsComponent } from '../customer-contacts/customer-contacts.component';
+import { CustomerPriceListsComponent } from '../customer-price-lists/customer-price-lists.component';
+import { CustomerPriceListFormComponent } from '../customer-price-lists/customer-price-list-form.component';
+import { CustomerPriceListItemsComponent } from '../customer-price-lists/customer-price-list-items.component';
 
 // All routes are relative to partner/:id/customers
 export const CUSTOMERS_ROUTES: Routes = [
@@ -31,4 +34,8 @@ export const CUSTOMERS_ROUTES: Routes = [
   { path: ':customerId/locations/:locationId/edit', component: CustomerLocationFormComponent },
   { path: ':customerId/addresses', component: CustomerAddressesComponent },
   { path: ':customerId/contacts', component: CustomerContactsComponent },
+  { path: ':customerId/price-lists', component: CustomerPriceListsComponent },
+  { path: ':customerId/price-lists/new', component: CustomerPriceListFormComponent },
+  { path: ':customerId/price-lists/:priceListId/edit', component: CustomerPriceListFormComponent },
+  { path: ':customerId/price-lists/:priceListId/items', component: CustomerPriceListItemsComponent },
 ];

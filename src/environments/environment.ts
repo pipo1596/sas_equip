@@ -28,5 +28,7 @@ export const environment = {
     customerAddresses: 'APITPCADDR',
     customerContacts: 'APITPCCONT',
     customerAttachments: 'APITPCATTC',
+    customerPriceLists: 'APITPCPRL',
+    customerPriceListItems: 'APITPCPRI',
   },
 };

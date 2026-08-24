@@ -1,0 +1,122 @@
+<section class="page-shell">
+
+  <div class="page-shell-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div>
+      <h1 class="page-title">{{ isEdit ? 'Edit Price List' : 'New Price List' }}</h1>
+      <p class="page-subtitle">for <strong>{{ customerMode.activeCustomer()?.customerName }}</strong></p>
+    </div>
+    <button type="button" class="btn btn-outline-secondary" (click)="cancel()">
+      <i class="bi bi-arrow-left me-2"></i>Back to Price Lists
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="d-flex justify-content-center align-items-center py-5">
+      <div class="spinner-border text-secondary" role="status">
+        <span class="visually-hidden">Loading…</span>
+      </div>
+    </div>
+  } @else {
+
+  <form #priceListForm="ngForm" (ngSubmit)="save()" novalidate>
+    <div class="row g-4">
+      <div class="col-12 col-lg-8">
+
+        <div class="card mb-4">
+          <div class="card-body">
+            <h6 class="card-title fw-semibold mb-3">Price List Information</h6>
+
+            <div class="row gy-2 gx-3">
+              <div class="col-12 col-sm-6">
+                <label class="form-label fw-medium">List Name <span class="text-danger">*</span></label>
+                <input type="text" class="form-control"
+                       name="listName" [(ngModel)]="formData.listName"
+                       required #nameCtrl="ngModel"
+                       [class.is-invalid]="nameCtrl.invalid && nameCtrl.touched" />
+                @if (nameCtrl.invalid && nameCtrl.touched) {
+                  <div class="invalid-feedback">List name is required.</div>
+                }
+              </div>
+              <div class="col-12 col-sm-6">
+                <label class="form-label fw-medium">Version Code <span class="text-danger">*</span></label>
+                <input type="text" class="form-control font-monospace"
+                       name="versionCode" [(ngModel)]="formData.versionCode"
+                       required #verCtrl="ngModel"
+                       [class.is-invalid]="verCtrl.invalid && verCtrl.touched"
+                       placeholder="e.g. v2.1" />
+                @if (verCtrl.invalid && verCtrl.touched) {
+                  <div class="invalid-feedback">Version code is required.</div>
+                }
+              </div>
+              <div class="col-12 col-sm-4">
+                <label class="form-label fw-medium">Currency</label>
+                <select class="form-select" name="currency" [(ngModel)]="formData.currency">
+                  <option value="USD">USD</option>
+                  <option value="CAD">CAD</option>
+                </select>
+              </div>
+              <div class="col-12 col-sm-4">
+                <label class="form-label fw-medium">Effective Date <span class="text-danger">*</span></label>
+                <input type="date" class="form-control"
+                       name="effectiveDate" [(ngModel)]="formData.effectiveDate"
+                       required #effCtrl="ngModel"
+                       [class.is-invalid]="effCtrl.invalid && effCtrl.touched" />
+                @if (effCtrl.invalid && effCtrl.touched) {
+                  <div class="invalid-feedback">Effective date is required.</div>
+                }
+              </div>
+              <div class="col-12 col-sm-4">
+                <label class="form-label fw-medium">End Date</label>
+                <input type="date" class="form-control" name="endDate" [(ngModel)]="formData.endDate" />
+                <div class="form-text">Leave blank to run until the next list takes effect.</div>
+              </div>
+              <div class="col-12">
+                <label class="form-label fw-medium">Description</label>
+                <textarea class="form-control" name="description" [(ngModel)]="formData.description" rows="3"
+                          placeholder="What changed in this price list…"></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="col-12 col-lg-4">
+
+        <div class="card mb-4">
+          <div class="card-body">
+            <h6 class="card-title fw-semibold mb-3">Status</h6>
+            <select class="form-select" name="status" [(ngModel)]="formData.status">
+              <option value="DRAFT">Draft</option>
+              <option value="ACTIVE">Active</option>
+              <option value="INACTIVE">Inactive</option>
+              <option value="EXPIRED">Expired</option>
+            </select>
+            <div class="form-text mt-2">Only one price list can be Active per customer at a time — setting this one Active will deactivate any other.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="d-flex align-items-center justify-content-end gap-2 mt-2">
+      @if (error()) {
+        <div class="alert alert-danger d-flex align-items-center gap-2 mb-0 py-2 px-3 me-auto" role="alert">
+          <i class="bi bi-exclamation-triangle-fill"></i>
+          <span>{{ error() }}</span>
+        </div>
+      }
+      <button type="button" class="btn btn-outline-secondary" (click)="cancel()" [disabled]="saving()">Cancel</button>
+      <button type="submit" class="btn btn-dark" [disabled]="saving()">
+        @if (saving()) {
+          <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving…
+        } @else {
+          <i class="bi bi-check-lg me-2"></i>{{ isEdit ? 'Save Changes' : 'Create Price List' }}
+        }
+      </button>
+    </div>
+
+  </form>
+
+  } <!-- end @else loading -->
+
+</section>

@@ -1,0 +1,140 @@
+<section class="page-shell">
+
+  <div class="page-shell-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div>
+      <h1 class="page-title">Price Lists</h1>
+      <p class="page-subtitle">Manage price lists for <strong>{{ customerMode.activeCustomer()?.customerName }}</strong></p>
+    </div>
+    <button type="button" class="btn btn-dark" (click)="newPriceList()">
+      <i class="bi bi-plus-lg me-2"></i>New Price List
+    </button>
+  </div>
+
+  @if (error()) {
+    <div class="alert alert-danger d-flex align-items-center gap-2 mb-3">
+      <i class="bi bi-exclamation-triangle-fill"></i><span>{{ error() }}</span>
+      <button class="btn-close ms-auto" (click)="error.set(null)"></button>
+    </div>
+  }
+
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+    <div class="input-group" style="max-width: 360px;">
+      <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+      <input type="text" class="form-control border-start-0 ps-0" placeholder="Search price lists…"
+             [value]="search()" (input)="onSearchChange($any($event.target).value)" />
+      @if (search()) {
+        <button class="btn btn-outline-secondary" type="button" (click)="onSearchChange('')"><i class="bi bi-x-lg"></i></button>
+      }
+    </div>
+    <select class="form-select" style="max-width: 180px;"
+            [ngModel]="statusFilter()" (ngModelChange)="onStatusFilterChange($event)">
+      <option value="ALL">All statuses</option>
+      <option value="DRAFT">Draft</option>
+      <option value="ACTIVE">Active</option>
+      <option value="INACTIVE">Inactive</option>
+      <option value="EXPIRED">Expired</option>
+    </select>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0 table-stacked">
+      <thead>
+        <tr>
+          <th>List</th>
+          <th>Version</th>
+          <th class="text-center">Currency</th>
+          <th>Effective</th>
+          <th>End Date</th>
+          <th class="text-center">Status</th>
+          <th class="text-center">Items</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (loading()) {
+          <tr><td colspan="8" class="text-center py-4 text-muted">
+            <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>Loading…
+          </td></tr>
+        } @else if (priceLists().length === 0) {
+          <tr><td colspan="8" class="text-center py-4 text-muted">
+            <i class="bi bi-tags me-2"></i>
+            @if (search()) { No price lists match your search. } @else { No price lists yet. }
+          </td></tr>
+        } @else {
+          @for (pl of priceLists(); track pl.priceListId) {
+            <tr>
+              <td>
+                <div class="fw-semibold">{{ pl.listName }}</div>
+                @if (pl.description) {
+                  <div class="text-muted small">{{ pl.description }}</div>
+                }
+              </td>
+              <td class="font-monospace small">{{ pl.versionCode }}</td>
+              <td class="text-center">{{ pl.currency }}</td>
+              <td class="small">{{ formatDate(pl.effectiveDate) }}</td>
+              <td class="small">{{ formatDate(pl.endDate) }}</td>
+              <td class="text-center">
+                <span [class]="statusBadge(pl.status)">{{ pl.status }}</span>
+              </td>
+              <td class="text-center">
+                <button class="btn btn-sm btn-outline-secondary px-3" (click)="manageItems(pl)" title="Manage Items">
+                  <i class="bi bi-list-ul me-1"></i>{{ pl.itemCount ?? 0 }}
+                </button>
+              </td>
+              <td class="text-end">
+                <button class="btn btn-sm btn-outline-secondary m-1 px-3" (click)="editPriceList(pl)" title="Edit"><i class="bi bi-pencil"></i></button>
+                <button class="btn btn-sm btn-outline-danger m-1 px-3" (click)="openDeleteModal(pl)" title="Delete"><i class="bi bi-trash"></i></button>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+
+  @if (!loading() && totalPages() > 1) {
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mt-3">
+      <p class="small text-muted mb-0">{{ startRecord() }}–{{ endRecord() }} of {{ total() }} price lists</p>
+      <div class="d-flex align-items-center gap-1">
+        @if (page() > 1) {
+          <button class="btn btn-sm btn-outline-secondary" (click)="goToPage(1)"><i class="bi bi-chevron-double-left"></i></button>
+          <button class="btn btn-sm btn-outline-secondary" (click)="goToPage(page() - 1)"><i class="bi bi-chevron-left"></i></button>
+        }
+        @for (p of pageWindow(); track p) {
+          <button class="btn btn-sm" [class.btn-dark]="p === page()" [class.btn-outline-secondary]="p !== page()" (click)="goToPage(p)">{{ p }}</button>
+        }
+        @if (page() < totalPages()) {
+          <button class="btn btn-sm btn-outline-secondary" (click)="goToPage(page() + 1)"><i class="bi bi-chevron-right"></i></button>
+          <button class="btn btn-sm btn-outline-secondary" (click)="goToPage(totalPages())"><i class="bi bi-chevron-double-right"></i></button>
+        }
+      </div>
+    </div>
+  }
+
+</section>
+
+@if (showDeleteModal()) {
+  <div class="modal-backdrop fade show"></div>
+  <div class="modal d-block" tabindex="-1" role="dialog" aria-modal="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i>Delete Price List</h5>
+          <button class="btn-close" (click)="closeDeleteModal()" [disabled]="deleting()"></button>
+        </div>
+        <div class="modal-body pt-2">
+          @if (deleteTarget(); as target) {
+            <p class="mb-0">Delete price list <strong>{{ target.listName }}</strong> ({{ target.versionCode }})? This cannot be undone.</p>
+          }
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button class="btn btn-outline-secondary" (click)="closeDeleteModal()" [disabled]="deleting()">Cancel</button>
+          <button class="btn btn-danger" (click)="confirmDelete()" [disabled]="deleting()">
+            @if (deleting()) { <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Deleting… }
+            @else { <i class="bi bi-trash me-2"></i>Delete }
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

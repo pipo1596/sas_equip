@@ -72,19 +72,15 @@
             <span [class]="statusBadge(c.status)">
                {{ c.status === 'ACTIVE' ? 'Active' : 'Inactive' }}
             </span>
-          </div>
-        </div>
 
-        <div class="card mb-4">
-          <div class="card-body">
-            <h6 class="card-title fw-semibold mb-3">Record Info</h6>
-            <div class="mb-2">
-              <div class="text-muted small text-uppercase" style="font-size:0.7rem; letter-spacing:0.04em;">Created</div>
-              <div class="small">{{ formatDate(c.createdTs) }}{{ c.createdBy ? ' · ' + c.createdBy : '' }}</div>
-            </div>
-            <div>
-              <div class="text-muted small text-uppercase" style="font-size:0.7rem; letter-spacing:0.04em;">Last Updated</div>
-              <div class="small">{{ formatDate(c.updatedTs) }}{{ c.updatedBy ? ' · ' + c.updatedBy : '' }}</div>
+            <h6 class="card-title fw-semibold mb-3 mt-4">Logo</h6>
+            <div class="d-flex align-items-center justify-content-center rounded-3"
+                 style="background:#fafafa; min-height:120px; padding:1rem;">
+              @if (c.logoUrl) {
+                <img [src]="c.logoUrl" alt="Customer logo" style="max-height:80px; max-width:100%; object-fit:contain;" />
+              } @else {
+                <i class="bi bi-image text-muted" style="font-size:1.75rem;"></i>
+              }
             </div>
           </div>
         </div>

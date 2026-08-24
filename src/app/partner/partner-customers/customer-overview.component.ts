@@ -219,15 +219,6 @@ export class CustomerOverviewComponent implements OnInit {
       : 'badge bg-secondary-subtle text-secondary border border-secondary-subtle';
   }
 
-  formatDate(ts: string | null): string {
-    if (!ts) return '—';
-    try {
-      return new Date(ts).toLocaleString();
-    } catch {
-      return ts;
-    }
-  }
-
   formatShortDate(ts: string | null): string {
     if (!ts) return '—';
     try {

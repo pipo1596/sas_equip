@@ -917,6 +917,14 @@
         </button>
       </div>
 
+      @if (attrError()) {
+        <div class="alert alert-danger d-flex align-items-center gap-2 mb-3" role="alert">
+          <i class="bi bi-exclamation-triangle-fill"></i>
+          <span>{{ attrError() }}</span>
+          <button type="button" class="btn-close ms-auto" (click)="attrError.set(null)"></button>
+        </div>
+      }
+
       @if (loadingAttributes()) {
         <div class="text-center py-4 text-muted">
           <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>Loading…

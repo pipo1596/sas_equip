@@ -1,0 +1,294 @@
+<section class="page-shell">
+
+  <div class="page-shell-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div>
+      <h1 class="page-title">{{ program()?.programName || 'Program' }}</h1>
+      <p class="page-subtitle">
+        Category &amp; product assortment
+        @if (program()?.priceListName) { · Priced from <strong>{{ program()?.priceListName }}</strong> }
+        · Last synced {{ formatDate(program()?.lastSyncedTs ?? null) }}
+      </p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <button type="button" class="btn btn-outline-secondary" (click)="backToPrograms()">
+        <i class="bi bi-arrow-left me-2"></i>Back to Programs
+      </button>
+    </div>
+  </div>
+
+  @if (error()) {
+    <div class="alert alert-danger d-flex align-items-center gap-2 mb-3">
+      <i class="bi bi-exclamation-triangle-fill"></i><span>{{ error() }}</span>
+      <button class="btn-close ms-auto" (click)="error.set(null)"></button>
+    </div>
+  }
+
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+    <div class="input-group" style="max-width: 360px;">
+      <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+      <input type="text" class="form-control border-start-0 ps-0" placeholder="Search category or product…"
+             (input)="onSearchChange($any($event.target).value)" />
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <button type="button" class="btn btn-outline-secondary btn-sm" (click)="expandAll()">
+        <i class="bi bi-chevron-bar-down me-1"></i>Expand all
+      </button>
+      <button type="button" class="btn btn-outline-secondary btn-sm" (click)="collapseAll()">
+        <i class="bi bi-chevron-bar-up me-1"></i>Collapse all
+      </button>
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0 table-stacked">
+      <thead>
+        <tr>
+          <th>Category / Product</th>
+          <th>Type</th>
+          <th class="text-center">SKUs</th>
+          <th class="text-end">Base Price</th>
+          <th class="text-end">Customer Price</th>
+          <th>Source</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (loading()) {
+          <tr><td colspan="7" class="text-center py-4 text-muted">
+            <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>Loading…
+          </td></tr>
+        } @else if (rows().length === 0) {
+          <tr><td colspan="7" class="text-center py-4 text-muted">
+            <i class="bi bi-diagram-3 me-2"></i>
+            @if (search()) { Nothing matches your search. } @else { No categories or products in this program yet. }
+          </td></tr>
+        } @else {
+          @for (row of rows(); track row.key) {
+            @if (row.kind === 'CATEGORY' && row.category; as cat) {
+              <tr>
+                <td>
+                  <div class="d-flex align-items-center gap-2" [style.paddingLeft.px]="row.level * 24">
+                    <button type="button" class="btn btn-sm btn-link text-dark p-0" (click)="toggleExpand(cat.progCatId)">
+                      <i class="bi" [class.bi-chevron-right]="!expandedIds().has(cat.progCatId)" [class.bi-chevron-down]="expandedIds().has(cat.progCatId)"></i>
+                    </button>
+                    <i class="bi bi-folder2 text-muted"></i>
+                    <span class="fw-semibold">{{ cat.categoryName }}</span>
+                    <span class="text-muted small">({{ cat.categoryId }})</span>
+                  </div>
+                </td>
+                <td><span class="badge bg-primary-subtle text-primary border border-primary-subtle">Category</span></td>
+                <td class="text-center text-muted">—</td>
+                <td class="text-end text-muted">—</td>
+                <td class="text-end text-muted">—</td>
+                <td class="small text-muted">Catalog</td>
+                <td class="text-end">
+                  @if (cat.children.length === 0) {
+                    <button type="button" class="btn btn-sm btn-outline-secondary m-1 px-3" (click)="openAddProductModal(cat)" title="Add Product">
+                      <i class="bi bi-plus-lg"></i>
+                    </button>
+                  }
+                  <button type="button" class="btn btn-sm btn-outline-danger m-1 px-3" (click)="openDeleteCategoryModal(cat)" title="Delete Category">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </td>
+              </tr>
+            } @else if (row.product; as prod) {
+              <tr>
+                <td>
+                  <div class="d-flex align-items-center gap-2" [style.paddingLeft.px]="row.level * 24 + 24">
+                    <i class="bi bi-box-seam text-muted"></i>
+                    <span>{{ prod.productName }}</span>
+                  </div>
+                </td>
+                <td><span class="badge bg-success-subtle text-success border border-success-subtle">Style</span></td>
+                <td class="text-center">{{ prod.skuCount }}</td>
+                <td class="text-end font-monospace">{{ prod.basePrice != null ? (prod.basePrice | number:'1.2-2') : '—' }}</td>
+                <td class="text-end font-monospace"
+                    [class.text-success]="prod.customerPrice != null && prod.customerPrice !== prod.basePrice"
+                    [class.fw-semibold]="prod.customerPrice != null && prod.customerPrice !== prod.basePrice">
+                  {{ prod.customerPrice != null ? (prod.customerPrice | number:'1.2-2') : '—' }}
+                </td>
+                <td class="small text-muted">Catalog</td>
+                <td class="text-end">
+                  <button type="button" class="btn btn-sm btn-outline-danger px-3" (click)="openDeleteProductModal(prod)" title="Remove Product">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </td>
+              </tr>
+            }
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+
+  @if (!loading()) {
+    <p class="small text-muted mt-3 mb-0">{{ categoryCount() }} {{ categoryCount() === 1 ? 'category' : 'categories' }} · {{ productCount() }} {{ productCount() === 1 ? 'product' : 'products' }}</p>
+  }
+
+</section>
+
+@if (showDeleteCategoryModal()) {
+  <div class="modal-backdrop fade show"></div>
+  <div class="modal d-block" tabindex="-1" role="dialog" aria-modal="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i>Delete Category</h5>
+          <button class="btn-close" (click)="closeDeleteCategoryModal()" [disabled]="deletingCategory()"></button>
+        </div>
+        <div class="modal-body pt-2">
+          @if (deleteCategoryTarget(); as target) {
+            <p class="mb-0">
+              Delete <strong>{{ target.categoryName }}</strong> from this program?
+              @if (countCategoryDescendants(target); as counts) {
+                @if (counts.categories > 0 || counts.products > 0) {
+                  This also removes
+                  @if (counts.categories > 0) { {{ counts.categories }} sub-{{ counts.categories === 1 ? 'category' : 'categories' }} }
+                  @if (counts.categories > 0 && counts.products > 0) { and }
+                  @if (counts.products > 0) { {{ counts.products }} product {{ counts.products === 1 ? 'placement' : 'placements' }} }
+                  from the tree.
+                }
+              }
+              This cannot be undone.
+            </p>
+          }
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button class="btn btn-outline-secondary" (click)="closeDeleteCategoryModal()" [disabled]="deletingCategory()">Cancel</button>
+          <button class="btn btn-danger" (click)="confirmDeleteCategory()" [disabled]="deletingCategory()">
+            @if (deletingCategory()) { <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Deleting… }
+            @else { <i class="bi bi-trash me-2"></i>Delete }
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+@if (showAddProductModal()) {
+  <div class="modal-backdrop fade show"></div>
+  <div class="modal d-block" tabindex="-1" role="dialog" aria-modal="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+      <div class="modal-content">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title">
+            Add Products
+            @if (addProductTarget(); as target) {
+              <span class="text-muted small fw-normal ms-1">to {{ target.categoryName }}</span>
+            }
+          </h5>
+          <button class="btn-close" (click)="closeAddProductModal()" [disabled]="savingProduct()"></button>
+        </div>
+        <div class="modal-body pt-2">
+
+          @if (addProductError()) {
+            <div class="alert alert-danger d-flex align-items-center gap-2 mb-3 py-2 px-3" role="alert">
+              <i class="bi bi-exclamation-triangle-fill"></i>
+              <span>{{ addProductError() }}</span>
+            </div>
+          }
+
+          <div class="input-group mb-3">
+            <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+            <input type="text" class="form-control border-start-0 ps-0"
+                   placeholder="Search products by name, ID, SKU, category, or description…"
+                   [value]="productSearch()" (input)="onProductSearchChange($any($event.target).value)" />
+          </div>
+
+          <div class="border rounded-3" style="max-height: 360px; overflow-y: auto;">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="sticky-top bg-white">
+                <tr>
+                  <th style="width:40px;">
+                    <input type="checkbox" class="form-check-input"
+                           [checked]="productSearchResults().length > 0 && productSearchResults().every(p => selectedProductPks().has(p.productPk))"
+                           (change)="toggleSelectAllProducts()" />
+                  </th>
+                  <th>Product</th>
+                  <th class="text-center">SKUs</th>
+                  <th>Category</th>
+                  <th>Brand</th>
+                  <th class="text-end">Base Price</th>
+                  <th class="text-end">Customer Price</th>
+                </tr>
+              </thead>
+              <tbody>
+                @if (productSearching()) {
+                  <tr><td colspan="7" class="text-center py-4 text-muted">
+                    <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>Searching…
+                  </td></tr>
+                } @else if (productSearchResults().length === 0) {
+                  <tr><td colspan="7" class="text-center py-4 text-muted">No matching products.</td></tr>
+                } @else {
+                  @for (prod of productSearchResults(); track prod.productPk) {
+                    <tr style="cursor:pointer;" (click)="toggleProductSelected(prod.productPk)">
+                      <td (click)="$event.stopPropagation()">
+                        <input type="checkbox" class="form-check-input"
+                               [checked]="selectedProductPks().has(prod.productPk)"
+                               (change)="toggleProductSelected(prod.productPk)" />
+                      </td>
+                      <td>
+                        <div class="fw-medium">{{ prod.title }}</div>
+                        @if (prod.productCode) {
+                          <div class="text-muted small">{{ prod.productCode }}</div>
+                        }
+                      </td>
+                      <td class="text-center">{{ prod.skuCount }}</td>
+                      <td class="small">{{ prod.categoryName || '—' }}</td>
+                      <td class="small">{{ prod.brandName || '—' }}</td>
+                      <td class="text-end font-monospace">{{ prod.basePrice != null ? (prod.basePrice | number:'1.2-2') : '—' }}</td>
+                      <td class="text-end font-monospace"
+                          [class.text-success]="prod.customerPrice != null && prod.customerPrice !== prod.basePrice"
+                          [class.fw-semibold]="prod.customerPrice != null && prod.customerPrice !== prod.basePrice">
+                        {{ prod.customerPrice != null ? (prod.customerPrice | number:'1.2-2') : '—' }}
+                      </td>
+                    </tr>
+                  }
+                }
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+        <div class="modal-footer border-0 pt-0 d-flex align-items-center">
+          <span class="text-muted small me-auto">{{ selectedProductPks().size }} selected</span>
+          <button class="btn btn-outline-secondary" (click)="closeAddProductModal()" [disabled]="savingProduct()">Cancel</button>
+          <button class="btn btn-dark" (click)="saveAddProduct()" [disabled]="savingProduct() || selectedProductPks().size === 0">
+            @if (savingProduct()) {
+              <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Assigning…
+            } @else {
+              <i class="bi bi-plus-lg me-2"></i>Assign selected
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+@if (showDeleteProductModal()) {
+  <div class="modal-backdrop fade show"></div>
+  <div class="modal d-block" tabindex="-1" role="dialog" aria-modal="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i>Remove Product</h5>
+          <button class="btn-close" (click)="closeDeleteProductModal()" [disabled]="deletingProduct()"></button>
+        </div>
+        <div class="modal-body pt-2">
+          @if (deleteProductTarget(); as target) {
+            <p class="mb-0">Remove <strong>{{ target.productName }}</strong> from this category? This does not delete the product from the catalog.</p>
+          }
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button class="btn btn-outline-secondary" (click)="closeDeleteProductModal()" [disabled]="deletingProduct()">Cancel</button>
+          <button class="btn btn-danger" (click)="confirmDeleteProduct()" [disabled]="deletingProduct()">
+            @if (deletingProduct()) { <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Removing… }
+            @else { <i class="bi bi-trash me-2"></i>Remove }
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

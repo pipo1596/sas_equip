@@ -1,0 +1,132 @@
+<section class="page-shell">
+
+  <div class="page-shell-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div>
+      <h1 class="page-title">{{ isEdit ? 'Edit Program' : 'New Program' }}</h1>
+      <p class="page-subtitle">for <strong>{{ customerMode.activeCustomer()?.customerName }}</strong></p>
+    </div>
+    <button type="button" class="btn btn-outline-secondary" (click)="cancel()">
+      <i class="bi bi-arrow-left me-2"></i>Back to Programs
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="d-flex justify-content-center align-items-center py-5">
+      <div class="spinner-border text-secondary" role="status">
+        <span class="visually-hidden">Loading…</span>
+      </div>
+    </div>
+  } @else {
+
+  <form #programForm="ngForm" (ngSubmit)="save()" novalidate>
+    <div class="row g-4">
+      <div class="col-12 col-lg-8">
+
+        <div class="card mb-4">
+          <div class="card-body">
+            <h6 class="card-title fw-semibold mb-3">Program Information</h6>
+
+            <div class="row gy-2 gx-3">
+              <div class="col-12">
+                <label class="form-label fw-medium">Program Name <span class="text-danger">*</span></label>
+                <input type="text" class="form-control"
+                       name="programName" [(ngModel)]="formData.programName"
+                       required #nameCtrl="ngModel"
+                       [class.is-invalid]="nameCtrl.invalid && nameCtrl.touched"
+                       placeholder="e.g. ANB Standard Program" />
+                @if (nameCtrl.invalid && nameCtrl.touched) {
+                  <div class="invalid-feedback">Program name is required.</div>
+                }
+              </div>
+              <div class="col-12">
+                <label class="form-label fw-medium">Price List</label>
+                <select class="form-select" name="priceListId"
+                        [ngModel]="formData.priceListId" (ngModelChange)="onPriceListChange($event)">
+                  <option [ngValue]="null">— No price list —</option>
+                  @for (pl of priceLists(); track pl.priceListId) {
+                    <option [ngValue]="pl.priceListId">{{ pl.listName }} ({{ pl.versionCode }})</option>
+                  }
+                </select>
+                <div class="form-text mt-2">Resolves Base/Customer pricing for products in this program's tree.</div>
+
+                @if (!isEdit) {
+                  <div class="row g-2 mt-1">
+                    <div class="col-6">
+                      <div class="border rounded-3 p-2 d-flex align-items-center gap-2"
+                           [class.border-primary]="genMode() === 'GENERATE'"
+                           [style.opacity]="canGenerate() ? 1 : 0.5"
+                           [style.cursor]="canGenerate() ? 'pointer' : 'not-allowed'"
+                           (click)="chooseMode('GENERATE')">
+                        <i class="bi bi-magic text-primary"></i>
+                        <div>
+                          <div class="small fw-medium">Generate from Products &amp; Price List</div>
+                          <div class="text-muted" style="font-size:0.7rem;">Auto-build the tree from the catalog.</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-6">
+                      <div class="border rounded-3 p-2 d-flex align-items-center gap-2" style="cursor:pointer;"
+                           [class.border-primary]="genMode() === 'MANUAL'"
+                           (click)="chooseMode('MANUAL')">
+                        <i class="bi bi-hand-index-thumb"></i>
+                        <div>
+                          <div class="small fw-medium">Build manually</div>
+                          <div class="text-muted" style="font-size:0.7rem;">Add categories by hand.</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  @if (!canGenerate()) {
+                    <div class="form-text mt-1">Select a price list above to enable generating the tree automatically.</div>
+                  }
+                }
+              </div>
+              <div class="col-12">
+                <label class="form-label fw-medium">Description</label>
+                <textarea class="form-control" name="description" [(ngModel)]="formData.description" rows="3"></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="col-12 col-lg-4">
+
+        <div class="card mb-4">
+          <div class="card-body">
+            <h6 class="card-title fw-semibold mb-3">Status</h6>
+            <select class="form-select" name="status" [(ngModel)]="formData.status">
+              <option value="DRAFT">Draft</option>
+              <option value="ACTIVE">Active</option>
+              <option value="ARCHIVED">Archived</option>
+            </select>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="d-flex align-items-center justify-content-end gap-2 mt-2">
+      @if (error()) {
+        <div class="alert alert-danger d-flex align-items-center gap-2 mb-0 py-2 px-3 me-auto" role="alert">
+          <i class="bi bi-exclamation-triangle-fill"></i>
+          <span>{{ error() }}</span>
+        </div>
+      }
+      <button type="button" class="btn btn-outline-secondary" (click)="cancel()" [disabled]="saving()">Cancel</button>
+      <button type="submit" class="btn btn-dark" [disabled]="saving()">
+        @if (saving()) {
+          <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+          {{ genMode() === 'GENERATE' ? 'Generating…' : 'Saving…' }}
+        } @else {
+          <i class="bi bi-check-lg me-2"></i>
+          {{ isEdit ? 'Save Changes' : (genMode() === 'GENERATE' ? 'Generate Program' : 'Create Program') }}
+        }
+      </button>
+    </div>
+
+  </form>
+
+  } <!-- end @else loading -->
+
+</section>

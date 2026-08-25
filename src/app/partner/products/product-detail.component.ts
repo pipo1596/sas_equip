@@ -179,6 +179,7 @@ export class ProductDetailComponent implements OnInit {
   readonly addingAttr = signal(false);
   readonly attrForm = signal({ attrName: '', attrValue: '' });
   readonly savingAttr = signal(false);
+  readonly attrError = signal<string | null>(null);
 
 
   protected get tpId(): number | undefined {
@@ -724,8 +725,9 @@ export class ProductDetailComponent implements OnInit {
     this.loadingAttributes.set(true);
     try {
       this.attributes.set(await this.service.listAttributes(tpId, id));
-    } catch { /* handled inline */ }
-    finally { this.loadingAttributes.set(false); }
+    } catch (err) {
+      this.attrError.set(err instanceof Error ? err.message : 'Failed to load attributes.');
+    } finally { this.loadingAttributes.set(false); }
   }
 
   startEditAttr(attr: ProductAttribute | null): void {
@@ -751,6 +753,7 @@ export class ProductDetailComponent implements OnInit {
     const form = this.attrForm();
     if (!tpId || !id || !form.attrName.trim() || !form.attrValue.trim()) return;
     this.savingAttr.set(true);
+    this.attrError.set(null);
     try {
       const existing = this.editingAttr();
       if (existing) {
@@ -764,17 +767,21 @@ export class ProductDetailComponent implements OnInit {
       this.editingAttr.set(null);
       await this.loadAttributes();
       this.addingAttr.set(false);
-    } catch { /* TODO: surface error */ }
-    finally { this.savingAttr.set(false); }
+    } catch (err) {
+      this.attrError.set(err instanceof Error ? err.message : 'Failed to save attribute.');
+    } finally { this.savingAttr.set(false); }
   }
 
   async deleteAttr(attr: ProductAttribute): Promise<void> {
     const tpId = this.tpId;
     if (!tpId) return;
+    this.attrError.set(null);
     try {
       await this.service.deleteAttribute(tpId, attr.attrId);
-      await this.loadAttributes();
-    } catch { /* TODO: surface error */ }
+      this.attributes.update(list => list.filter(a => a.attrId !== attr.attrId));
+    } catch (err) {
+      this.attrError.set(err instanceof Error ? err.message : 'Failed to delete attribute.');
+    }
   }
 
   backToList(): void {

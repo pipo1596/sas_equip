@@ -51,7 +51,7 @@ export class ProductSkusService {
   // ── Images ────────────────────────────────────────────────────────────────
 
   async listImages(tpId: number, skuId: number): Promise<ProductImage[]> {
-    const data = await this.post({ action: '*LIST_IMAGES', tpId, skuId });
+    const data = await this.post({ action: '*LIST_IMG', tpId, skuId });
     return data['data'] as unknown as ProductImage[];
   }
 
@@ -61,13 +61,13 @@ export class ProductSkusService {
   }
 
   async deleteImage(tpId: number, imgId: number): Promise<void> {
-    await this.post({ action: '*DELETE_IMAGE', tpId, imgId });
+    await this.post({ action: '*DEL_IMG', tpId, imgId });
   }
 
   // ── Attributes ────────────────────────────────────────────────────────────
 
   async listAttributes(tpId: number, skuId: number): Promise<ProductAttribute[]> {
-    const data = await this.post({ action: '*LIST_ATTRS', tpId, skuId });
+    const data = await this.post({ action: '*LIST_ATTR', tpId, skuId });
     return data['data'] as unknown as ProductAttribute[];
   }
 
@@ -77,11 +77,11 @@ export class ProductSkusService {
   }
 
   async updateAttribute(tpId: number, attrId: number, attr: Partial<ProductAttribute>): Promise<void> {
-    await this.post({ action: '*UPDATE_ATTR', tpId, attrId, ...attr });
+    await this.post({ action: '*UPD_ATTR', tpId, attrId, ...attr });
   }
 
   async deleteAttribute(tpId: number, attrId: number): Promise<void> {
-    await this.post({ action: '*DELETE_ATTR', tpId, attrId });
+    await this.post({ action: '*DEL_ATTR', tpId, attrId });
   }
 
   // ── Inventory ─────────────────────────────────────────────────────────────
@@ -92,27 +92,27 @@ export class ProductSkusService {
   }
 
   async updateInventory(tpId: number, invId: number, fields: Partial<ProductInventory>): Promise<void> {
-    await this.post({ action: '*UPDATE_INV', tpId, invId, ...fields });
+    await this.post({ action: '*UPD_INV', tpId, invId, ...fields });
   }
 
   // ── Pricing ───────────────────────────────────────────────────────────────
 
   async listPricing(tpId: number, skuId: number): Promise<ProductPricing[]> {
-    const data = await this.post({ action: '*LIST_PRICING', tpId, skuId });
+    const data = await this.post({ action: '*LIST_PRC', tpId, skuId });
     return data['data'] as unknown as ProductPricing[];
   }
 
   async addPricing(tpId: number, pricing: Omit<ProductPricing, 'priceId' | 'tpId' | 'createdTs' | 'updatedTs'>): Promise<ProductPricing> {
-    const data = await this.post({ action: '*ADD_PRICING', tpId, ...pricing });
+    const data = await this.post({ action: '*ADD_PRC', tpId, ...pricing });
     return data['pricing'] as unknown as ProductPricing;
   }
 
   async updatePricing(tpId: number, priceId: number, pricing: Partial<ProductPricing>): Promise<void> {
-    await this.post({ action: '*UPDATE_PRICING', tpId, priceId, ...pricing });
+    await this.post({ action: '*UPD_PRC', tpId, priceId, ...pricing });
   }
 
   async deletePricing(tpId: number, priceId: number): Promise<void> {
-    await this.post({ action: '*DELETE_PRICING', tpId, priceId });
+    await this.post({ action: '*DEL_PRC', tpId, priceId });
   }
 
   // ── HTTP helper ───────────────────────────────────────────────────────────

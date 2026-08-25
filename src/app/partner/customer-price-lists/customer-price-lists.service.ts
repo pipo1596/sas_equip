@@ -23,6 +23,11 @@ export class CustomerPriceListsService {
     return data as unknown as CustomerPriceListsPage;
   }
 
+  async listAll(tpId: number, custId: number): Promise<CustomerPriceList[]> {
+    const data = await this.post(this.endpoint, { action: '*LIST_ALL', tpId, custId });
+    return (data['data'] as unknown as CustomerPriceList[]) ?? [];
+  }
+
   async get(tpId: number, custId: number, priceListId: number): Promise<CustomerPriceList> {
     const data = await this.post(this.endpoint, { action: '*GET', tpId, custId, priceListId });
     return data as unknown as CustomerPriceList;

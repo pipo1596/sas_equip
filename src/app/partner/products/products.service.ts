@@ -35,7 +35,7 @@ export class ProductsService {
   }
 
   async listPlatforms(tpId: number): Promise<string[]> {
-    const data = await this.post({ action: '*LIST_PLATFORMS', tpId });
+    const data = await this.post({ action: '*LIST_PLAT', tpId });
     return (data['data'] ?? []) as unknown as string[];
   }
 
@@ -93,7 +93,7 @@ export class ProductsService {
   // ── Images ────────────────────────────────────────────────────────────────
 
   async listImages(tpId: number, productPk: number): Promise<ProductImage[]> {
-    const data = await this.post({ action: '*LIST_IMAGES', tpId, productPk });
+    const data = await this.post({ action: '*LIST_IMG', tpId, productPk });
     return (data['data'] as unknown as ProductImage[]) ?? [];
   }
 
@@ -103,11 +103,11 @@ export class ProductsService {
   }
 
   async deleteImage(tpId: number, imgId: number): Promise<void> {
-    await this.post({ action: '*DELETE_IMAGE', tpId, imgId });
+    await this.post({ action: '*DEL_IMG', tpId, imgId });
   }
 
   async setThumbnail(tpId: number, imgId: number): Promise<void> {
-    await this.post({ action: '*SET_THUMBNAIL', tpId, imgId });
+    await this.post({ action: '*SET_THUMB', tpId, imgId });
   }
 
   // ── Categories ────────────────────────────────────────────────────────────
@@ -124,7 +124,7 @@ export class ProductsService {
   // ── Attributes ────────────────────────────────────────────────────────────
 
   async listAttributes(tpId: number, productPk: number): Promise<ProductAttribute[]> {
-    const data = await this.post({ action: '*LIST_ATTRS', tpId, productPk });
+    const data = await this.post({ action: '*LIST_ATTR', tpId, productPk });
     return (data['data'] as unknown as ProductAttribute[]) ?? [];
   }
 
@@ -134,17 +134,17 @@ export class ProductsService {
   }
 
   async updateAttribute(tpId: number, attrId: number, attr: Partial<ProductAttribute>): Promise<void> {
-    await this.post({ action: '*UPDATE_ATTR', tpId, attrId, ...attr });
+    await this.post({ action: '*UPD_ATTR', tpId, attrId, ...attr });
   }
 
   async deleteAttribute(tpId: number, attrId: number): Promise<void> {
-    await this.post({ action: '*DELETE_ATTR', tpId, attrId });
+    await this.post({ action: '*DEL_ATTR', tpId, attrId });
   }
 
   // ── Cross-refs ────────────────────────────────────────────────────────────
 
   async listXrefs(tpId: number, productPk: number): Promise<ProductXref[]> {
-    const data = await this.post({ action: '*LIST_XREFS', tpId, productPk });
+    const data = await this.post({ action: '*LIST_XREF', tpId, productPk });
     return (data['data'] as unknown as ProductXref[]) ?? [];
   }
 
@@ -154,7 +154,7 @@ export class ProductsService {
   }
 
   async deleteXref(tpId: number, xrefId: number): Promise<void> {
-    await this.post({ action: '*DELETE_XREF', tpId, xrefId });
+    await this.post({ action: '*DEL_XREF', tpId, xrefId });
   }
 
   // ── HTTP helper ───────────────────────────────────────────────────────────

@@ -37,7 +37,7 @@ export class DataResidencyService {
     const response = await fetch(this.lockCheckEndpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: '*HAS_EMPLOYEES', tpId }),
+      body: JSON.stringify({ action: '*HAS_EMPS', tpId }),
       credentials: 'include',
     });
     if (!response.ok) {

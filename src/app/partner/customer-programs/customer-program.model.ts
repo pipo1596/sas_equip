@@ -26,12 +26,13 @@ export interface CustomerProgramsPage {
   pagination: { totalRows: number; page: number; pageSize: number };
 }
 
-export interface CustomerProgramProduct {
+export interface CustomerProgramSku {
   progProdId: number;
   progCatId: number;
+  skuId: number;
+  skuCode: string | null;
   productPk: number;
-  productName: string;
-  skuCount: number;
+  productTitle: string;
   basePrice: number | null;
   customerPrice: number | null;
   sortOrder: number;
@@ -47,20 +48,20 @@ export interface CustomerProgramCategoryNode {
   sortOrder: number;
   status: 'ACTIVE' | 'INACTIVE';
   children: CustomerProgramCategoryNode[];
-  products: CustomerProgramProduct[];
+  skus: CustomerProgramSku[];
 }
 
 export interface CustomerProgramTree {
   categories: CustomerProgramCategoryNode[];
   categoryCount: number;
-  productCount: number;
+  skuCount: number;
 }
 
-export interface CustomerProgramProductCandidate {
+export interface CustomerProgramSkuCandidate {
+  skuId: number;
+  skuCode: string | null;
   productPk: number;
-  title: string;
-  productCode: string | null;
-  skuCount: number;
+  productTitle: string;
   categoryName: string | null;
   brandName: string | null;
   basePrice: number | null;

@@ -3,7 +3,7 @@ import { environment } from '../../../environments/environment';
 import { repairCp1252MojibakeDeep, decodeWindows1252Text } from '../../shared/cp1252-mojibake.util';
 import {
   CustomerProgram, CustomerProgramForm, CustomerProgramsPage, CustomerProgramTree,
-  CustomerProgramProductCandidate,
+  CustomerProgramSkuCandidate,
 } from './customer-program.model';
 
 @Injectable({ providedIn: 'root' })
@@ -49,34 +49,43 @@ export class CustomerProgramsService {
     await this.post({ action: '*REGENRT', tpId, custId, programId });
   }
 
+  // Assigns a real catalog CATEGORY into this program's tree, optionally
+  // under an existing program category node (top-level when parentProgCatId
+  // is null). categoryName is denormalized server-side from CATEGORY at
+  // insert time, same as the *REGENRT snapshot refresh.
+  async addCategory(tpId: number, custId: number, programId: number, params: { categoryId: number; parentProgCatId: number | null }): Promise<void> {
+    await this.post({ action: '*CAT_ADD', tpId, custId, programId, ...params });
+  }
+
   // Removes a category node (and, per TPCPCAT_PARENT_FK's ON DELETE CASCADE,
-  // its child nodes and their product placements) from a program's tree.
+  // its child nodes and their SKU placements) from a program's tree.
   async removeCategory(tpId: number, custId: number, programId: number, progCatId: number): Promise<void> {
     await this.post({ action: '*CAT_DEL', tpId, custId, programId, progCatId });
   }
 
-  // Candidate products for the "Add Product" picker, scoped to this program
-  // (so basePrice/customerPrice resolve against PROGRAM.PRICE_LIST_ID the
-  // same way *TREE's rows do) and this category node (so products already
-  // placed there are excluded server-side).
-  async searchProducts(tpId: number, custId: number, programId: number, progCatId: number, search: string): Promise<CustomerProgramProductCandidate[]> {
-    const data = await this.post({ action: '*PRD_SRCH', tpId, custId, programId, progCatId, search });
-    return (data['data'] as unknown as CustomerProgramProductCandidate[]) ?? [];
+  // Candidate SKUs for the "Add SKUs" picker, scoped to this program (so
+  // basePrice/customerPrice resolve against PROGRAM.PRICE_LIST_ID the same
+  // way *TREE's rows do) and this category node (so SKUs already placed
+  // there are excluded server-side).
+  async searchSkus(tpId: number, custId: number, programId: number, progCatId: number, search: string): Promise<CustomerProgramSkuCandidate[]> {
+    const data = await this.post({ action: '*SKU_SRCH', tpId, custId, programId, progCatId, search });
+    return (data['data'] as unknown as CustomerProgramSkuCandidate[]) ?? [];
   }
 
-  // Bulk-assigns catalog PRODUCTs into a program category node in one call —
-  // a product can be cross-listed under more than one category node in the
-  // same program (TPCPPRD_PROD_UQ is scoped to PROG_CAT_ID + PRODUCT_PK, not
-  // PROGRAM_ID + PRODUCT_PK), so the same productPk can be added again
-  // under a different progCatId.
-  async addProducts(tpId: number, custId: number, programId: number, progCatId: number, productPks: number[]): Promise<void> {
-    await this.post({ action: '*PRD_BULK', tpId, custId, programId, progCatId, productPks });
+  // Bulk-assigns catalog SKUs into a program category node in one call — a
+  // SKU can be cross-listed under more than one category node in the same
+  // program (TPCPSKU_PROD_UQ is scoped to PROG_CAT_ID + SKU_ID, not
+  // PROGRAM_ID + SKU_ID), so the same skuId can be added again under a
+  // different progCatId.
+  async addSkus(tpId: number, custId: number, programId: number, progCatId: number, skuIds: number[]): Promise<void> {
+    const skus = skuIds.map(skuId => ({ skuId }));
+    await this.post({ action: '*SKU_BULK', tpId, custId, programId, progCatId, skuIds: skus });
   }
 
-  // Removes one product placement (progProdId) from its category node —
-  // does not touch the underlying catalog PRODUCT row.
-  async removeProduct(tpId: number, custId: number, programId: number, progProdId: number): Promise<void> {
-    await this.post({ action: '*PRD_DEL', tpId, custId, programId, progProdId });
+  // Removes one SKU placement (progProdId) from its category node — does
+  // not touch the underlying catalog PRODUCT_SKU row.
+  async removeSku(tpId: number, custId: number, programId: number, progProdId: number): Promise<void> {
+    await this.post({ action: '*SKU_DEL', tpId, custId, programId, progProdId });
   }
 
   private async post(body: Record<string, unknown>): Promise<Record<string, unknown>> {

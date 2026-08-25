@@ -58,6 +58,12 @@ export class CustomerPriceListsService {
     return data['item'] as unknown as CustomerPriceListItem;
   }
 
+  // Bulk-adds multiple SKUs to a price list in one call, each with its own
+  // price/compareAtPrc/status — used by the multi-select "Add Items" picker.
+  async createItems(tpId: number, custId: number, priceListId: number, items: Array<{ skuId: number; price: number; compareAtPrc: number | null; status: 'ACTIVE' | 'INACTIVE' }>): Promise<void> {
+    await this.post(this.itemsEndpoint, { action: '*ITEM_BULK', tpId, custId, priceListId, items });
+  }
+
   async updateItem(tpId: number, custId: number, priceListId: number, itemId: number, form: CustomerPriceListItemForm): Promise<void> {
     await this.post(this.itemsEndpoint, { action: '*UPDATE', tpId, custId, priceListId, itemId, ...form });
   }

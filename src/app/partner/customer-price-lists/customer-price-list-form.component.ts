@@ -5,6 +5,7 @@ import { PartnerModeService } from '../partner-mode.service';
 import { CustomerModeService } from '../partner-customers/customer-mode.service';
 import { CustomerPriceListsService } from './customer-price-lists.service';
 import { CustomerPriceList, CustomerPriceListForm } from './customer-price-list.model';
+import { TpSettingsService } from '../../shared/tp-settings.service';
 
 @Component({
   selector: 'app-customer-price-list-form',
@@ -18,12 +19,14 @@ export class CustomerPriceListFormComponent implements OnInit {
   protected readonly partnerMode = inject(PartnerModeService);
   protected readonly customerMode = inject(CustomerModeService);
   private readonly service = inject(CustomerPriceListsService);
+  private readonly tpSettingsService = inject(TpSettingsService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
 
   readonly loading = signal(false);
   readonly saving = signal(false);
   readonly error = signal<string | null>(null);
+  readonly orgCurrency = signal<'USD' | 'CAD'>('USD');
 
   isEdit = false;
   priceListId: number | null = null;
@@ -48,6 +51,8 @@ export class CustomerPriceListFormComponent implements OnInit {
 
     const tpId = this.tpId;
     if (tpId && this.customerId) await this.customerMode.ensure(tpId, this.customerId);
+    if (tpId) await this.loadOrgCurrency(tpId);
+    this.formData.currency = this.orgCurrency();
 
     const idParam = this.route.snapshot.paramMap.get('priceListId');
     if (!idParam) return;
@@ -59,11 +64,19 @@ export class CustomerPriceListFormComponent implements OnInit {
     this.loading.set(true);
     try {
       this.prefill(await this.service.get(tpId, this.customerId, this.priceListId));
+      this.formData.currency = this.orgCurrency();
     } catch {
       this.error.set('Could not load price list data.');
     } finally {
       this.loading.set(false);
     }
+  }
+
+  private async loadOrgCurrency(tpId: number): Promise<void> {
+    try {
+      const settings = await this.tpSettingsService.get(tpId);
+      this.orgCurrency.set(settings.currency === 'CAD' ? 'CAD' : 'USD');
+    } catch { /* non-critical — falls back to USD */ }
   }
 
   private prefill(priceList: CustomerPriceList): void {

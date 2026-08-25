@@ -50,10 +50,8 @@
               </div>
               <div class="col-12 col-sm-4">
                 <label class="form-label fw-medium">Currency</label>
-                <select class="form-select" name="currency" [(ngModel)]="formData.currency">
-                  <option value="USD">USD</option>
-                  <option value="CAD">CAD</option>
-                </select>
+                <input type="text" class="form-control" [value]="orgCurrency()" disabled readonly />
+                <div class="form-text mt-2">Set at the partner organization level.</div>
               </div>
               <div class="col-12 col-sm-4">
                 <label class="form-label fw-medium">Effective Date <span class="text-danger">*</span></label>

@@ -6,8 +6,20 @@ import { PartnerModeService } from '../partner-mode.service';
 import { CustomerModeService } from '../partner-customers/customer-mode.service';
 import { CustomerPriceListsService } from './customer-price-lists.service';
 import {
-  CustomerPriceList, CustomerPriceListItem, CustomerPriceListItemForm, SkuSearchResult,
+  CustomerPriceList, CustomerPriceListItem, SkuSearchResult,
 } from './customer-price-list.model';
+
+interface ItemDraft {
+  price: number | null;
+  compareAtPrc: number | null;
+  status: 'ACTIVE' | 'INACTIVE';
+}
+
+interface SkuRow {
+  sku: SkuSearchResult;
+  isFirstInGroup: boolean;
+  groupIndex: number;
+}
 
 @Component({
   selector: 'app-customer-price-list-items',
@@ -35,17 +47,48 @@ export class CustomerPriceListItemsComponent implements OnInit {
   readonly deleting = signal(false);
   readonly deleteTarget = signal<CustomerPriceListItem | null>(null);
 
-  readonly showItemModal = signal(false);
-  readonly editingItem = signal<CustomerPriceListItem | null>(null);
-  readonly savingItem = signal(false);
-  readonly itemError = signal<string | null>(null);
-  readonly itemForm = signal<CustomerPriceListItemForm>({ skuId: null, price: null, compareAtPrc: null, status: 'ACTIVE' });
+  // Edit existing item — SKU is fixed, only price/compareAtPrc/status change.
+  readonly showEditItemModal = signal(false);
+  readonly editTarget = signal<CustomerPriceListItem | null>(null);
+  readonly editForm = signal<ItemDraft>({ price: null, compareAtPrc: null, status: 'ACTIVE' });
+  readonly savingEdit = signal(false);
+  readonly editError = signal<string | null>(null);
 
+  // Add items — search, multi-select via checkboxes, each row has its own
+  // editable price/compareAtPrc/status.
+  readonly showAddItemsModal = signal(false);
+  readonly savingItems = signal(false);
+  readonly addItemsError = signal<string | null>(null);
   readonly skuSearchTerm = signal('');
   readonly skuSearchResults = signal<SkuSearchResult[]>([]);
   readonly skuSearching = signal(false);
-  readonly selectedSku = signal<SkuSearchResult | null>(null);
+  readonly selectedSkuIds = signal<Set<number>>(new Set());
+  readonly skuDrafts = signal<Map<number, ItemDraft>>(new Map());
   private skuSearchTimer: ReturnType<typeof setTimeout> | null = null;
+
+  // Regroups search results so every SKU of the same product sits adjacent
+  // (the API doesn't guarantee that ordering), for the grouped-background
+  // striping and the per-group "apply to all" affordance in the picker.
+  readonly groupedSkuRows = computed<SkuRow[]>(() => {
+    const byProduct = new Map<number, SkuSearchResult[]>();
+    const order: number[] = [];
+    for (const sku of this.skuSearchResults()) {
+      let group = byProduct.get(sku.productPk);
+      if (!group) {
+        group = [];
+        byProduct.set(sku.productPk, group);
+        order.push(sku.productPk);
+      }
+      group.push(sku);
+    }
+    const rows: SkuRow[] = [];
+    order.forEach((productPk, groupIndex) => {
+      byProduct.get(productPk)!.forEach((sku, i) => {
+        rows.push({ sku, isFirstInGroup: i === 0, groupIndex });
+      });
+    });
+    return rows;
+  });
 
   readonly totalPages = computed(() => Math.max(1, Math.ceil(this.total() / this.pageSize())));
   readonly startRecord = computed(() => this.total() === 0 ? 0 : (this.page() - 1) * this.pageSize() + 1);
@@ -125,43 +168,66 @@ export class CustomerPriceListItemsComponent implements OnInit {
     this.router.navigate(['/partner', this.tpId, 'customers', this.customerId, 'price-lists']);
   }
 
-  openAddItemModal(): void {
-    this.editingItem.set(null);
-    this.itemForm.set({ skuId: null, price: null, compareAtPrc: null, status: 'ACTIVE' });
-    this.selectedSku.set(null);
-    this.skuSearchTerm.set('');
-    this.skuSearchResults.set([]);
-    this.itemError.set(null);
-    this.showItemModal.set(true);
-  }
+  // ── Edit existing item ────────────────────────────────────────────────────
 
   openEditItemModal(item: CustomerPriceListItem): void {
-    this.editingItem.set(item);
-    this.itemForm.set({
-      skuId: item.skuId,
-      price: item.price,
-      compareAtPrc: item.compareAtPrc,
-      status: item.status,
-    });
-    this.selectedSku.set({
-      skuId: item.skuId,
-      skuCode: item.skuCode ?? '',
-      productTitle: item.productTitle ?? '',
-      basePrice: item.price,
-    });
-    this.itemError.set(null);
-    this.showItemModal.set(true);
+    this.editTarget.set(item);
+    this.editForm.set({ price: item.price, compareAtPrc: item.compareAtPrc, status: item.status });
+    this.editError.set(null);
+    this.showEditItemModal.set(true);
   }
 
-  closeItemModal(): void {
-    this.showItemModal.set(false);
-    this.editingItem.set(null);
+  closeEditItemModal(): void {
+    this.showEditItemModal.set(false);
+    this.editTarget.set(null);
+  }
+
+  async saveEditItem(): Promise<void> {
+    const tpId = this.tpId;
+    const custId = this.customerId;
+    const priceListId = this.priceListId;
+    const target = this.editTarget();
+    const form = this.editForm();
+    if (!tpId || !custId || !priceListId || !target) return;
+    if (form.price == null || form.price <= 0) {
+      this.editError.set('Please enter a price greater than 0.');
+      return;
+    }
+    this.savingEdit.set(true);
+    this.editError.set(null);
+    try {
+      await this.service.updateItem(tpId, custId, priceListId, target.itemId, {
+        skuId: target.skuId,
+        price: form.price,
+        compareAtPrc: form.compareAtPrc,
+        status: form.status,
+      });
+      this.closeEditItemModal();
+      await this.loadItems();
+    } catch (err) {
+      this.editError.set(err instanceof Error ? err.message : 'Failed to save item.');
+    } finally {
+      this.savingEdit.set(false);
+    }
+  }
+
+  // ── Add items (bulk) ─────────────────────────────────────────────────────
+
+  openAddItemsModal(): void {
+    this.selectedSkuIds.set(new Set());
+    this.skuDrafts.set(new Map());
+    this.skuSearchTerm.set('');
+    this.skuSearchResults.set([]);
+    this.addItemsError.set(null);
+    this.showAddItemsModal.set(true);
+  }
+
+  closeAddItemsModal(): void {
+    this.showAddItemsModal.set(false);
   }
 
   onSkuSearchChange(value: string): void {
     this.skuSearchTerm.set(value);
-    this.selectedSku.set(null);
-    this.itemForm.update(f => ({ ...f, skuId: null }));
     if (this.skuSearchTimer) clearTimeout(this.skuSearchTimer);
     if (!value.trim()) {
       this.skuSearchResults.set([]);
@@ -175,7 +241,17 @@ export class CustomerPriceListItemsComponent implements OnInit {
     if (!tpId) return;
     this.skuSearching.set(true);
     try {
-      this.skuSearchResults.set(await this.service.searchSkus(tpId, term));
+      const results = await this.service.searchSkus(tpId, term);
+      this.skuSearchResults.set(results);
+      this.skuDrafts.update(map => {
+        const next = new Map(map);
+        for (const sku of results) {
+          if (!next.has(sku.skuId)) {
+            next.set(sku.skuId, { price: sku.basePrice, compareAtPrc: null, status: 'ACTIVE' });
+          }
+        }
+        return next;
+      });
     } catch {
       this.skuSearchResults.set([]);
     } finally {
@@ -183,54 +259,93 @@ export class CustomerPriceListItemsComponent implements OnInit {
     }
   }
 
-  pickSku(sku: SkuSearchResult): void {
-    this.selectedSku.set(sku);
-    this.skuSearchResults.set([]);
-    this.skuSearchTerm.set('');
-    this.itemForm.update(f => ({
-      ...f,
-      skuId: sku.skuId,
-      price: f.price ?? sku.basePrice,
-    }));
+  // Checking a SKU also checks its sibling SKUs from the same product (the
+  // common case — you usually want every size/color of a style, not one).
+  // Unchecking only affects that single SKU, so a peer can still be
+  // excluded after the fact.
+  toggleSkuSelected(skuId: number): void {
+    const results = this.skuSearchResults();
+    const sku = results.find(s => s.skuId === skuId);
+    this.selectedSkuIds.update(set => {
+      const next = new Set(set);
+      if (next.has(skuId)) {
+        next.delete(skuId);
+      } else {
+        next.add(skuId);
+        if (sku) {
+          for (const peer of results) {
+            if (peer.productPk === sku.productPk) next.add(peer.skuId);
+          }
+        }
+      }
+      return next;
+    });
   }
 
-  clearSelectedSku(): void {
-    this.selectedSku.set(null);
-    this.itemForm.update(f => ({ ...f, skuId: null }));
+  draftFor(skuId: number): ItemDraft {
+    return this.skuDrafts().get(skuId) ?? { price: null, compareAtPrc: null, status: 'ACTIVE' };
   }
 
-  async saveItem(): Promise<void> {
+  updateDraft(skuId: number, patch: Partial<ItemDraft>): void {
+    this.skuDrafts.update(map => {
+      const next = new Map(map);
+      next.set(skuId, { ...this.draftFor(skuId), ...patch });
+      return next;
+    });
+  }
+
+  // Spreads one field's value from a product's first SKU row to every other
+  // visible SKU of that same product.
+  applyToGroup(sku: SkuSearchResult, field: 'price' | 'compareAtPrc'): void {
+    const value = this.draftFor(sku.skuId)[field];
+    const peers = this.skuSearchResults().filter(s => s.productPk === sku.productPk && s.skuId !== sku.skuId);
+    this.skuDrafts.update(map => {
+      const next = new Map(map);
+      for (const peer of peers) {
+        next.set(peer.skuId, { ...this.draftFor(peer.skuId), [field]: value });
+      }
+      return next;
+    });
+  }
+
+  async saveAddItems(): Promise<void> {
     const tpId = this.tpId;
     const custId = this.customerId;
     const priceListId = this.priceListId;
-    const form = this.itemForm();
     if (!tpId || !custId || !priceListId) return;
-    if (!form.skuId) {
-      this.itemError.set('Please select a SKU.');
+
+    const selected = Array.from(this.selectedSkuIds());
+    if (selected.length === 0) {
+      this.addItemsError.set('Please select at least one SKU.');
       return;
     }
-    if (form.price == null || form.price < 0) {
-      this.itemError.set('Please enter a valid price.');
-      return;
+    const drafts = this.skuDrafts();
+    for (const skuId of selected) {
+      const draft = drafts.get(skuId);
+      if (!draft || draft.price == null || draft.price <= 0) {
+        this.addItemsError.set('Please enter a price greater than 0 for every selected SKU.');
+        return;
+      }
     }
 
-    this.savingItem.set(true);
-    this.itemError.set(null);
+    this.savingItems.set(true);
+    this.addItemsError.set(null);
     try {
-      const editing = this.editingItem();
-      if (editing) {
-        await this.service.updateItem(tpId, custId, priceListId, editing.itemId, form);
-      } else {
-        await this.service.createItem(tpId, custId, priceListId, form);
-      }
-      this.closeItemModal();
+      const items = selected.map(skuId => {
+        const draft = drafts.get(skuId)!;
+        return { skuId, price: draft.price as number, compareAtPrc: draft.compareAtPrc, status: draft.status };
+      });
+      await this.service.createItems(tpId, custId, priceListId, items);
+      this.closeAddItemsModal();
       await this.loadItems();
     } catch (err) {
-      this.itemError.set(err instanceof Error ? err.message : 'Failed to save item.');
+      this.addItemsError.set(err instanceof Error ? err.message : 'Failed to add items.');
     } finally {
-      this.savingItem.set(false);
+      this.savingItems.set(false);
     }
   }
+
+  // ── Delete ────────────────────────────────────────────────────────────────
 
   openDeleteModal(item: CustomerPriceListItem): void {
     this.deleteTarget.set(item);

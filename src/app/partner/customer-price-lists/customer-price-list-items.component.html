@@ -13,8 +13,8 @@
       <button type="button" class="btn btn-outline-secondary" (click)="backToPriceLists()">
         <i class="bi bi-arrow-left me-2"></i>Back to Price Lists
       </button>
-      <button type="button" class="btn btn-dark" (click)="openAddItemModal()">
-        <i class="bi bi-plus-lg me-2"></i>Add Item
+      <button type="button" class="btn btn-dark" (click)="openAddItemsModal()">
+        <i class="bi bi-plus-lg me-2"></i>Add Items
       </button>
     </div>
   </div>
@@ -100,74 +100,41 @@
 
 </section>
 
-@if (showItemModal()) {
+@if (showEditItemModal()) {
   <div class="modal-backdrop fade show"></div>
   <div class="modal d-block" tabindex="-1" role="dialog" aria-modal="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header border-0 pb-0">
-          <h5 class="modal-title">{{ editingItem() ? 'Edit Item' : 'Add Item' }}</h5>
-          <button class="btn-close" (click)="closeItemModal()" [disabled]="savingItem()"></button>
+          <h5 class="modal-title">Edit Item</h5>
+          <button class="btn-close" (click)="closeEditItemModal()" [disabled]="savingEdit()"></button>
         </div>
         <div class="modal-body pt-2">
 
-          @if (itemError()) {
+          @if (editError()) {
             <div class="alert alert-danger d-flex align-items-center gap-2 mb-3 py-2 px-3" role="alert">
               <i class="bi bi-exclamation-triangle-fill"></i>
-              <span>{{ itemError() }}</span>
+              <span>{{ editError() }}</span>
             </div>
           }
 
-          <div class="mb-3">
-            <label class="form-label fw-medium">SKU <span class="text-danger">*</span></label>
-
-            @if (selectedSku(); as sku) {
-              <div class="border rounded-3 p-2 d-flex align-items-center justify-content-between gap-2">
-                <div>
-                  <div class="fw-medium">{{ sku.productTitle || '—' }}</div>
-                  <div class="text-muted small font-monospace">{{ sku.skuCode }}</div>
-                </div>
-                @if (!editingItem()) {
-                  <button type="button" class="btn btn-sm btn-outline-secondary" (click)="clearSelectedSku()">
-                    <i class="bi bi-x-lg"></i>
-                  </button>
-                }
+          @if (editTarget(); as target) {
+            <div class="mb-3">
+              <label class="form-label fw-medium">SKU</label>
+              <div class="border rounded-3 p-2">
+                <div class="fw-medium">{{ target.productTitle || '—' }}</div>
+                <div class="text-muted small font-monospace">{{ target.skuCode || ('SKU #' + target.skuId) }}</div>
               </div>
-            } @else {
-              <div class="position-relative">
-                <input type="text" class="form-control" placeholder="Search by SKU code or product name…"
-                       [value]="skuSearchTerm()" (input)="onSkuSearchChange($any($event.target).value)" />
-                @if (skuSearching()) {
-                  <div class="text-muted small mt-1">
-                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>Searching…
-                  </div>
-                } @else if (skuSearchResults().length > 0) {
-                  <div class="border rounded-3 mt-1" style="max-height: 220px; overflow-y: auto;">
-                    @for (sku of skuSearchResults(); track sku.skuId) {
-                      <button type="button" class="btn btn-light w-100 text-start rounded-0 border-bottom d-flex justify-content-between align-items-center"
-                              (click)="pickSku(sku)">
-                        <span>
-                          <span class="fw-medium">{{ sku.productTitle }}</span>
-                          <span class="text-muted small font-monospace ms-2">{{ sku.skuCode }}</span>
-                        </span>
-                        <span class="text-muted small">{{ sku.basePrice | number:'1.2-2' }}</span>
-                      </button>
-                    }
-                  </div>
-                } @else if (skuSearchTerm().trim()) {
-                  <div class="text-muted small mt-1">No matching SKUs.</div>
-                }
-              </div>
-            }
-          </div>
+            </div>
+          }
 
           <div class="row g-3">
             <div class="col-6">
               <label class="form-label fw-medium">Price <span class="text-danger">*</span></label>
               <div class="input-group">
                 <span class="input-group-text">$</span>
-                <input type="number" class="form-control" step="0.01" min="0"
-                       [ngModel]="itemForm().price" (ngModelChange)="itemForm.update(f => ({...f, price: $event}))" />
+                <input type="number" class="form-control" step="0.01" min="0.01"
+                       [ngModel]="editForm().price" (ngModelChange)="editForm.update(f => ({...f, price: $event}))" />
               </div>
             </div>
             <div class="col-6">
@@ -175,13 +142,13 @@
               <div class="input-group">
                 <span class="input-group-text">$</span>
                 <input type="number" class="form-control" step="0.01" min="0"
-                       [ngModel]="itemForm().compareAtPrc" (ngModelChange)="itemForm.update(f => ({...f, compareAtPrc: $event}))" />
+                       [ngModel]="editForm().compareAtPrc" (ngModelChange)="editForm.update(f => ({...f, compareAtPrc: $event}))" />
               </div>
             </div>
             <div class="col-12">
               <label class="form-label fw-medium">Status</label>
               <select class="form-select"
-                      [ngModel]="itemForm().status" (ngModelChange)="itemForm.update(f => ({...f, status: $event}))">
+                      [ngModel]="editForm().status" (ngModelChange)="editForm.update(f => ({...f, status: $event}))">
                 <option value="ACTIVE">Active</option>
                 <option value="INACTIVE">Inactive</option>
               </select>
@@ -190,12 +157,129 @@
 
         </div>
         <div class="modal-footer border-0 pt-0">
-          <button class="btn btn-outline-secondary" (click)="closeItemModal()" [disabled]="savingItem()">Cancel</button>
-          <button class="btn btn-dark" (click)="saveItem()" [disabled]="savingItem()">
-            @if (savingItem()) {
+          <button class="btn btn-outline-secondary" (click)="closeEditItemModal()" [disabled]="savingEdit()">Cancel</button>
+          <button class="btn btn-dark" (click)="saveEditItem()" [disabled]="savingEdit()">
+            @if (savingEdit()) {
               <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving…
             } @else {
-              <i class="bi bi-check-lg me-2"></i>{{ editingItem() ? 'Save Changes' : 'Add Item' }}
+              <i class="bi bi-check-lg me-2"></i>Save Changes
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+@if (showAddItemsModal()) {
+  <div class="modal-backdrop fade show"></div>
+  <div class="modal d-block" tabindex="-1" role="dialog" aria-modal="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+      <div class="modal-content">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title">Add Items</h5>
+          <button class="btn-close" (click)="closeAddItemsModal()" [disabled]="savingItems()"></button>
+        </div>
+        <div class="modal-body pt-2">
+
+          @if (addItemsError()) {
+            <div class="alert alert-danger d-flex align-items-center gap-2 mb-3 py-2 px-3" role="alert">
+              <i class="bi bi-exclamation-triangle-fill"></i>
+              <span>{{ addItemsError() }}</span>
+            </div>
+          }
+
+          <div class="input-group mb-3">
+            <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+            <input type="text" class="form-control border-start-0 ps-0"
+                   placeholder="Search by SKU code or product name…"
+                   [value]="skuSearchTerm()" (input)="onSkuSearchChange($any($event.target).value)" />
+          </div>
+
+          <div class="border rounded-3" style="max-height: 400px; overflow-y: auto;">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="sticky-top bg-white">
+                <tr>
+                  <th style="width:40px;"></th>
+                  <th>Product / SKU</th>
+                  <th style="width:150px;">Price</th>
+                  <th style="width:150px;">Compare-At</th>
+                  <th style="width:130px;">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                @if (skuSearching()) {
+                  <tr><td colspan="5" class="text-center py-4 text-muted">
+                    <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>Searching…
+                  </td></tr>
+                } @else if (skuSearchResults().length === 0) {
+                  <tr><td colspan="5" class="text-center py-4 text-muted">
+                    @if (skuSearchTerm().trim()) { No matching SKUs. } @else { Search for SKUs to add above. }
+                  </td></tr>
+                } @else {
+                  @for (row of groupedSkuRows(); track row.sku.skuId) {
+                    <tr [class.table-light]="row.groupIndex % 2 === 1">
+                      <td>
+                        <input type="checkbox" class="form-check-input"
+                               [checked]="selectedSkuIds().has(row.sku.skuId)"
+                               (change)="toggleSkuSelected(row.sku.skuId)" />
+                      </td>
+                      <td>
+                        <div class="fw-medium">{{ row.sku.productTitle }}</div>
+                        <div class="text-muted small font-monospace">{{ row.sku.skuCode }}</div>
+                      </td>
+                      <td>
+                        <div class="input-group input-group-sm">
+                          <span class="input-group-text">$</span>
+                          <input type="number" class="form-control" step="0.01" min="0.01"
+                                 [ngModel]="draftFor(row.sku.skuId).price"
+                                 (ngModelChange)="updateDraft(row.sku.skuId, { price: $event })" />
+                          @if (row.isFirstInGroup) {
+                            <button type="button" class="btn btn-outline-secondary" title="Apply this price to every SKU of this product"
+                                    (click)="applyToGroup(row.sku, 'price')">
+                              <i class="bi bi-arrows-expand"></i>
+                            </button>
+                          }
+                        </div>
+                      </td>
+                      <td>
+                        <div class="input-group input-group-sm">
+                          <span class="input-group-text">$</span>
+                          <input type="number" class="form-control" step="0.01" min="0"
+                                 [ngModel]="draftFor(row.sku.skuId).compareAtPrc"
+                                 (ngModelChange)="updateDraft(row.sku.skuId, { compareAtPrc: $event })" />
+                          @if (row.isFirstInGroup) {
+                            <button type="button" class="btn btn-outline-secondary" title="Apply this compare-at price to every SKU of this product"
+                                    (click)="applyToGroup(row.sku, 'compareAtPrc')">
+                              <i class="bi bi-arrows-expand"></i>
+                            </button>
+                          }
+                        </div>
+                      </td>
+                      <td>
+                        <select class="form-select form-select-sm"
+                                [ngModel]="draftFor(row.sku.skuId).status"
+                                (ngModelChange)="updateDraft(row.sku.skuId, { status: $event })">
+                          <option value="ACTIVE">Active</option>
+                          <option value="INACTIVE">Inactive</option>
+                        </select>
+                      </td>
+                    </tr>
+                  }
+                }
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+        <div class="modal-footer border-0 pt-0 d-flex align-items-center">
+          <span class="text-muted small me-auto">{{ selectedSkuIds().size }} selected</span>
+          <button class="btn btn-outline-secondary" (click)="closeAddItemsModal()" [disabled]="savingItems()">Cancel</button>
+          <button class="btn btn-dark" (click)="saveAddItems()" [disabled]="savingItems() || selectedSkuIds().size === 0">
+            @if (savingItems()) {
+              <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Adding…
+            } @else {
+              <i class="bi bi-plus-lg me-2"></i>Add selected
             }
           </button>
         </div>

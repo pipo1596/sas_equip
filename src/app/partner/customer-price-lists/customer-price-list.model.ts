@@ -61,6 +61,7 @@ export interface CustomerPriceListItemsPage {
 export interface SkuSearchResult {
   skuId: number;
   skuCode: string;
+  productPk: number;
   productTitle: string;
   basePrice: number;
 }

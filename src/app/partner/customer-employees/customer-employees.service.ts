@@ -22,7 +22,23 @@ export class CustomerEmployeesService {
 
   async listAll(tpId: number, custId: number): Promise<CustomerEmployee[]> {
     const data = await this.post(tpId, { action: '*LIST_ALL', tpId, custId });
-    return (data['data'] as unknown as CustomerEmployee[]) ?? [];
+    return this.parseListData<CustomerEmployee>(data['data']);
+  }
+
+  // Defensive against the double-JSON-encoding quirk seen elsewhere in this
+  // API (e.g. APITPCLCEM *GET) where `data` comes back as a JSON-encoded
+  // string instead of a real array.
+  private parseListData<T>(raw: unknown): T[] {
+    if (Array.isArray(raw)) return raw as T[];
+    if (typeof raw === 'string') {
+      try {
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed as T[] : [];
+      } catch {
+        return [];
+      }
+    }
+    return [];
   }
 
   async get(tpId: number, custId: number, empId: number): Promise<CustomerEmployee> {

@@ -71,12 +71,12 @@
               <div class="col-12">
                 <label class="form-label fw-medium">Customer URL</label>
                 <div class="input-group">
-                  @if (portalBaseDomain()) {
-                    <span class="input-group-text bg-light text-muted">{{ portalBaseDomain() }}</span>
-                  }
                   <input type="text" class="form-control" name="customerUrl" [(ngModel)]="formData.customerUrl" placeholder="customer-slug" />
+                  @if (portalBaseDomain()) {
+                    <span class="input-group-text bg-light text-muted">.{{ portalBaseDomain() }}</span>
+                  }
                 </div>
-                <div class="form-text">The path appended to the customer portal base domain.</div>
+                <div class="form-text">The subdomain prefix for the customer portal base domain.</div>
               </div>
               <div class="col-12">
                 <label class="form-label fw-medium">Notes</label>

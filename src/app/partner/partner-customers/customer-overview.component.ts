@@ -94,9 +94,9 @@ export class CustomerOverviewComponent implements OnInit {
   fullCustomerUrl(customerUrl: string): string {
     const base = this.portalBaseDomain();
     if (!base) return customerUrl;
-    const normalizedBase = base.replace(/\/+$/, '');
-    const normalizedSuffix = customerUrl.replace(/^\/+/, '');
-    return `${normalizedBase}/${normalizedSuffix}`;
+    const normalizedSlug = customerUrl.replace(/\.+$/, '');
+    const normalizedBase = base.replace(/^\.+/, '');
+    return `${normalizedSlug}.${normalizedBase}`;
   }
 
   async loadAttachments(): Promise<void> {

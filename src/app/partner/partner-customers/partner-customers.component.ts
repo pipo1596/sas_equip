@@ -7,6 +7,7 @@ import { CustomerModeService } from './customer-mode.service';
 import { Customer } from './customer.model';
 import { ImageUploadService } from '../../shared/image-upload.service';
 import { CustomerEmployeesService } from '../customer-employees/customer-employees.service';
+import { TenantPartnersService } from '../../admin/tenant-partners/tenant-partners.service';
 
 @Component({
   selector: 'app-partner-customers',
@@ -20,9 +21,11 @@ export class PartnerCustomersComponent implements OnInit {
   private readonly customerMode = inject(CustomerModeService);
   private readonly imageUploadService = inject(ImageUploadService);
   private readonly employeesService = inject(CustomerEmployeesService);
+  private readonly tenantPartnersService = inject(TenantPartnersService);
   private readonly router = inject(Router);
 
   readonly customers = signal<Customer[]>([]);
+  readonly portalBaseDomain = signal<string | null>(null);
   readonly total = signal(0);
   readonly page = signal(1);
   readonly pageSize = signal(20);
@@ -65,6 +68,24 @@ export class PartnerCustomersComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadCustomers();
+    this.loadPortalBaseDomain();
+  }
+
+  private async loadPortalBaseDomain(): Promise<void> {
+    const tpId = this.tpId;
+    if (!tpId) return;
+    try {
+      const partner = await this.tenantPartnersService.get(tpId);
+      this.portalBaseDomain.set(partner.portalBaseDomain);
+    } catch { /* non-critical */ }
+  }
+
+  fullCustomerUrl(customerUrl: string): string {
+    const base = this.portalBaseDomain();
+    if (!base) return customerUrl;
+    const normalizedSlug = customerUrl.replace(/\.+$/, '');
+    const normalizedBase = base.replace(/^\.+/, '');
+    return `${normalizedSlug}.${normalizedBase}`;
   }
 
   async onCsvSelected(event: Event): Promise<void> {
@@ -145,7 +166,7 @@ export class PartnerCustomersComponent implements OnInit {
   }
 
   manageCustomer(customer: Customer): void {
-    this.customerMode.enter({ custId: customer.custId, customerName: customer.customerName });
+    this.customerMode.enter({ custId: customer.custId, customerName: customer.customerName, logoUrl: customer.logoUrl });
     this.router.navigate(['/partner', this.tpId, 'customers', customer.custId]);
   }
 

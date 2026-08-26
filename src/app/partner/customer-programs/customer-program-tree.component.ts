@@ -297,8 +297,8 @@ export class CustomerProgramTreeComponent implements OnInit {
     this.catalogCategories().filter(c => !this.usedCatalogCategoryIds().has(c.catId))
   );
 
-  async openAddCategoryModal(): Promise<void> {
-    this.selectedParentProgCatId.set(null);
+  async openAddCategoryModal(parentProgCatId: number | null = null): Promise<void> {
+    this.selectedParentProgCatId.set(parentProgCatId);
     this.selectedCategoryId.set(null);
     this.addCategoryError.set(null);
     this.showAddCategoryModal.set(true);

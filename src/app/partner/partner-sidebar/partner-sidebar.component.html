@@ -140,7 +140,13 @@
       } @else if (inCustomerMode()) {
 
         <div class="customer-mode-banner">
-          <div class="customer-mode-banner-icon"><i class="bi bi-person-vcard-fill"></i></div>
+          <div class="customer-mode-banner-icon">
+            @if (customerMode.activeCustomer()?.logoUrl; as logoUrl) {
+              <img [src]="logoUrl" alt="" class="customer-mode-banner-logo" />
+            } @else {
+              <i class="bi bi-person-vcard-fill"></i>
+            }
+          </div>
           <div class="customer-mode-banner-info">
             <span class="customer-mode-banner-label">Customer</span>
             <span class="customer-mode-banner-name">{{ customerMode.activeCustomer()?.customerName || 'Customer' }}</span>

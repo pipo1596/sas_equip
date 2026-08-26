@@ -4,6 +4,7 @@ import { CustomersService } from './customers.service';
 export interface ActiveCustomer {
   custId: number;
   customerName: string;
+  logoUrl: string | null;
 }
 
 const STORAGE_KEY = 'saas_customerMode';
@@ -29,7 +30,7 @@ export class CustomerModeService {
   async ensure(tpId: number, custId: number): Promise<void> {
     if (this.activeCustomer()?.custId === custId) return;
     const customer = await this.customersService.get(tpId, custId);
-    this.enter({ custId: customer.custId, customerName: customer.customerName });
+    this.enter({ custId: customer.custId, customerName: customer.customerName, logoUrl: customer.logoUrl });
   }
 
   private readFromStorage(): ActiveCustomer | null {

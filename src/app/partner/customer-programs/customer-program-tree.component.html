@@ -80,6 +80,11 @@
                 <td class="text-end text-muted">—</td>
                 <td class="text-end text-muted">—</td>
                 <td class="text-end">
+                  @if (cat.skus.length === 0) {
+                    <button type="button" class="btn btn-sm btn-dark m-1 px-3" (click)="openAddCategoryModal(cat.progCatId)" title="Add Sub-Category">
+                      <i class="bi bi-folder-plus"></i>
+                    </button>
+                  }
                   @if (cat.children.length === 0) {
                     <button type="button" class="btn btn-sm btn-outline-secondary m-1 px-3" (click)="openAddSkuModal(cat)" title="Add SKU">
                       <i class="bi bi-plus-lg"></i>
@@ -98,6 +103,7 @@
                       <i class="bi" [class.bi-chevron-right]="!expandedGroupKeys().has(group.key)" [class.bi-chevron-down]="expandedGroupKeys().has(group.key)"></i>
                     </button>
                     <i class="bi bi-box-seam text-muted"></i>
+                    <span class="text-muted small font-monospace">#{{ group.productPk }}</span>
                     <span class="fw-medium" [title]="group.productTitle">{{ truncateTitle(group.productTitle) }}</span>
                     <span class="text-muted small">({{ group.skus.length }} item{{ group.skus.length === 1 ? '' : 's' }})</span>
                   </div>

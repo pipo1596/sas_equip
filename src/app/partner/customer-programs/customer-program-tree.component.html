@@ -223,7 +223,7 @@
           <h5 class="modal-title">
             Move Assortment
             @if (reparentSourceTarget(); as source) {
-              <span class="text-muted small fw-normal ms-1">{{ source.categoryName }}</span>
+              <span class="text-muted small fw-normal ms-1">{{ categoryBreadcrumbFor(source.progCatId) }}</span>
             }
           </h5>
           <button class="btn-close" (click)="closeReparentModal()" [disabled]="savingReparent()"></button>
@@ -244,7 +244,7 @@
                 <option [ngValue]="null">— Top level —</option>
               }
               @for (opt of reparentTargetOptions(); track opt.progCatId) {
-                <option [ngValue]="opt.progCatId">{{ '—'.repeat(opt.level) }} {{ opt.categoryName }}</option>
+                <option [ngValue]="opt.progCatId">{{ opt.breadcrumb }}</option>
               }
             </select>
             <div class="form-text mt-2">Leave as top level to move it out of any parent.</div>
@@ -290,9 +290,12 @@
           }
 
           @if (reassignSourceTarget(); as source) {
-            <p class="text-muted small">
+            <p class="text-muted small mb-1">
               Moves all <strong>{{ source.skus.length }}</strong> item{{ source.skus.length === 1 ? '' : 's' }}
               of <strong>{{ source.productTitle }}</strong> to the assortment selected below.
+            </p>
+            <p class="text-muted small">
+              Currently in <strong>{{ categoryBreadcrumbFor(source.progCatId) }}</strong>.
             </p>
           }
 
@@ -301,7 +304,7 @@
             <select class="form-select" [ngModel]="reassignTargetProgCatId()" (ngModelChange)="reassignTargetProgCatId.set($event)">
               <option [ngValue]="null">— Select an assortment —</option>
               @for (opt of reassignTargetOptions(); track opt.progCatId) {
-                <option [ngValue]="opt.progCatId">{{ '—'.repeat(opt.level) }} {{ opt.categoryName }}</option>
+                <option [ngValue]="opt.progCatId">{{ opt.breadcrumb }}</option>
               }
             </select>
             @if (reassignTargetOptions().length === 0) {
@@ -386,7 +389,7 @@
             <select class="form-select" [ngModel]="selectedParentProgCatId()" (ngModelChange)="selectedParentProgCatId.set($event)">
               <option [ngValue]="null">— Top level —</option>
               @for (opt of parentOptions(); track opt.progCatId) {
-                <option [ngValue]="opt.progCatId">{{ '—'.repeat(opt.level) }} {{ opt.categoryName }}</option>
+                <option [ngValue]="opt.progCatId">{{ opt.breadcrumb }}</option>
               }
             </select>
             <div class="form-text mt-2">Leave blank to add as a top-level assortment.</div>

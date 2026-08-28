@@ -16,6 +16,7 @@ interface ParentOption {
   progCatId: number;
   categoryName: string;
   level: number;
+  breadcrumb: string;
 }
 
 interface ProductGroup {
@@ -321,6 +322,10 @@ export class CustomerProgramTreeComponent implements OnInit {
     this.saveExpandedState();
   }
 
+  categoryBreadcrumbFor(progCatId: number): string {
+    return this.parentOptions().find(o => o.progCatId === progCatId)?.breadcrumb ?? '';
+  }
+
   groupBasePriceRange(group: ProductGroup): string {
     return this.priceRange(group.skus.map(s => s.basePrice));
   }
@@ -352,21 +357,23 @@ export class CustomerProgramTreeComponent implements OnInit {
 
   readonly parentOptions = computed<ParentOption[]>(() => {
     const options: ParentOption[] = [];
-    const visit = (cat: CustomerProgramCategoryNode, level: number) => {
-      options.push({ progCatId: cat.progCatId, categoryName: cat.categoryName, level });
-      cat.children.forEach(child => visit(child, level + 1));
+    const visit = (cat: CustomerProgramCategoryNode, level: number, path: string[]) => {
+      const breadcrumb = [...path, cat.categoryName].join(' › ');
+      options.push({ progCatId: cat.progCatId, categoryName: cat.categoryName, level, breadcrumb });
+      cat.children.forEach(child => visit(child, level + 1, [...path, cat.categoryName]));
     };
-    this.categories().forEach(cat => visit(cat, 0));
+    this.categories().forEach(cat => visit(cat, 0, []));
     return options;
   });
 
   private readonly allLeafOptions = computed<ParentOption[]>(() => {
     const options: ParentOption[] = [];
-    const visit = (cat: CustomerProgramCategoryNode, level: number) => {
-      if (cat.children.length === 0) options.push({ progCatId: cat.progCatId, categoryName: cat.categoryName, level });
-      cat.children.forEach(child => visit(child, level + 1));
+    const visit = (cat: CustomerProgramCategoryNode, level: number, path: string[]) => {
+      const breadcrumb = [...path, cat.categoryName].join(' › ');
+      if (cat.children.length === 0) options.push({ progCatId: cat.progCatId, categoryName: cat.categoryName, level, breadcrumb });
+      cat.children.forEach(child => visit(child, level + 1, [...path, cat.categoryName]));
     };
-    this.categories().forEach(cat => visit(cat, 0));
+    this.categories().forEach(cat => visit(cat, 0, []));
     return options;
   });
 

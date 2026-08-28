@@ -76,8 +76,14 @@ export class CustomerProgramTreeComponent implements OnInit {
   readonly showReassignModal = signal(false);
   readonly savingReassign = signal(false);
   readonly reassignError = signal<string | null>(null);
-  readonly reassignSourceTarget = signal<CustomerProgramCategoryNode | null>(null);
+  readonly reassignSourceTarget = signal<ProductGroup | null>(null);
   readonly reassignTargetProgCatId = signal<number | null>(null);
+
+  readonly showReparentModal = signal(false);
+  readonly savingReparent = signal(false);
+  readonly reparentError = signal<string | null>(null);
+  readonly reparentSourceTarget = signal<CustomerProgramCategoryNode | null>(null);
+  readonly reparentTargetProgCatId = signal<number | null>(null);
 
   readonly showAddCategoryModal = signal(false);
   readonly savingCategory = signal(false);
@@ -208,8 +214,15 @@ export class CustomerProgramTreeComponent implements OnInit {
       this.categories.set(tree.categories);
       this.categoryCount.set(tree.categoryCount);
       this.skuCount.set(tree.skuCount);
-      this.expandedIds.set(new Set(this.allCategoryIds()));
-      this.expandedGroupKeys.set(new Set());
+
+      // Collapsed by default on first-ever visit to a program; on later
+      // loads (including a hard refresh), restore whatever was expanded —
+      // dropping any ids/keys that no longer exist in the reloaded tree.
+      const validCatIds = new Set(this.allCategoryIds());
+      const validGroupKeys = new Set(this.allGroupKeys());
+      const saved = this.loadExpandedState();
+      this.expandedIds.set(new Set([...(saved?.categories ?? [])].filter(id => validCatIds.has(id))));
+      this.expandedGroupKeys.set(new Set([...(saved?.groups ?? [])].filter(k => validGroupKeys.has(k))));
     } catch (err) {
       this.error.set(err instanceof Error ? err.message : 'Failed to load program tree.');
     } finally {
@@ -250,11 +263,44 @@ export class CustomerProgramTreeComponent implements OnInit {
   expandAll(): void {
     this.expandedIds.set(new Set(this.allCategoryIds()));
     this.expandedGroupKeys.set(new Set(this.allGroupKeys()));
+    this.saveExpandedState();
   }
 
   collapseAll(): void {
     this.expandedIds.set(new Set());
     this.expandedGroupKeys.set(new Set());
+    this.saveExpandedState();
+  }
+
+  // Persists which assortments/product groups are expanded, per program, so
+  // it survives a refresh — sessionStorage rather than component state
+  // since loadTree() re-fetches the whole tree from scratch on every load.
+  private expandedStateKey(): string | null {
+    const programId = this.programId;
+    return programId ? `saas_programTreeExpanded_${programId}` : null;
+  }
+
+  private saveExpandedState(): void {
+    const key = this.expandedStateKey();
+    if (!key) return;
+    try {
+      sessionStorage.setItem(key, JSON.stringify({
+        categories: Array.from(this.expandedIds()),
+        groups: Array.from(this.expandedGroupKeys()),
+      }));
+    } catch { /* non-critical */ }
+  }
+
+  private loadExpandedState(): { categories: number[]; groups: string[] } | null {
+    const key = this.expandedStateKey();
+    if (!key) return null;
+    try {
+      const raw = sessionStorage.getItem(key);
+      if (!raw) return null;
+      return JSON.parse(raw) as { categories: number[]; groups: string[] };
+    } catch {
+      return null;
+    }
   }
 
   toggleExpand(progCatId: number): void {
@@ -263,6 +309,7 @@ export class CustomerProgramTreeComponent implements OnInit {
       next.has(progCatId) ? next.delete(progCatId) : next.add(progCatId);
       return next;
     });
+    this.saveExpandedState();
   }
 
   toggleGroupExpand(key: string): void {
@@ -271,6 +318,7 @@ export class CustomerProgramTreeComponent implements OnInit {
       next.has(key) ? next.delete(key) : next.add(key);
       return next;
     });
+    this.saveExpandedState();
   }
 
   groupBasePriceRange(group: ProductGroup): string {
@@ -325,6 +373,41 @@ export class CustomerProgramTreeComponent implements OnInit {
   reassignTargetOptions(): ParentOption[] {
     const sourceId = this.reassignSourceTarget()?.progCatId;
     return this.allLeafOptions().filter(o => o.progCatId !== sourceId);
+  }
+
+  // A category can't be re-parented into itself or one of its own
+  // descendants — that would create a cycle in the tree.
+  private descendantProgCatIds(category: CustomerProgramCategoryNode): Set<number> {
+    const ids = new Set<number>();
+    const visit = (cat: CustomerProgramCategoryNode) => {
+      ids.add(cat.progCatId);
+      cat.children.forEach(visit);
+    };
+    visit(category);
+    return ids;
+  }
+
+  // Only categories with no items of their own can receive a re-parented
+  // category — mirrors the rule that a category holding SKUs can't also
+  // hold sub-assortments (see the Add Sub-Assortment button's condition).
+  private readonly categoriesWithItems = computed(() => {
+    const ids = new Set<number>();
+    const visit = (cat: CustomerProgramCategoryNode) => {
+      if (cat.skus.length > 0) ids.add(cat.progCatId);
+      cat.children.forEach(visit);
+    };
+    this.categories().forEach(visit);
+    return ids;
+  });
+
+  reparentTargetOptions(): ParentOption[] {
+    const source = this.reparentSourceTarget();
+    if (!source) return [];
+    const excluded = this.descendantProgCatIds(source);
+    const withItems = this.categoriesWithItems();
+    return this.parentOptions().filter(o =>
+      !excluded.has(o.progCatId) && !withItems.has(o.progCatId) && o.progCatId !== source.parentProgCatId
+    );
   }
 
   private readonly usedCatalogCategoryIds = computed(() => {
@@ -441,8 +524,8 @@ export class CustomerProgramTreeComponent implements OnInit {
     }
   }
 
-  openReassignModal(category: CustomerProgramCategoryNode): void {
-    this.reassignSourceTarget.set(category);
+  openReassignModal(group: ProductGroup): void {
+    this.reassignSourceTarget.set(group);
     this.reassignTargetProgCatId.set(null);
     this.reassignError.set(null);
     this.showReassignModal.set(true);
@@ -467,13 +550,44 @@ export class CustomerProgramTreeComponent implements OnInit {
     this.savingReassign.set(true);
     this.reassignError.set(null);
     try {
-      await this.service.reassignSkus(tpId, custId, programId, source.progCatId, targetProgCatId);
+      await this.service.reassignSkus(tpId, custId, programId, source.progCatId, targetProgCatId, source.productPk);
       this.closeReassignModal();
       await this.loadTree();
     } catch (err) {
       this.reassignError.set(err instanceof Error ? err.message : 'Failed to reassign items.');
     } finally {
       this.savingReassign.set(false);
+    }
+  }
+
+  openReparentModal(category: CustomerProgramCategoryNode): void {
+    this.reparentSourceTarget.set(category);
+    this.reparentTargetProgCatId.set(null);
+    this.reparentError.set(null);
+    this.showReparentModal.set(true);
+  }
+
+  closeReparentModal(): void {
+    this.showReparentModal.set(false);
+    this.reparentSourceTarget.set(null);
+  }
+
+  async confirmReparent(): Promise<void> {
+    const tpId = this.tpId;
+    const custId = this.customerId;
+    const programId = this.programId;
+    const source = this.reparentSourceTarget();
+    if (!tpId || !custId || !programId || !source) return;
+    this.savingReparent.set(true);
+    this.reparentError.set(null);
+    try {
+      await this.service.moveCategory(tpId, custId, programId, source.progCatId, this.reparentTargetProgCatId());
+      this.closeReparentModal();
+      await this.loadTree();
+    } catch (err) {
+      this.reparentError.set(err instanceof Error ? err.message : 'Failed to move assortment.');
+    } finally {
+      this.savingReparent.set(false);
     }
   }
 

@@ -85,6 +85,11 @@
                   <button type="button" class="btn btn-sm btn-outline-secondary m-1 px-3" (click)="openEditCategoryModal(cat)" title="Rename Assortment">
                     <i class="bi bi-pencil"></i>
                   </button>
+                  @if (cat.skus.length > 0) {
+                    <button type="button" class="btn btn-sm btn-dark m-1 px-3" (click)="openReparentModal(cat)" title="Move to Another Assortment">
+                      <i class="bi bi-folder-symlink"></i>
+                    </button>
+                  }
                   @if (cat.skus.length === 0) {
                     <button type="button" class="btn btn-sm btn-dark m-1 px-3" (click)="openAddCategoryModal(cat.progCatId)" title="Add Sub-Assortment">
                       <i class="bi bi-folder-plus"></i>
@@ -93,11 +98,6 @@
                   @if (cat.children.length === 0) {
                     <button type="button" class="btn btn-sm btn-outline-secondary m-1 px-3" (click)="openAddSkuModal(cat)" title="Add SKU">
                       <i class="bi bi-plus-lg"></i>
-                    </button>
-                  }
-                  @if (cat.children.length === 0 && cat.skus.length > 0) {
-                    <button type="button" class="btn btn-sm btn-dark m-1 px-3" (click)="openReassignModal(cat)" title="Reassign Items to Another Assortment">
-                      <i class="bi bi-arrow-left-right"></i>
                     </button>
                   }
                   <button type="button" class="btn btn-sm btn-outline-danger m-1 px-3" (click)="openDeleteCategoryModal(cat)" title="Delete Assortment">
@@ -131,6 +131,9 @@
                 </td>
                 <td class="text-end font-monospace">{{ groupPointsRange(group) }}</td>
                 <td class="text-end">
+                  <button type="button" class="btn btn-sm btn-dark m-1 px-3" (click)="openReassignModal(group)" title="Reassign Items to Another Assortment">
+                    <i class="bi bi-arrow-left-right"></i>
+                  </button>
                   <button type="button" class="btn btn-sm btn-danger m-1 px-3" (click)="openDeleteGroupModal(group)" title="Delete all SKUs for this product">
                     <i class="bi bi-trash3-fill"></i>
                   </button>
@@ -211,6 +214,58 @@
   </div>
 }
 
+@if (showReparentModal()) {
+  <div class="modal-backdrop fade show"></div>
+  <div class="modal d-block" tabindex="-1" role="dialog" aria-modal="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title">
+            Move Assortment
+            @if (reparentSourceTarget(); as source) {
+              <span class="text-muted small fw-normal ms-1">{{ source.categoryName }}</span>
+            }
+          </h5>
+          <button class="btn-close" (click)="closeReparentModal()" [disabled]="savingReparent()"></button>
+        </div>
+        <div class="modal-body pt-2">
+
+          @if (reparentError()) {
+            <div class="alert alert-danger d-flex align-items-center gap-2 mb-3 py-2 px-3" role="alert">
+              <i class="bi bi-exclamation-triangle-fill"></i>
+              <span>{{ reparentError() }}</span>
+            </div>
+          }
+
+          <div class="mb-2">
+            <label class="form-label fw-medium">New Parent Assortment</label>
+            <select class="form-select" [ngModel]="reparentTargetProgCatId()" (ngModelChange)="reparentTargetProgCatId.set($event)">
+              @if (reparentSourceTarget()?.parentProgCatId !== null) {
+                <option [ngValue]="null">— Top level —</option>
+              }
+              @for (opt of reparentTargetOptions(); track opt.progCatId) {
+                <option [ngValue]="opt.progCatId">{{ '—'.repeat(opt.level) }} {{ opt.categoryName }}</option>
+              }
+            </select>
+            <div class="form-text mt-2">Leave as top level to move it out of any parent.</div>
+          </div>
+
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button class="btn btn-outline-secondary" (click)="closeReparentModal()" [disabled]="savingReparent()">Cancel</button>
+          <button class="btn btn-dark" (click)="confirmReparent()" [disabled]="savingReparent()">
+            @if (savingReparent()) {
+              <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Moving…
+            } @else {
+              <i class="bi bi-folder-symlink me-2"></i>Move Assortment
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
 @if (showReassignModal()) {
   <div class="modal-backdrop fade show"></div>
   <div class="modal d-block" tabindex="-1" role="dialog" aria-modal="true">
@@ -220,7 +275,7 @@
           <h5 class="modal-title">
             Reassign Items
             @if (reassignSourceTarget(); as source) {
-              <span class="text-muted small fw-normal ms-1">from {{ source.categoryName }}</span>
+              <span class="text-muted small fw-normal ms-1">for {{ source.productTitle }}</span>
             }
           </h5>
           <button class="btn-close" (click)="closeReassignModal()" [disabled]="savingReassign()"></button>
@@ -237,7 +292,7 @@
           @if (reassignSourceTarget(); as source) {
             <p class="text-muted small">
               Moves all <strong>{{ source.skus.length }}</strong> item{{ source.skus.length === 1 ? '' : 's' }}
-              from <strong>{{ source.categoryName }}</strong> to the assortment selected below.
+              of <strong>{{ source.productTitle }}</strong> to the assortment selected below.
             </p>
           }
 

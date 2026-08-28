@@ -69,11 +69,18 @@ export class CustomerProgramsService {
     await this.post({ action: '*CAT_DEL', tpId, custId, programId, progCatId });
   }
 
-  // Moves every SKU placement from one leaf category node to another —
-  // used when a leaf's items need to move under a different leaf (e.g.
-  // before deleting the source, or consolidating two assortments).
-  async reassignSkus(tpId: number, custId: number, programId: number, fromProgCatId: number, toProgCatId: number): Promise<void> {
-    await this.post({ action: '*SKU_MOVE', tpId, custId, programId, fromProgCatId, toProgCatId });
+  // Re-parents a category node under a different parent (or to top level
+  // when newParentProgCatId is null) — moves the node and, via
+  // TPCPCAT_PARENT_FK, its whole subtree along with it.
+  async moveCategory(tpId: number, custId: number, programId: number, progCatId: number, newParentProgCatId: number | null): Promise<void> {
+    await this.post({ action: '*CAT_MOVE', tpId, custId, programId, progCatId, newParentProgCatId });
+  }
+
+  // Moves every SKU placement of one product from one leaf category node to
+  // another — used when a product's items need to move under a different
+  // leaf (e.g. before deleting the source, or consolidating two assortments).
+  async reassignSkus(tpId: number, custId: number, programId: number, fromProgCatId: number, toProgCatId: number, productPk: number): Promise<void> {
+    await this.post({ action: '*SKU_MOVE', tpId, custId, programId, fromProgCatId, toProgCatId, productPk });
   }
 
   // Candidate SKUs for the "Add SKUs" picker, scoped to this program (so

@@ -1,8 +1,10 @@
 import { Routes } from '@angular/router';
 import { PartnerDashboardComponent } from './partner-dashboard/partner-dashboard.component';
+import { DataImportsComponent } from './data-imports/data-imports.component';
 
 export const PARTNER_ROUTES: Routes = [
   { path: ':id/dashboard', component: PartnerDashboardComponent },
+  { path: ':id/data-imports', component: DataImportsComponent },
 
   // ── Products (brands + categories + catalog — one shared chunk) ────────────
   {

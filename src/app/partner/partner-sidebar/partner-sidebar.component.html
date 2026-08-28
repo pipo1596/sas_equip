@@ -283,6 +283,15 @@
             </a>
           </li>
 
+          <li class="nav-item">
+            <a class="sidebar-nav-link"
+               [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'data-imports']"
+               routerLinkActive="active">
+              <i class="bi bi-cloud-upload nav-icon"></i>
+              <span>Data Imports</span>
+            </a>
+          </li>
+
           <hr class="sidebar-divider border-secondary my-2" />
 
           <li class="nav-item">

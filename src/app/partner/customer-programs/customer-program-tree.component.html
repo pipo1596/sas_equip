@@ -112,7 +112,7 @@
                     <button type="button" class="btn btn-sm btn-link text-dark p-0" (click)="toggleGroupExpand(group.key)">
                       <i class="bi" [class.bi-chevron-right]="!expandedGroupKeys().has(group.key)" [class.bi-chevron-down]="expandedGroupKeys().has(group.key)"></i>
                     </button>
-                    @if (group.productImageUrl) {
+                    @if (isDisplayableImageUrl(group.productImageUrl)) {
                       <img [src]="group.productImageUrl" alt="" style="width:24px; height:24px; object-fit:contain;" />
                     } @else {
                       <i class="bi bi-box-seam text-muted"></i>

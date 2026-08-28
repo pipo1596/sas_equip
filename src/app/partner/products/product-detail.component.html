@@ -7,7 +7,7 @@
         <div class="placeholder-glow"><span class="placeholder col-6"></span></div>
       } @else if (product(); as p) {
         <div class="d-flex align-items-center gap-3">
-          @if (p.thumbnailUrl) {
+          @if (isDisplayableImageUrl(p.thumbnailUrl)) {
             <img [src]="p.thumbnailUrl" [alt]="p.title"
                  class="flex-shrink-0 rounded"
                  style="width:48px; height:48px; object-fit:contain; border:1px solid #e2e8f0; background:#f8fafc;" />
@@ -407,12 +407,14 @@
           </div>
 
           @if (product()?.thumbnailUrl; as thumbUrl) {
-            <div class="card mb-4">
-              <div class="card-body text-center">
-                <h6 class="card-title fw-semibold mb-3">Thumbnail</h6>
-                <img [src]="thumbUrl" [alt]="product()?.title || ''" class="img-fluid rounded" style="max-height:180px; object-fit:contain;">
+            @if (isDisplayableImageUrl(thumbUrl)) {
+              <div class="card mb-4">
+                <div class="card-body text-center">
+                  <h6 class="card-title fw-semibold mb-3">Thumbnail</h6>
+                  <img [src]="thumbUrl" [alt]="product()?.title || ''" class="img-fluid rounded" style="max-height:180px; object-fit:contain;">
+                </div>
               </div>
-            </div>
+            }
           }
 
         </div>

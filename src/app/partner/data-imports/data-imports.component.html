@@ -1,0 +1,153 @@
+<section class="page-shell">
+
+  <div class="page-shell-header">
+    <h1 class="page-title">Data Imports</h1>
+    <p class="page-subtitle">Bulk-upload data for <strong>{{ partnerMode.activePartner()?.tpName }}</strong> from a CSV file.</p>
+  </div>
+
+  <div class="row g-4">
+
+    <div class="col-12 col-lg-4">
+      <div class="card h-100">
+        <div class="card-body">
+          <h5 class="card-title fw-semibold d-flex align-items-center gap-2">
+            <i class="bi bi-box-seam"></i>Products
+          </h5>
+          <p class="text-muted">
+            Bulk add or update products and SKUs in your catalog from a CSV file. Use this to
+            onboard a large catalog at once instead of creating products one at a time.
+          </p>
+
+          @if (productError()) {
+            <div class="alert alert-danger d-flex align-items-center gap-2 py-2 px-3" role="alert">
+              <i class="bi bi-exclamation-triangle-fill"></i>
+              <span>{{ productError() }}</span>
+              <button type="button" class="btn-close ms-auto" (click)="productError.set(null)"></button>
+            </div>
+          }
+          @if (productSuccess()) {
+            <div class="alert alert-success d-flex align-items-center gap-2 py-2 px-3" role="alert">
+              <i class="bi bi-patch-check-fill"></i>
+              <span>Product induction started successfully. Products will appear once processed.</span>
+            </div>
+          }
+
+          <input #productCsvFileInput type="file" accept=".csv" class="d-none" (change)="onProductCsvSelected($event)" />
+          <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-outline-secondary" type="button"
+                    (click)="productCsvFileInput.click()"
+                    [disabled]="productUploading() || productInducing()">
+              @if (productUploading()) {
+                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Uploading…
+              } @else if (productInducing()) {
+                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Processing…
+              } @else {
+                <i class="bi bi-file-earmark-arrow-up me-2"></i>Upload Products
+              }
+            </button>
+            <a class="text-muted d-inline-flex align-items-center" href="/photos/sample/products.csv"
+               target="_blank" rel="noopener" title="Download sample CSV template">
+              <i class="bi bi-info-circle"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-4">
+      <div class="card h-100">
+        <div class="card-body">
+          <h5 class="card-title fw-semibold d-flex align-items-center gap-2">
+            <i class="bi bi-people"></i>Employees
+          </h5>
+          <p class="text-muted">
+            Bulk-create employee accounts for your customers from a CSV file. Use this to induct
+            a customer's whole roster at once instead of adding employees one at a time.
+          </p>
+
+          @if (employeeError()) {
+            <div class="alert alert-danger d-flex align-items-center gap-2 py-2 px-3" role="alert">
+              <i class="bi bi-exclamation-triangle-fill"></i>
+              <span>{{ employeeError() }}</span>
+              <button type="button" class="btn-close ms-auto" (click)="employeeError.set(null)"></button>
+            </div>
+          }
+          @if (employeeSuccess()) {
+            <div class="alert alert-success d-flex align-items-center gap-2 py-2 px-3" role="alert">
+              <i class="bi bi-patch-check-fill"></i>
+              <span>Employee induction started successfully. Employees will appear once processed.</span>
+            </div>
+          }
+
+          <input #employeeCsvFileInput type="file" accept=".csv" class="d-none" (change)="onEmployeeCsvSelected($event)" />
+          <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-outline-secondary" type="button"
+                    (click)="employeeCsvFileInput.click()"
+                    [disabled]="employeeUploading() || employeeInducing()">
+              @if (employeeUploading()) {
+                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Uploading…
+              } @else if (employeeInducing()) {
+                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Processing…
+              } @else {
+                <i class="bi bi-file-earmark-arrow-up me-2"></i>Import Employees
+              }
+            </button>
+            <a class="text-muted d-inline-flex align-items-center" href="/photos/sample/employees.csv"
+               target="_blank" rel="noopener" title="Download sample CSV template">
+              <i class="bi bi-info-circle"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-4">
+      <div class="card h-100">
+        <div class="card-body">
+          <h5 class="card-title fw-semibold d-flex align-items-center gap-2">
+            <i class="bi bi-tags"></i>Price Lists
+          </h5>
+          <p class="text-muted">
+            Bulk add or update customer price list items from a CSV file. Use this to load a
+            customer's SKU pricing at once instead of entering each item one at a time.
+          </p>
+
+          @if (priceListError()) {
+            <div class="alert alert-danger d-flex align-items-center gap-2 py-2 px-3" role="alert">
+              <i class="bi bi-exclamation-triangle-fill"></i>
+              <span>{{ priceListError() }}</span>
+              <button type="button" class="btn-close ms-auto" (click)="priceListError.set(null)"></button>
+            </div>
+          }
+          @if (priceListSuccess()) {
+            <div class="alert alert-success d-flex align-items-center gap-2 py-2 px-3" role="alert">
+              <i class="bi bi-patch-check-fill"></i>
+              <span>Price list induction started successfully. Items will appear once processed.</span>
+            </div>
+          }
+
+          <input #priceListCsvFileInput type="file" accept=".csv" class="d-none" (change)="onPriceListCsvSelected($event)" />
+          <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-outline-secondary" type="button"
+                    (click)="priceListCsvFileInput.click()"
+                    [disabled]="priceListUploading() || priceListInducing()">
+              @if (priceListUploading()) {
+                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Uploading…
+              } @else if (priceListInducing()) {
+                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Processing…
+              } @else {
+                <i class="bi bi-file-earmark-arrow-up me-2"></i>Upload Price List
+              }
+            </button>
+            <a class="text-muted d-inline-flex align-items-center" href="/photos/sample/pricing.csv"
+               target="_blank" rel="noopener" title="Download sample CSV template">
+              <i class="bi bi-info-circle"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</section>

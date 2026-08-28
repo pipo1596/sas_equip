@@ -7,6 +7,7 @@ import type { ContentChange } from 'ngx-quill';
 import { PartnerModeService } from '../partner-mode.service';
 import { ImageUploadService } from '../../shared/image-upload.service';
 import { htmlEncodeNonAscii } from '../../shared/html-encode-non-ascii.util';
+import { isDisplayableImageUrl } from '../../shared/image-url.util';
 import { ProductsService } from './products.service';
 import { ProductOptionsService } from './product-options.service';
 import { ProductImagesService } from './product-images.service';
@@ -787,6 +788,8 @@ export class ProductDetailComponent implements OnInit {
   backToList(): void {
     this.router.navigate(['/partner', this.tpId, 'products']);
   }
+
+  protected readonly isDisplayableImageUrl = isDisplayableImageUrl;
 
   statusBadge(status: string): string {
     switch (status) {

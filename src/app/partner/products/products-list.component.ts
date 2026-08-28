@@ -7,6 +7,7 @@ import { ProductsService } from './products.service';
 import { BrandsService } from '../brands/brands.service';
 import { CategoriesService } from '../categories/categories.service';
 import { ImageUploadService } from '../../shared/image-upload.service';
+import { isDisplayableImageUrl } from '../../shared/image-url.util';
 import { Product, ProductSummary } from './product.model';
 import { Brand } from '../brands/brand.model';
 import { Category } from '../categories/category.model';
@@ -251,6 +252,8 @@ export class ProductsListComponent implements OnInit {
       default:             return 'text-muted';
     }
   }
+
+  protected readonly isDisplayableImageUrl = isDisplayableImageUrl;
 
   stockLabel(status: string | null | undefined): string {
     switch (status) {

@@ -10,6 +10,7 @@ import {
 } from './customer-program.model';
 import { CategoriesService } from '../categories/categories.service';
 import { Category } from '../categories/category.model';
+import { isDisplayableImageUrl } from '../../shared/image-url.util';
 
 interface ParentOption {
   progCatId: number;
@@ -680,6 +681,8 @@ export class CustomerProgramTreeComponent implements OnInit {
       return d;
     }
   }
+
+  protected readonly isDisplayableImageUrl = isDisplayableImageUrl;
 
   truncateTitle(text: string, max = 30): string {
     return text.length > max ? text.slice(0, max) + '…' : text;

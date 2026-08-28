@@ -81,6 +81,10 @@ export class CustomerPriceListsService {
     return (data['data'] as unknown as SkuSearchResult[]) ?? [];
   }
 
+  async inductFromCsv(tpId: number, csvUrl: string): Promise<void> {
+    await this.post(this.endpoint, { action: '*INDUCT', tpId, csvUrl });
+  }
+
   private async post(endpoint: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
     const response = await fetch(endpoint, {
       method: 'POST',

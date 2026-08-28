@@ -43,7 +43,7 @@
         <tr>
           <th>SKU</th>
           <th class="text-end">Price</th>
-          <th class="text-end">Compare-At</th>
+          <th class="text-end">Points</th>
           <th class="text-center">Status</th>
           <th class="text-end">Actions</th>
         </tr>
@@ -65,9 +65,9 @@
                 <div class="fw-semibold">{{ item.productTitle || '—' }}</div>
                 <div class="text-muted small font-monospace">{{ item.skuCode || ('SKU #' + item.skuId) }}</div>
               </td>
-              <td class="text-end font-monospace">{{ item.price | number:'1.2-2' }}</td>
+              <td class="text-end font-monospace">{{ item.price | currency:(priceList()?.currency || 'USD') }}</td>
               <td class="text-end font-monospace text-muted">
-                {{ item.compareAtPrc != null ? (item.compareAtPrc | number:'1.2-2') : '—' }}
+                {{ item.points != null ? (item.points | number:'1.0-2') : '—' }}
               </td>
               <td class="text-center">
                 <span [class]="statusBadge(item.status)">{{ item.status === 'ACTIVE' ? 'Active' : 'Inactive' }}</span>
@@ -129,7 +129,7 @@
           }
 
           <div class="row g-3">
-            <div class="col-6">
+            <div class="col-4">
               <label class="form-label fw-medium">Price <span class="text-danger">*</span></label>
               <div class="input-group">
                 <span class="input-group-text">$</span>
@@ -137,12 +137,20 @@
                        [ngModel]="editForm().price" (ngModelChange)="editForm.update(f => ({...f, price: $event}))" />
               </div>
             </div>
-            <div class="col-6">
+            <div class="col-4">
               <label class="form-label fw-medium">Compare-At Price</label>
               <div class="input-group">
                 <span class="input-group-text">$</span>
                 <input type="number" class="form-control" step="0.01" min="0"
                        [ngModel]="editForm().compareAtPrc" (ngModelChange)="editForm.update(f => ({...f, compareAtPrc: $event}))" />
+              </div>
+            </div>
+            <div class="col-4">
+              <label class="form-label fw-medium">Points</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-star"></i></span>
+                <input type="number" class="form-control" step="1" min="0"
+                       [ngModel]="editForm().points" (ngModelChange)="editForm.update(f => ({...f, points: $event}))" />
               </div>
             </div>
             <div class="col-12">
@@ -196,7 +204,7 @@
                    [value]="skuSearchTerm()" (input)="onSkuSearchChange($any($event.target).value)" />
           </div>
 
-          <div class="border rounded-3" style="max-height: 400px; overflow-y: auto;">
+          <div class="border rounded-3" style="height: 400px; overflow-y: auto;">
             <table class="table table-hover align-middle mb-0">
               <thead class="sticky-top bg-white">
                 <tr>
@@ -204,16 +212,17 @@
                   <th>Product / SKU</th>
                   <th style="width:150px;">Price</th>
                   <th style="width:150px;">Compare-At</th>
+                  <th style="width:150px;">Points</th>
                   <th style="width:130px;">Status</th>
                 </tr>
               </thead>
               <tbody>
                 @if (skuSearching()) {
-                  <tr><td colspan="5" class="text-center py-4 text-muted">
+                  <tr><td colspan="6" class="text-center py-4 text-muted">
                     <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>Searching…
                   </td></tr>
                 } @else if (skuSearchResults().length === 0) {
-                  <tr><td colspan="5" class="text-center py-4 text-muted">
+                  <tr><td colspan="6" class="text-center py-4 text-muted">
                     @if (skuSearchTerm().trim()) { No matching SKUs. } @else { Search for SKUs to add above. }
                   </td></tr>
                 } @else {
@@ -237,7 +246,7 @@
                           @if (row.isFirstInGroup) {
                             <button type="button" class="btn btn-outline-secondary" title="Apply this price to every SKU of this product"
                                     (click)="applyToGroup(row.sku, 'price')">
-                              <i class="bi bi-arrows-expand"></i>
+                              <i class="bi bi-arrow-bar-down"></i>
                             </button>
                           }
                         </div>
@@ -251,7 +260,21 @@
                           @if (row.isFirstInGroup) {
                             <button type="button" class="btn btn-outline-secondary" title="Apply this compare-at price to every SKU of this product"
                                     (click)="applyToGroup(row.sku, 'compareAtPrc')">
-                              <i class="bi bi-arrows-expand"></i>
+                              <i class="bi bi-arrow-bar-down"></i>
+                            </button>
+                          }
+                        </div>
+                      </td>
+                      <td>
+                        <div class="input-group input-group-sm">
+                          <span class="input-group-text"><i class="bi bi-star"></i></span>
+                          <input type="number" class="form-control" step="1" min="0"
+                                 [ngModel]="draftFor(row.sku.skuId).points"
+                                 (ngModelChange)="updateDraft(row.sku.skuId, { points: $event })" />
+                          @if (row.isFirstInGroup) {
+                            <button type="button" class="btn btn-outline-secondary" title="Apply this points value to every SKU of this product"
+                                    (click)="applyToGroup(row.sku, 'points')">
+                              <i class="bi bi-arrow-bar-down"></i>
                             </button>
                           }
                         </div>

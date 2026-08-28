@@ -21,7 +21,9 @@ interface ProductGroup {
   key: string;
   progCatId: number;
   productPk: number;
+  productId: number;
   productTitle: string;
+  productImageUrl: string | null;
   skus: CustomerProgramSku[];
 }
 
@@ -64,6 +66,18 @@ export class CustomerProgramTreeComponent implements OnInit {
   readonly deletingCategory = signal(false);
   readonly deleteCategoryTarget = signal<CustomerProgramCategoryNode | null>(null);
 
+  readonly showEditCategoryModal = signal(false);
+  readonly savingEditCategory = signal(false);
+  readonly editCategoryError = signal<string | null>(null);
+  readonly editCategoryTarget = signal<CustomerProgramCategoryNode | null>(null);
+  readonly editCategoryName = signal('');
+
+  readonly showReassignModal = signal(false);
+  readonly savingReassign = signal(false);
+  readonly reassignError = signal<string | null>(null);
+  readonly reassignSourceTarget = signal<CustomerProgramCategoryNode | null>(null);
+  readonly reassignTargetProgCatId = signal<number | null>(null);
+
   readonly showAddCategoryModal = signal(false);
   readonly savingCategory = signal(false);
   readonly addCategoryError = signal<string | null>(null);
@@ -71,6 +85,8 @@ export class CustomerProgramTreeComponent implements OnInit {
   readonly loadingCatalogCategories = signal(false);
   readonly selectedParentProgCatId = signal<number | null>(null);
   readonly selectedCategoryId = signal<number | null>(null);
+  readonly categoryNameMode = signal<'CATALOG' | 'CUSTOM'>('CATALOG');
+  readonly customCategoryName = signal('');
 
   readonly showAddSkuModal = signal(false);
   readonly addSkuTarget = signal<CustomerProgramCategoryNode | null>(null);
@@ -84,6 +100,10 @@ export class CustomerProgramTreeComponent implements OnInit {
   readonly showDeleteSkuModal = signal(false);
   readonly deletingSku = signal(false);
   readonly deleteSkuTarget = signal<CustomerProgramSku | null>(null);
+
+  readonly showDeleteGroupModal = signal(false);
+  readonly deletingGroup = signal(false);
+  readonly deleteGroupTarget = signal<ProductGroup | null>(null);
 
   private searchTimer: ReturnType<typeof setTimeout> | null = null;
   private skuSearchTimer: ReturnType<typeof setTimeout> | null = null;
@@ -123,7 +143,7 @@ export class CustomerProgramTreeComponent implements OnInit {
       for (const sku of skus) {
         let group = byProduct.get(sku.productPk);
         if (!group) {
-          group = { key: `g${sku.progCatId}-${sku.productPk}`, progCatId: sku.progCatId, productPk: sku.productPk, productTitle: sku.productTitle, skus: [] };
+          group = { key: `g${sku.progCatId}-${sku.productPk}`, progCatId: sku.progCatId, productPk: sku.productPk, productId: sku.productId, productTitle: sku.productTitle, productImageUrl: sku.productImageUrl, skus: [] };
           byProduct.set(sku.productPk, group);
           order.push(group);
         }
@@ -260,16 +280,24 @@ export class CustomerProgramTreeComponent implements OnInit {
     return this.priceRange(group.skus.map(s => s.customerPrice ?? s.basePrice));
   }
 
+  groupPointsRange(group: ProductGroup): string {
+    return this.numberRange(group.skus.map(s => s.points), 0);
+  }
+
   groupHasDiscount(group: ProductGroup): boolean {
     return group.skus.some(s => s.customerPrice != null && s.customerPrice !== s.basePrice);
   }
 
   private priceRange(values: Array<number | null>): string {
+    return this.numberRange(values, 2);
+  }
+
+  private numberRange(values: Array<number | null>, decimals: number): string {
     const nums = values.filter((v): v is number => v != null);
     if (nums.length === 0) return '—';
     const min = Math.min(...nums);
     const max = Math.max(...nums);
-    const fmt = (n: number) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const fmt = (n: number) => n.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
     return min === max ? fmt(min) : `${fmt(min)} – ${fmt(max)}`;
   }
 
@@ -282,6 +310,21 @@ export class CustomerProgramTreeComponent implements OnInit {
     this.categories().forEach(cat => visit(cat, 0));
     return options;
   });
+
+  private readonly allLeafOptions = computed<ParentOption[]>(() => {
+    const options: ParentOption[] = [];
+    const visit = (cat: CustomerProgramCategoryNode, level: number) => {
+      if (cat.children.length === 0) options.push({ progCatId: cat.progCatId, categoryName: cat.categoryName, level });
+      cat.children.forEach(child => visit(child, level + 1));
+    };
+    this.categories().forEach(cat => visit(cat, 0));
+    return options;
+  });
+
+  reassignTargetOptions(): ParentOption[] {
+    const sourceId = this.reassignSourceTarget()?.progCatId;
+    return this.allLeafOptions().filter(o => o.progCatId !== sourceId);
+  }
 
   private readonly usedCatalogCategoryIds = computed(() => {
     const ids = new Set<number>();
@@ -300,6 +343,8 @@ export class CustomerProgramTreeComponent implements OnInit {
   async openAddCategoryModal(parentProgCatId: number | null = null): Promise<void> {
     this.selectedParentProgCatId.set(parentProgCatId);
     this.selectedCategoryId.set(null);
+    this.categoryNameMode.set('CATALOG');
+    this.customCategoryName.set('');
     this.addCategoryError.set(null);
     this.showAddCategoryModal.set(true);
     if (this.catalogCategories().length === 0) {
@@ -324,25 +369,110 @@ export class CustomerProgramTreeComponent implements OnInit {
     const tpId = this.tpId;
     const custId = this.customerId;
     const programId = this.programId;
-    const categoryId = this.selectedCategoryId();
     if (!tpId || !custId || !programId) return;
-    if (!categoryId) {
-      this.addCategoryError.set('Please select a category.');
-      return;
+
+    let categoryName: string;
+    if (this.categoryNameMode() === 'CUSTOM') {
+      categoryName = this.customCategoryName().trim();
+      if (!categoryName) {
+        this.addCategoryError.set('Please enter an assortment name.');
+        return;
+      }
+    } else {
+      const categoryId = this.selectedCategoryId();
+      const category = categoryId != null ? this.catalogCategories().find(c => c.catId === categoryId) : undefined;
+      if (!category) {
+        this.addCategoryError.set('Please select a category.');
+        return;
+      }
+      categoryName = category.catName;
     }
+
     this.savingCategory.set(true);
     this.addCategoryError.set(null);
     try {
       await this.service.addCategory(tpId, custId, programId, {
-        categoryId,
+        categoryName,
         parentProgCatId: this.selectedParentProgCatId(),
       });
       this.closeAddCategoryModal();
       await this.loadTree();
     } catch (err) {
-      this.addCategoryError.set(err instanceof Error ? err.message : 'Failed to add category.');
+      this.addCategoryError.set(err instanceof Error ? err.message : 'Failed to add assortment.');
     } finally {
       this.savingCategory.set(false);
+    }
+  }
+
+  openEditCategoryModal(category: CustomerProgramCategoryNode): void {
+    this.editCategoryTarget.set(category);
+    this.editCategoryName.set(category.categoryName);
+    this.editCategoryError.set(null);
+    this.showEditCategoryModal.set(true);
+  }
+
+  closeEditCategoryModal(): void {
+    this.showEditCategoryModal.set(false);
+    this.editCategoryTarget.set(null);
+  }
+
+  async saveEditCategory(): Promise<void> {
+    const tpId = this.tpId;
+    const custId = this.customerId;
+    const programId = this.programId;
+    const target = this.editCategoryTarget();
+    if (!tpId || !custId || !programId || !target) return;
+    const categoryName = this.editCategoryName().trim();
+    if (!categoryName) {
+      this.editCategoryError.set('Please enter an assortment name.');
+      return;
+    }
+    this.savingEditCategory.set(true);
+    this.editCategoryError.set(null);
+    try {
+      await this.service.updateCategory(tpId, custId, programId, target.progCatId, categoryName);
+      this.closeEditCategoryModal();
+      await this.loadTree();
+    } catch (err) {
+      this.editCategoryError.set(err instanceof Error ? err.message : 'Failed to update assortment.');
+    } finally {
+      this.savingEditCategory.set(false);
+    }
+  }
+
+  openReassignModal(category: CustomerProgramCategoryNode): void {
+    this.reassignSourceTarget.set(category);
+    this.reassignTargetProgCatId.set(null);
+    this.reassignError.set(null);
+    this.showReassignModal.set(true);
+  }
+
+  closeReassignModal(): void {
+    this.showReassignModal.set(false);
+    this.reassignSourceTarget.set(null);
+  }
+
+  async confirmReassign(): Promise<void> {
+    const tpId = this.tpId;
+    const custId = this.customerId;
+    const programId = this.programId;
+    const source = this.reassignSourceTarget();
+    const targetProgCatId = this.reassignTargetProgCatId();
+    if (!tpId || !custId || !programId || !source) return;
+    if (!targetProgCatId) {
+      this.reassignError.set('Please select a destination assortment.');
+      return;
+    }
+    this.savingReassign.set(true);
+    this.reassignError.set(null);
+    try {
+      await this.service.reassignSkus(tpId, custId, programId, source.progCatId, targetProgCatId);
+      this.closeReassignModal();
+      await this.loadTree();
+    } catch (err) {
+      this.reassignError.set(err instanceof Error ? err.message : 'Failed to reassign items.');
+    } finally {
+      this.savingReassign.set(false);
     }
   }
 
@@ -368,7 +498,7 @@ export class CustomerProgramTreeComponent implements OnInit {
       this.closeDeleteCategoryModal();
       await this.loadTree();
     } catch (err) {
-      this.error.set(err instanceof Error ? err.message : 'Failed to delete category.');
+      this.error.set(err instanceof Error ? err.message : 'Failed to delete assortment.');
       this.closeDeleteCategoryModal();
     } finally {
       this.deletingCategory.set(false);
@@ -503,6 +633,38 @@ export class CustomerProgramTreeComponent implements OnInit {
       this.closeDeleteSkuModal();
     } finally {
       this.deletingSku.set(false);
+    }
+  }
+
+  openDeleteGroupModal(group: ProductGroup): void {
+    this.deleteGroupTarget.set(group);
+    this.showDeleteGroupModal.set(true);
+  }
+
+  closeDeleteGroupModal(): void {
+    this.showDeleteGroupModal.set(false);
+    this.deleteGroupTarget.set(null);
+  }
+
+  async confirmDeleteGroup(): Promise<void> {
+    const target = this.deleteGroupTarget();
+    const tpId = this.tpId;
+    const custId = this.customerId;
+    const programId = this.programId;
+    if (!target || !tpId || !custId || !programId) return;
+    this.deletingGroup.set(true);
+    try {
+      for (const sku of target.skus) {
+        await this.service.removeSku(tpId, custId, programId, sku.progProdId);
+      }
+      this.closeDeleteGroupModal();
+      await this.loadTree();
+    } catch (err) {
+      this.error.set(err instanceof Error ? err.message : 'Failed to remove product SKUs.');
+      this.closeDeleteGroupModal();
+      await this.loadTree();
+    } finally {
+      this.deletingGroup.set(false);
     }
   }
 

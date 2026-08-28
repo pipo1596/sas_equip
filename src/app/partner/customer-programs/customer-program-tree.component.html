@@ -4,7 +4,7 @@
     <div>
       <h1 class="page-title">{{ program()?.programName || 'Program' }}</h1>
       <p class="page-subtitle">
-        Category &amp; SKU assortment
+        Assortment &amp; SKU details
         @if (program()?.priceListName) { · Priced from <strong>{{ program()?.priceListName }}</strong> }
         · Last synced {{ formatDate(program()?.lastSyncedTs ?? null) }}
       </p>
@@ -14,7 +14,7 @@
         <i class="bi bi-arrow-left me-2"></i>Back to Programs
       </button>
       <button type="button" class="btn btn-dark" (click)="openAddCategoryModal()">
-        <i class="bi bi-folder-plus me-2"></i>Add Category
+        <i class="bi bi-folder-plus me-2"></i>Add Assortment
       </button>
     </div>
   </div>
@@ -29,7 +29,7 @@
   <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
     <div class="input-group" style="max-width: 360px;">
       <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
-      <input type="text" class="form-control border-start-0 ps-0" placeholder="Search category or SKU…"
+      <input type="text" class="form-control border-start-0 ps-0" placeholder="Search assortment or SKU…"
              (input)="onSearchChange($any($event.target).value)" />
     </div>
     <div class="d-flex align-items-center gap-2">
@@ -46,22 +46,23 @@
     <table class="table table-hover align-middle mb-0 table-stacked">
       <thead>
         <tr>
-          <th>Category / Product / SKU</th>
+          <th>Assortment / Product / SKU</th>
           <th>Type</th>
           <th class="text-end">Base Price</th>
           <th class="text-end">Customer Price</th>
+          <th class="text-end">Points</th>
           <th class="text-end">Actions</th>
         </tr>
       </thead>
       <tbody>
         @if (loading()) {
-          <tr><td colspan="5" class="text-center py-4 text-muted">
+          <tr><td colspan="6" class="text-center py-4 text-muted">
             <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>Loading…
           </td></tr>
         } @else if (rows().length === 0) {
-          <tr><td colspan="5" class="text-center py-4 text-muted">
+          <tr><td colspan="6" class="text-center py-4 text-muted">
             <i class="bi bi-diagram-3 me-2"></i>
-            @if (search()) { Nothing matches your search. } @else { No categories or SKUs in this program yet. }
+            @if (search()) { Nothing matches your search. } @else { No assortments or SKUs in this program yet. }
           </td></tr>
         } @else {
           @for (row of rows(); track row.key) {
@@ -76,12 +77,16 @@
                     <span class="fw-semibold">{{ cat.categoryName }}</span>
                   </div>
                 </td>
-                <td><span class="badge bg-primary-subtle text-primary border border-primary-subtle">Category</span></td>
+                <td><span class="badge bg-primary-subtle text-primary border border-primary-subtle">Assortment</span></td>
+                <td class="text-end text-muted">—</td>
                 <td class="text-end text-muted">—</td>
                 <td class="text-end text-muted">—</td>
                 <td class="text-end">
+                  <button type="button" class="btn btn-sm btn-outline-secondary m-1 px-3" (click)="openEditCategoryModal(cat)" title="Rename Assortment">
+                    <i class="bi bi-pencil"></i>
+                  </button>
                   @if (cat.skus.length === 0) {
-                    <button type="button" class="btn btn-sm btn-dark m-1 px-3" (click)="openAddCategoryModal(cat.progCatId)" title="Add Sub-Category">
+                    <button type="button" class="btn btn-sm btn-dark m-1 px-3" (click)="openAddCategoryModal(cat.progCatId)" title="Add Sub-Assortment">
                       <i class="bi bi-folder-plus"></i>
                     </button>
                   }
@@ -90,7 +95,12 @@
                       <i class="bi bi-plus-lg"></i>
                     </button>
                   }
-                  <button type="button" class="btn btn-sm btn-outline-danger m-1 px-3" (click)="openDeleteCategoryModal(cat)" title="Delete Category">
+                  @if (cat.children.length === 0 && cat.skus.length > 0) {
+                    <button type="button" class="btn btn-sm btn-dark m-1 px-3" (click)="openReassignModal(cat)" title="Reassign Items to Another Assortment">
+                      <i class="bi bi-arrow-left-right"></i>
+                    </button>
+                  }
+                  <button type="button" class="btn btn-sm btn-outline-danger m-1 px-3" (click)="openDeleteCategoryModal(cat)" title="Delete Assortment">
                     <i class="bi bi-trash"></i>
                   </button>
                 </td>
@@ -102,8 +112,12 @@
                     <button type="button" class="btn btn-sm btn-link text-dark p-0" (click)="toggleGroupExpand(group.key)">
                       <i class="bi" [class.bi-chevron-right]="!expandedGroupKeys().has(group.key)" [class.bi-chevron-down]="expandedGroupKeys().has(group.key)"></i>
                     </button>
-                    <i class="bi bi-box-seam text-muted"></i>
-                    <span class="text-muted small font-monospace">#{{ group.productPk }}</span>
+                    @if (group.productImageUrl) {
+                      <img [src]="group.productImageUrl" alt="" style="width:24px; height:24px; object-fit:contain;" />
+                    } @else {
+                      <i class="bi bi-box-seam text-muted"></i>
+                    }
+                    <span class="text-muted small font-monospace">#{{ group.productId }}</span>
                     <span class="fw-medium" [title]="group.productTitle">{{ truncateTitle(group.productTitle) }}</span>
                     <span class="text-muted small">({{ group.skus.length }} item{{ group.skus.length === 1 ? '' : 's' }})</span>
                   </div>
@@ -115,7 +129,12 @@
                     [class.fw-semibold]="groupHasDiscount(group)">
                   {{ groupCustomerPriceRange(group) }}
                 </td>
-                <td></td>
+                <td class="text-end font-monospace">{{ groupPointsRange(group) }}</td>
+                <td class="text-end">
+                  <button type="button" class="btn btn-sm btn-danger m-1 px-3" (click)="openDeleteGroupModal(group)" title="Delete all SKUs for this product">
+                    <i class="bi bi-trash3-fill"></i>
+                  </button>
+                </td>
               </tr>
             } @else if (row.sku; as sku) {
               <tr>
@@ -132,6 +151,7 @@
                     [class.fw-semibold]="sku.customerPrice != null && sku.customerPrice !== sku.basePrice">
                   {{ sku.customerPrice != null ? (sku.customerPrice | number:'1.2-2') : '—' }}
                 </td>
+                <td class="text-end font-monospace">{{ sku.points != null ? (sku.points | number:'1.0-0') : '—' }}</td>
                 <td class="text-end">
                   <button type="button" class="btn btn-sm btn-outline-danger px-3" (click)="openDeleteSkuModal(sku)" title="Remove SKU">
                     <i class="bi bi-trash"></i>
@@ -146,10 +166,109 @@
   </div>
 
   @if (!loading()) {
-    <p class="small text-muted mt-3 mb-0">{{ categoryCount() }} {{ categoryCount() === 1 ? 'category' : 'categories' }} · {{ skuCount() }} {{ skuCount() === 1 ? 'SKU' : 'SKUs' }}</p>
+    <p class="small text-muted mt-3 mb-0">{{ categoryCount() }} {{ categoryCount() === 1 ? 'assortment' : 'assortments' }} · {{ skuCount() }} {{ skuCount() === 1 ? 'SKU' : 'SKUs' }}</p>
   }
 
 </section>
+
+@if (showEditCategoryModal()) {
+  <div class="modal-backdrop fade show"></div>
+  <div class="modal d-block" tabindex="-1" role="dialog" aria-modal="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title">Rename Assortment</h5>
+          <button class="btn-close" (click)="closeEditCategoryModal()" [disabled]="savingEditCategory()"></button>
+        </div>
+        <div class="modal-body pt-2">
+
+          @if (editCategoryError()) {
+            <div class="alert alert-danger d-flex align-items-center gap-2 mb-3 py-2 px-3" role="alert">
+              <i class="bi bi-exclamation-triangle-fill"></i>
+              <span>{{ editCategoryError() }}</span>
+            </div>
+          }
+
+          <div class="mb-2">
+            <label class="form-label fw-medium">Assortment Name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" placeholder="Assortment name…"
+                   [ngModel]="editCategoryName()" (ngModelChange)="editCategoryName.set($event)" />
+          </div>
+
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button class="btn btn-outline-secondary" (click)="closeEditCategoryModal()" [disabled]="savingEditCategory()">Cancel</button>
+          <button class="btn btn-dark" (click)="saveEditCategory()" [disabled]="savingEditCategory()">
+            @if (savingEditCategory()) {
+              <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving…
+            } @else {
+              <i class="bi bi-check-lg me-2"></i>Save Changes
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+@if (showReassignModal()) {
+  <div class="modal-backdrop fade show"></div>
+  <div class="modal d-block" tabindex="-1" role="dialog" aria-modal="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title">
+            Reassign Items
+            @if (reassignSourceTarget(); as source) {
+              <span class="text-muted small fw-normal ms-1">from {{ source.categoryName }}</span>
+            }
+          </h5>
+          <button class="btn-close" (click)="closeReassignModal()" [disabled]="savingReassign()"></button>
+        </div>
+        <div class="modal-body pt-2">
+
+          @if (reassignError()) {
+            <div class="alert alert-danger d-flex align-items-center gap-2 mb-3 py-2 px-3" role="alert">
+              <i class="bi bi-exclamation-triangle-fill"></i>
+              <span>{{ reassignError() }}</span>
+            </div>
+          }
+
+          @if (reassignSourceTarget(); as source) {
+            <p class="text-muted small">
+              Moves all <strong>{{ source.skus.length }}</strong> item{{ source.skus.length === 1 ? '' : 's' }}
+              from <strong>{{ source.categoryName }}</strong> to the assortment selected below.
+            </p>
+          }
+
+          <div class="mb-2">
+            <label class="form-label fw-medium">Destination Assortment <span class="text-danger">*</span></label>
+            <select class="form-select" [ngModel]="reassignTargetProgCatId()" (ngModelChange)="reassignTargetProgCatId.set($event)">
+              <option [ngValue]="null">— Select an assortment —</option>
+              @for (opt of reassignTargetOptions(); track opt.progCatId) {
+                <option [ngValue]="opt.progCatId">{{ '—'.repeat(opt.level) }} {{ opt.categoryName }}</option>
+              }
+            </select>
+            @if (reassignTargetOptions().length === 0) {
+              <div class="form-text mt-2">No other assortment is available to receive these items.</div>
+            }
+          </div>
+
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button class="btn btn-outline-secondary" (click)="closeReassignModal()" [disabled]="savingReassign()">Cancel</button>
+          <button class="btn btn-dark" (click)="confirmReassign()" [disabled]="savingReassign() || reassignTargetOptions().length === 0">
+            @if (savingReassign()) {
+              <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Reassigning…
+            } @else {
+              <i class="bi bi-arrow-left-right me-2"></i>Reassign Items
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
 
 @if (showDeleteCategoryModal()) {
   <div class="modal-backdrop fade show"></div>
@@ -157,7 +276,7 @@
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header border-0 pb-0">
-          <h5 class="modal-title text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i>Delete Category</h5>
+          <h5 class="modal-title text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i>Delete Assortment</h5>
           <button class="btn-close" (click)="closeDeleteCategoryModal()" [disabled]="deletingCategory()"></button>
         </div>
         <div class="modal-body pt-2">
@@ -167,7 +286,7 @@
               @if (countCategoryDescendants(target); as counts) {
                 @if (counts.categories > 0 || counts.skus > 0) {
                   This also removes
-                  @if (counts.categories > 0) { {{ counts.categories }} sub-{{ counts.categories === 1 ? 'category' : 'categories' }} }
+                  @if (counts.categories > 0) { {{ counts.categories }} sub-{{ counts.categories === 1 ? 'assortment' : 'assortments' }} }
                   @if (counts.categories > 0 && counts.skus > 0) { and }
                   @if (counts.skus > 0) { {{ counts.skus }} SKU {{ counts.skus === 1 ? 'placement' : 'placements' }} }
                   from the tree.
@@ -195,7 +314,7 @@
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header border-0 pb-0">
-          <h5 class="modal-title">Add Category</h5>
+          <h5 class="modal-title">Add Assortment</h5>
           <button class="btn-close" (click)="closeAddCategoryModal()" [disabled]="savingCategory()"></button>
         </div>
         <div class="modal-body pt-2">
@@ -208,19 +327,43 @@
           }
 
           <div class="mb-3">
-            <label class="form-label fw-medium">Parent Category</label>
+            <label class="form-label fw-medium">Parent Assortment</label>
             <select class="form-select" [ngModel]="selectedParentProgCatId()" (ngModelChange)="selectedParentProgCatId.set($event)">
               <option [ngValue]="null">— Top level —</option>
               @for (opt of parentOptions(); track opt.progCatId) {
                 <option [ngValue]="opt.progCatId">{{ '—'.repeat(opt.level) }} {{ opt.categoryName }}</option>
               }
             </select>
-            <div class="form-text mt-2">Leave blank to add as a top-level category.</div>
+            <div class="form-text mt-2">Leave blank to add as a top-level assortment.</div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-medium">Assortment Source</label>
+            <div class="d-flex gap-2">
+              <button type="button" class="btn flex-fill text-start px-3 py-2"
+                      [class.btn-dark]="categoryNameMode() === 'CATALOG'"
+                      [class.btn-outline-secondary]="categoryNameMode() !== 'CATALOG'"
+                      (click)="categoryNameMode.set('CATALOG')">
+                <span class="fw-semibold"><i class="bi bi-collection me-2"></i>From Catalog</span>
+              </button>
+              <button type="button" class="btn flex-fill text-start px-3 py-2"
+                      [class.btn-dark]="categoryNameMode() === 'CUSTOM'"
+                      [class.btn-outline-secondary]="categoryNameMode() !== 'CUSTOM'"
+                      (click)="categoryNameMode.set('CUSTOM')">
+                <span class="fw-semibold"><i class="bi bi-pencil-square me-2"></i>Custom Name</span>
+              </button>
+            </div>
           </div>
 
           <div class="mb-2">
-            <label class="form-label fw-medium">Catalog Category <span class="text-danger">*</span></label>
-            @if (loadingCatalogCategories()) {
+            <label class="form-label fw-medium">
+              {{ categoryNameMode() === 'CUSTOM' ? 'Assortment Name' : 'Catalog Category' }} <span class="text-danger">*</span>
+            </label>
+
+            @if (categoryNameMode() === 'CUSTOM') {
+              <input type="text" class="form-control" placeholder="Assortment name…"
+                     [ngModel]="customCategoryName()" (ngModelChange)="customCategoryName.set($event)" />
+            } @else if (loadingCatalogCategories()) {
               <div class="text-muted small py-2">
                 <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Loading categories…
               </div>
@@ -244,7 +387,7 @@
             @if (savingCategory()) {
               <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Adding…
             } @else {
-              <i class="bi bi-check-lg me-2"></i>Add Category
+              <i class="bi bi-check-lg me-2"></i>Add Assortment
             }
           </button>
         </div>
@@ -283,7 +426,7 @@
                    [value]="skuSearch()" (input)="onSkuSearchChange($any($event.target).value)" />
           </div>
 
-          <div class="border rounded-3" style="max-height: 360px; overflow-y: auto;">
+          <div class="border rounded-3" style="height: 360px; overflow-y: auto;">
             <table class="table table-hover align-middle mb-0">
               <thead class="sticky-top bg-white">
                 <tr>
@@ -363,7 +506,7 @@
         </div>
         <div class="modal-body pt-2">
           @if (deleteSkuTarget(); as target) {
-            <p class="mb-0">Remove <strong>{{ target.productTitle }}</strong>@if (target.skuCode) { ({{ target.skuCode }}) } from this category? This does not delete the SKU from the catalog.</p>
+            <p class="mb-0">Remove <strong>{{ target.productTitle }}</strong>@if (target.skuCode) { ({{ target.skuCode }}) } from this assortment? This does not delete the SKU from the catalog.</p>
           }
         </div>
         <div class="modal-footer border-0 pt-0">
@@ -371,6 +514,36 @@
           <button class="btn btn-danger" (click)="confirmDeleteSku()" [disabled]="deletingSku()">
             @if (deletingSku()) { <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Removing… }
             @else { <i class="bi bi-trash me-2"></i>Remove }
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+@if (showDeleteGroupModal()) {
+  <div class="modal-backdrop fade show"></div>
+  <div class="modal d-block" tabindex="-1" role="dialog" aria-modal="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i>Delete Product SKUs</h5>
+          <button class="btn-close" (click)="closeDeleteGroupModal()" [disabled]="deletingGroup()"></button>
+        </div>
+        <div class="modal-body pt-2">
+          @if (deleteGroupTarget(); as target) {
+            <p class="mb-0">
+              Remove all <strong>{{ target.skus.length }}</strong> SKU{{ target.skus.length === 1 ? '' : 's' }}
+              of <strong>{{ target.productTitle }}</strong> (#{{ target.productId }}) from this assortment?
+              This does not delete the SKUs from the catalog.
+            </p>
+          }
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button class="btn btn-outline-secondary" (click)="closeDeleteGroupModal()" [disabled]="deletingGroup()">Cancel</button>
+          <button class="btn btn-danger" (click)="confirmDeleteGroup()" [disabled]="deletingGroup()">
+            @if (deletingGroup()) { <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Removing… }
+            @else { <i class="bi bi-trash3-fill me-2"></i>Remove All }
           </button>
         </div>
       </div>

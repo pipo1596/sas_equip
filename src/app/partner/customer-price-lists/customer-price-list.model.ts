@@ -39,6 +39,7 @@ export interface CustomerPriceListItem {
   productTitle: string | null;
   price: number;
   compareAtPrc: number | null;
+  points: number | null;
   status: 'ACTIVE' | 'INACTIVE';
   createdTs: string;
   createdBy: string | null;
@@ -50,6 +51,7 @@ export interface CustomerPriceListItemForm {
   skuId: number | null;
   price: number | null;
   compareAtPrc: number | null;
+  points: number | null;
   status: 'ACTIVE' | 'INACTIVE';
 }
 

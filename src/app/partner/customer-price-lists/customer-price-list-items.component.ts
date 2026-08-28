@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { DecimalPipe } from '@angular/common';
+import { CurrencyPipe, DecimalPipe } from '@angular/common';
 import { PartnerModeService } from '../partner-mode.service';
 import { CustomerModeService } from '../partner-customers/customer-mode.service';
 import { CustomerPriceListsService } from './customer-price-lists.service';
@@ -12,6 +12,7 @@ import {
 interface ItemDraft {
   price: number | null;
   compareAtPrc: number | null;
+  points: number | null;
   status: 'ACTIVE' | 'INACTIVE';
 }
 
@@ -24,7 +25,7 @@ interface SkuRow {
 @Component({
   selector: 'app-customer-price-list-items',
   standalone: true,
-  imports: [FormsModule, RouterModule, DecimalPipe],
+  imports: [FormsModule, RouterModule, DecimalPipe, CurrencyPipe],
   templateUrl: './customer-price-list-items.component.html',
 })
 export class CustomerPriceListItemsComponent implements OnInit {
@@ -50,7 +51,7 @@ export class CustomerPriceListItemsComponent implements OnInit {
   // Edit existing item — SKU is fixed, only price/compareAtPrc/status change.
   readonly showEditItemModal = signal(false);
   readonly editTarget = signal<CustomerPriceListItem | null>(null);
-  readonly editForm = signal<ItemDraft>({ price: null, compareAtPrc: null, status: 'ACTIVE' });
+  readonly editForm = signal<ItemDraft>({ price: null, compareAtPrc: null, points: null, status: 'ACTIVE' });
   readonly savingEdit = signal(false);
   readonly editError = signal<string | null>(null);
 
@@ -172,7 +173,7 @@ export class CustomerPriceListItemsComponent implements OnInit {
 
   openEditItemModal(item: CustomerPriceListItem): void {
     this.editTarget.set(item);
-    this.editForm.set({ price: item.price, compareAtPrc: item.compareAtPrc, status: item.status });
+    this.editForm.set({ price: item.price, compareAtPrc: item.compareAtPrc, points: item.points, status: item.status });
     this.editError.set(null);
     this.showEditItemModal.set(true);
   }
@@ -200,6 +201,7 @@ export class CustomerPriceListItemsComponent implements OnInit {
         skuId: target.skuId,
         price: form.price,
         compareAtPrc: form.compareAtPrc,
+        points: form.points,
         status: form.status,
       });
       this.closeEditItemModal();
@@ -247,7 +249,7 @@ export class CustomerPriceListItemsComponent implements OnInit {
         const next = new Map(map);
         for (const sku of results) {
           if (!next.has(sku.skuId)) {
-            next.set(sku.skuId, { price: sku.basePrice, compareAtPrc: null, status: 'ACTIVE' });
+            next.set(sku.skuId, { price: sku.basePrice, compareAtPrc: null, points: null, status: 'ACTIVE' });
           }
         }
         return next;
@@ -283,7 +285,7 @@ export class CustomerPriceListItemsComponent implements OnInit {
   }
 
   draftFor(skuId: number): ItemDraft {
-    return this.skuDrafts().get(skuId) ?? { price: null, compareAtPrc: null, status: 'ACTIVE' };
+    return this.skuDrafts().get(skuId) ?? { price: null, compareAtPrc: null, points: null, status: 'ACTIVE' };
   }
 
   updateDraft(skuId: number, patch: Partial<ItemDraft>): void {
@@ -296,7 +298,7 @@ export class CustomerPriceListItemsComponent implements OnInit {
 
   // Spreads one field's value from a product's first SKU row to every other
   // visible SKU of that same product.
-  applyToGroup(sku: SkuSearchResult, field: 'price' | 'compareAtPrc'): void {
+  applyToGroup(sku: SkuSearchResult, field: 'price' | 'compareAtPrc' | 'points'): void {
     const value = this.draftFor(sku.skuId)[field];
     const peers = this.skuSearchResults().filter(s => s.productPk === sku.productPk && s.skuId !== sku.skuId);
     this.skuDrafts.update(map => {
@@ -333,7 +335,7 @@ export class CustomerPriceListItemsComponent implements OnInit {
     try {
       const items = selected.map(skuId => {
         const draft = drafts.get(skuId)!;
-        return { skuId, price: draft.price as number, compareAtPrc: draft.compareAtPrc, status: draft.status };
+        return { skuId, price: draft.price as number, compareAtPrc: draft.compareAtPrc, points: draft.points, status: draft.status };
       });
       await this.service.createItems(tpId, custId, priceListId, items);
       this.closeAddItemsModal();

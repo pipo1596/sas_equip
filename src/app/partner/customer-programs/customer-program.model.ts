@@ -32,9 +32,12 @@ export interface CustomerProgramSku {
   skuId: number;
   skuCode: string | null;
   productPk: number;
+  productId: number;
   productTitle: string;
+  productImageUrl: string | null;
   basePrice: number | null;
   customerPrice: number | null;
+  points: number | null;
   sortOrder: number;
   status: 'ACTIVE' | 'INACTIVE';
 }

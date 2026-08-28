@@ -51,16 +51,29 @@ export class CustomerProgramsService {
 
   // Assigns a real catalog CATEGORY into this program's tree, optionally
   // under an existing program category node (top-level when parentProgCatId
-  // is null). categoryName is denormalized server-side from CATEGORY at
-  // insert time, same as the *REGENRT snapshot refresh.
-  async addCategory(tpId: number, custId: number, programId: number, params: { categoryId: number; parentProgCatId: number | null }): Promise<void> {
+  // is null). Takes categoryName (not categoryId) since the tree node stores
+  // its own denormalized name snapshot rather than a live FK lookup.
+  async addCategory(tpId: number, custId: number, programId: number, params: { categoryName: string; parentProgCatId: number | null }): Promise<void> {
     await this.post({ action: '*CAT_ADD', tpId, custId, programId, ...params });
+  }
+
+  // Renames a category node's denormalized name snapshot — does not touch
+  // the underlying catalog CATEGORY row it was created from (if any).
+  async updateCategory(tpId: number, custId: number, programId: number, progCatId: number, categoryName: string): Promise<void> {
+    await this.post({ action: '*CAT_UPD', tpId, custId, programId, progCatId, categoryName });
   }
 
   // Removes a category node (and, per TPCPCAT_PARENT_FK's ON DELETE CASCADE,
   // its child nodes and their SKU placements) from a program's tree.
   async removeCategory(tpId: number, custId: number, programId: number, progCatId: number): Promise<void> {
     await this.post({ action: '*CAT_DEL', tpId, custId, programId, progCatId });
+  }
+
+  // Moves every SKU placement from one leaf category node to another —
+  // used when a leaf's items need to move under a different leaf (e.g.
+  // before deleting the source, or consolidating two assortments).
+  async reassignSkus(tpId: number, custId: number, programId: number, fromProgCatId: number, toProgCatId: number): Promise<void> {
+    await this.post({ action: '*SKU_MOVE', tpId, custId, programId, fromProgCatId, toProgCatId });
   }
 
   // Candidate SKUs for the "Add SKUs" picker, scoped to this program (so

@@ -322,6 +322,18 @@ export class CustomerProgramTreeComponent implements OnInit {
     this.saveExpandedState();
   }
 
+  // Rolls up distinct products across the category's own items and every
+  // descendant's, so a parent category's count reflects its whole subtree.
+  categoryProductCount(cat: CustomerProgramCategoryNode): number {
+    const productPks = new Set<number>();
+    const visit = (node: CustomerProgramCategoryNode) => {
+      node.skus.forEach(s => productPks.add(s.productPk));
+      node.children.forEach(visit);
+    };
+    visit(cat);
+    return productPks.size;
+  }
+
   categoryBreadcrumbFor(progCatId: number): string {
     return this.parentOptions().find(o => o.progCatId === progCatId)?.breadcrumb ?? '';
   }

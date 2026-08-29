@@ -806,6 +806,10 @@ export class CustomerProgramTreeComponent implements OnInit {
     this.router.navigate(['/partner', this.tpId, 'customers', this.customerId, 'uniform-programs']);
   }
 
+  goToViews(): void {
+    this.router.navigate(['/partner', this.tpId, 'customers', this.customerId, 'uniform-programs', this.programId, 'views']);
+  }
+
   formatDate(d: string | null): string {
     if (!d) return 'Never';
     try {

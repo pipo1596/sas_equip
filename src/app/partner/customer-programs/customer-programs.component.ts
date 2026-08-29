@@ -118,6 +118,13 @@ export class CustomerProgramsComponent implements OnInit {
     );
   }
 
+  manageViews(program: CustomerProgram): void {
+    this.router.navigate(
+      ['/partner', this.tpId, 'customers', this.customerId, 'uniform-programs', program.programId, 'views'],
+      { state: { program } },
+    );
+  }
+
   openDeleteModal(program: CustomerProgram): void {
     this.deleteTarget.set(program);
     this.showDeleteModal.set(true);

@@ -31,5 +31,6 @@ export const environment = {
     customerPriceLists: 'APITPCPRL',
     customerPriceListItems: 'APITPCPRI',
     customerPrograms: 'APITPCPROG',
+    customerProgramViews: 'APITPCPVW',
   },
 };

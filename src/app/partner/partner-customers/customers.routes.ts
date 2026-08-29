@@ -16,6 +16,7 @@ import { CustomerPriceListItemsComponent } from '../customer-price-lists/custome
 import { CustomerProgramsComponent } from '../customer-programs/customer-programs.component';
 import { CustomerProgramFormComponent } from '../customer-programs/customer-program-form.component';
 import { CustomerProgramTreeComponent } from '../customer-programs/customer-program-tree.component';
+import { CustomerProgramViewsComponent } from '../customer-program-views/customer-program-views.component';
 
 // All routes are relative to partner/:id/customers
 export const CUSTOMERS_ROUTES: Routes = [
@@ -28,6 +29,7 @@ export const CUSTOMERS_ROUTES: Routes = [
   { path: ':customerId/uniform-programs/new', component: CustomerProgramFormComponent },
   { path: ':customerId/uniform-programs/:programId/edit', component: CustomerProgramFormComponent },
   { path: ':customerId/uniform-programs/:programId/tree', component: CustomerProgramTreeComponent },
+  { path: ':customerId/uniform-programs/:programId/views', component: CustomerProgramViewsComponent },
   { path: ':customerId/roles', component: CustomerRolesComponent },
   { path: ':customerId/roles/new', component: CustomerRoleFormComponent },
   { path: ':customerId/roles/:roleId/edit', component: CustomerRoleFormComponent },

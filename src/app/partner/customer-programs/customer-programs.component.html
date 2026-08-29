@@ -36,17 +36,18 @@
           <th>Price List</th>
           <th class="text-center">Status</th>
           <th>Last Synced</th>
-          <th class="text-center">Categories</th>
+          <th class="text-center">Assortment</th>
+          <th class="text-center">Views</th>
           <th class="text-end">Actions</th>
         </tr>
       </thead>
       <tbody>
         @if (loading()) {
-          <tr><td colspan="6" class="text-center py-4 text-muted">
+          <tr><td colspan="7" class="text-center py-4 text-muted">
             <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>Loading…
           </td></tr>
         } @else if (programs().length === 0) {
-          <tr><td colspan="6" class="text-center py-4 text-muted">
+          <tr><td colspan="7" class="text-center py-4 text-muted">
             <i class="bi bi-badge-vo me-2"></i>
             @if (search()) { No programs match your search. } @else { No uniform programs yet. }
           </td></tr>
@@ -66,6 +67,9 @@
               <td class="small text-muted">{{ formatDate(program.lastSyncedTs) }}</td>
               <td class="text-center">
                 <button class="btn btn-sm btn-outline-secondary px-3" (click)="viewTree(program)" title="View Tree"><i class="bi bi-diagram-3"></i></button>
+              </td>
+              <td class="text-center">
+                <button class="btn btn-sm btn-outline-secondary px-3" (click)="manageViews(program)" title="Manage Views"><i class="bi bi-eye"></i></button>
               </td>
               <td class="text-end">
                 <button class="btn btn-sm btn-outline-secondary m-1 px-3" (click)="editProgram(program)" title="Edit"><i class="bi bi-pencil"></i></button>

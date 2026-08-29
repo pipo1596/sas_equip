@@ -2,9 +2,19 @@
 
   <div class="page-shell-header d-flex align-items-center justify-content-between flex-wrap gap-2">
     <div>
-      <h1 class="page-title">{{ program()?.programName || 'Program' }}</h1>
+      <h1 class="page-title">Assortment</h1>
+      <div class="mb-2">
+        <div class="d-inline-flex p-1 rounded-3" style="background:#f1f3f5;">
+          <button type="button" class="btn btn-sm border-0 rounded-2 bg-white shadow-sm fw-semibold">
+            Assortment
+          </button>
+          <button type="button" class="btn btn-sm border-0 rounded-2 text-muted" (click)="goToViews()">
+            Views
+          </button>
+        </div>
+      </div>
       <p class="page-subtitle">
-        Assortment &amp; SKU details
+        Assortment &amp; SKU details for <strong>{{ program()?.programName || 'Program' }}</strong>
         @if (program()?.priceListName) { · Priced from <strong>{{ program()?.priceListName }}</strong> }
         · Last synced {{ formatDate(program()?.lastSyncedTs ?? null) }}
       </p>

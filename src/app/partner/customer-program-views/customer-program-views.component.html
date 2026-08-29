@@ -1,0 +1,358 @@
+<section class="page-shell">
+
+  <div class="page-shell-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div>
+      <h1 class="page-title">Views</h1>
+      <div class="mb-2">
+        <div class="d-inline-flex p-1 rounded-3" style="background:#f1f3f5;">
+          <button type="button" class="btn btn-sm border-0 rounded-2 text-muted" (click)="goToTree()">
+            Assortment
+          </button>
+          <button type="button" class="btn btn-sm border-0 rounded-2 bg-white shadow-sm fw-semibold">
+            Views
+          </button>
+        </div>
+      </div>
+      <p class="page-subtitle">
+        Audience-scoped assortments for <strong>{{ program()?.programName || 'Program' }}</strong>
+      </p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <button type="button" class="btn btn-outline-secondary" (click)="backToPrograms()">
+        <i class="bi bi-arrow-left me-2"></i>Back to Programs
+      </button>
+      <button type="button" class="btn btn-dark" (click)="openCreateModal()">
+        <i class="bi bi-plus-lg me-2"></i>New View
+      </button>
+    </div>
+  </div>
+
+  @if (error()) {
+    <div class="alert alert-danger d-flex align-items-center gap-2 mb-3">
+      <i class="bi bi-exclamation-triangle-fill"></i><span>{{ error() }}</span>
+      <button class="btn-close ms-auto" (click)="error.set(null)"></button>
+    </div>
+  }
+
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+    <div class="input-group" style="max-width: 360px;">
+      <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+      <input type="text" class="form-control border-start-0 ps-0" placeholder="Search views…"
+             [value]="search()" (input)="onSearchChange($any($event.target).value)" />
+      @if (search()) {
+        <button class="btn btn-outline-secondary" type="button" (click)="onSearchChange('')"><i class="bi bi-x-lg"></i></button>
+      }
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0 table-stacked">
+      <thead>
+        <tr>
+          <th>View</th>
+          <th class="text-center">Status</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (loading()) {
+          <tr><td colspan="3" class="text-center py-4 text-muted">
+            <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>Loading…
+          </td></tr>
+        } @else if (views().length === 0) {
+          <tr><td colspan="3" class="text-center py-4 text-muted">
+            <i class="bi bi-eye me-2"></i>
+            @if (search()) { No views match your search. } @else { No views for this program yet. }
+          </td></tr>
+        } @else {
+          @for (view of views(); track view.viewId) {
+            <tr>
+              <td>
+                <div class="fw-semibold">{{ view.viewName }}</div>
+                @if (view.description) {
+                  <div class="text-muted small">{{ view.description }}</div>
+                }
+              </td>
+              <td class="text-center">
+                <span [class]="statusBadge(view.status)">{{ view.status }}</span>
+              </td>
+              <td class="text-end">
+                <button class="btn btn-sm btn-dark m-1 px-3" (click)="openSelectionsModal(view)" title="Edit Selections">
+                  <i class="bi bi-ui-checks"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-secondary m-1 px-3" (click)="openEditModal(view)" title="Rename / Edit">
+                  <i class="bi bi-pencil"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-danger m-1 px-3" (click)="openDeleteModal(view)" title="Delete">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+
+  @if (!loading() && totalPages() > 1) {
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mt-3">
+      <p class="small text-muted mb-0">{{ startRecord() }}–{{ endRecord() }} of {{ total() }} views</p>
+      <div class="d-flex align-items-center gap-1">
+        @if (page() > 1) {
+          <button class="btn btn-sm btn-outline-secondary" (click)="goToPage(page() - 1)"><i class="bi bi-chevron-left"></i></button>
+        }
+        <span class="small text-muted px-2">Page {{ page() }} of {{ totalPages() }}</span>
+        @if (page() < totalPages()) {
+          <button class="btn btn-sm btn-outline-secondary" (click)="goToPage(page() + 1)"><i class="bi bi-chevron-right"></i></button>
+        }
+      </div>
+    </div>
+  }
+
+</section>
+
+@if (showFormModal()) {
+  <div class="modal-backdrop fade show"></div>
+  <div class="modal d-block" tabindex="-1" role="dialog" aria-modal="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title">{{ editTarget() ? 'Edit View' : 'New View' }}</h5>
+          <button class="btn-close" (click)="closeFormModal()" [disabled]="savingForm()"></button>
+        </div>
+        <div class="modal-body pt-2">
+
+          @if (formError()) {
+            <div class="alert alert-danger d-flex align-items-center gap-2 mb-3 py-2 px-3" role="alert">
+              <i class="bi bi-exclamation-triangle-fill"></i>
+              <span>{{ formError() }}</span>
+            </div>
+          }
+
+          <div class="mb-3">
+            <label class="form-label fw-medium">View Name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" placeholder="View name…"
+                   [ngModel]="form().viewName" (ngModelChange)="form.update(f => ({...f, viewName: $event}))" />
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-medium">Description</label>
+            <textarea class="form-control" rows="2" placeholder="What this view is for…"
+                      [ngModel]="form().description" (ngModelChange)="form.update(f => ({...f, description: $event}))"></textarea>
+          </div>
+
+          <div class="mb-2">
+            <label class="form-label fw-medium">Status</label>
+            <select class="form-select" [ngModel]="form().status" (ngModelChange)="form.update(f => ({...f, status: $event}))">
+              <option value="ACTIVE">Active</option>
+              <option value="INACTIVE">Inactive</option>
+            </select>
+          </div>
+
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button class="btn btn-outline-secondary" (click)="closeFormModal()" [disabled]="savingForm()">Cancel</button>
+          <button class="btn btn-dark" (click)="saveForm()" [disabled]="savingForm()">
+            @if (savingForm()) {
+              <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving…
+            } @else {
+              <i class="bi bi-check-lg me-2"></i>Save
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+@if (showDeleteModal()) {
+  <div class="modal-backdrop fade show"></div>
+  <div class="modal d-block" tabindex="-1" role="dialog" aria-modal="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i>Delete View</h5>
+          <button class="btn-close" (click)="closeDeleteModal()" [disabled]="deleting()"></button>
+        </div>
+        <div class="modal-body pt-2">
+          @if (deleteTarget(); as target) {
+            <p class="mb-0">Delete view <strong>{{ target.viewName }}</strong>? This cannot be undone.</p>
+          }
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button class="btn btn-outline-secondary" (click)="closeDeleteModal()" [disabled]="deleting()">Cancel</button>
+          <button class="btn btn-danger" (click)="confirmDelete()" [disabled]="deleting()">
+            @if (deleting()) { <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Deleting… }
+            @else { <i class="bi bi-trash me-2"></i>Delete }
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+@if (showSelectionsModal()) {
+  <div class="modal-backdrop fade show"></div>
+  <div class="modal d-block" tabindex="-1" role="dialog" aria-modal="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl" style="max-width: 95vw;">
+      <div class="modal-content">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title">
+            Selections
+            @if (selectionsView(); as view) {
+              <span class="text-muted small fw-normal ms-1">for {{ view.viewName }}</span>
+            }
+          </h5>
+          <button class="btn-close" (click)="closeSelectionsModal()"></button>
+        </div>
+        <div class="modal-body pt-2">
+
+          @if (selectionsError()) {
+            <div class="alert alert-danger d-flex align-items-center gap-2 mb-3 py-2 px-3" role="alert">
+              <i class="bi bi-exclamation-triangle-fill"></i>
+              <span>{{ selectionsError() }}</span>
+              <button type="button" class="btn-close ms-auto" (click)="selectionsError.set(null)"></button>
+            </div>
+          }
+
+          <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+            <div class="input-group" style="max-width: 320px;">
+              <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+              <input type="text" class="form-control border-start-0 ps-0" placeholder="Search assortment or SKU…"
+                     (input)="onTreeSearchChange($any($event.target).value)" />
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              @if (selectionsSynced()) {
+                <span class="badge bg-success-subtle text-success border border-success-subtle fw-normal">
+                  <i class="bi bi-check-lg me-1"></i>Saved
+                </span>
+              }
+              <button type="button" class="btn btn-outline-dark btn-sm" [disabled]="bulkActionLoading()" (click)="selectAllSelections()">
+                @if (bulkActionLoading()) {
+                  <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                } @else {
+                  <i class="bi bi-check2-all me-1"></i>
+                }
+                Select all
+              </button>
+              <button type="button" class="btn btn-outline-danger btn-sm" [disabled]="bulkActionLoading()" (click)="clearAllSelections()">
+                <i class="bi bi-x-lg me-1"></i>Clear all
+              </button>
+              <button type="button" class="btn btn-outline-secondary btn-sm" (click)="expandAllTree()">
+                <i class="bi bi-chevron-bar-down me-1"></i>Expand all
+              </button>
+              <button type="button" class="btn btn-outline-secondary btn-sm" (click)="collapseAllTree()">
+                <i class="bi bi-chevron-bar-up me-1"></i>Collapse all
+              </button>
+            </div>
+          </div>
+
+          <div class="border rounded-3" style="height: 65vh; overflow-y: auto;">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="sticky-top bg-white">
+                <tr>
+                  <th>Assortment / Product / SKU</th>
+                  <th>Type</th>
+                </tr>
+              </thead>
+              <tbody>
+                @if (selectionsLoading()) {
+                  <tr><td colspan="2" class="text-center py-4 text-muted">
+                    <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>Loading…
+                  </td></tr>
+                } @else if (treeRows().length === 0) {
+                  <tr><td colspan="2" class="text-center py-4 text-muted">
+                    <i class="bi bi-diagram-3 me-2"></i>
+                    @if (treeSearch()) { Nothing matches your search. } @else { No assortments or SKUs in this program yet. }
+                  </td></tr>
+                } @else {
+                  @for (row of treeRows(); track row.key) {
+                    @if (row.kind === 'CATEGORY' && row.category; as cat) {
+                      <tr>
+                        <td>
+                          <div class="d-flex align-items-center gap-2" [style.paddingLeft.px]="row.level * 24">
+                            <input type="checkbox" class="form-check-input flex-shrink-0" role="switch"
+                                   [checked]="isCategoryIncluded(cat.progCatId)"
+                                   [disabled]="isToggling('c' + cat.progCatId)"
+                                   (change)="toggleCategory(cat)" />
+                            <button type="button" class="btn btn-sm btn-link text-dark p-0" (click)="toggleExpand(cat.progCatId)">
+                              <i class="bi" [class.bi-chevron-right]="!expandedIds().has(cat.progCatId)" [class.bi-chevron-down]="expandedIds().has(cat.progCatId)"></i>
+                            </button>
+                            <i class="bi bi-folder2 text-muted"></i>
+                            <span class="fw-semibold">{{ cat.categoryName }}</span>
+                            @if (categoryProductSelection(cat); as sel) {
+                              @if (sel.total > 0) {
+                                <span class="small" [class.text-muted]="sel.selected > 0" [class.text-danger]="sel.selected === 0">
+                                  ({{ sel.selected }} of {{ sel.total }} products selected)
+                                </span>
+                              }
+                            }
+                          </div>
+                        </td>
+                        <td><span class="badge bg-primary-subtle text-primary border border-primary-subtle">Assortment</span></td>
+                      </tr>
+                    } @else if (row.kind === 'PRODUCT_GROUP' && row.group; as group) {
+                      <tr>
+                        <td>
+                          <div class="d-flex align-items-center gap-2" [style.paddingLeft.px]="row.level * 24">
+                            <input type="checkbox" class="form-check-input flex-shrink-0" role="switch"
+                                   [checked]="isGroupFullyIncluded(group)"
+                                   [indeterminate]="isGroupPartiallyIncluded(group)"
+                                   [disabled]="isToggling('g' + group.key)"
+                                   title="Check/uncheck every SKU of this product"
+                                   (change)="toggleGroupSkus(group)" />
+                            <button type="button" class="btn btn-sm btn-link text-dark p-0" (click)="toggleGroupExpand(group.key)">
+                              <i class="bi" [class.bi-chevron-right]="!expandedGroupKeys().has(group.key)" [class.bi-chevron-down]="expandedGroupKeys().has(group.key)"></i>
+                            </button>
+                            @if (isDisplayableImageUrl(group.productImageUrl)) {
+                              <img [src]="group.productImageUrl" alt="" style="width:24px; height:24px; object-fit:contain;" />
+                            } @else {
+                              <i class="bi bi-box-seam text-muted"></i>
+                            }
+                            <span class="text-muted small font-monospace">{{ group.productId }}</span>
+                            <span class="fw-medium" [title]="group.productTitle">{{ truncateTitle(group.productTitle) }}</span>
+                            @if (groupSkuSelection(group); as sel) {
+                              <span class="text-muted small">({{ sel.selected }} of {{ sel.total }} SKUs selected)</span>
+                            }
+                          </div>
+                        </td>
+                        <td>
+                          <span class="badge bg-info-subtle text-info border border-info-subtle">Product</span>
+                        </td>
+                      </tr>
+                    } @else if (row.sku; as sku) {
+                      <tr>
+                        <td>
+                          <div class="d-flex align-items-center gap-2" [style.paddingLeft.px]="row.level * 24">
+                            <input type="checkbox" class="form-check-input flex-shrink-0" role="switch"
+                                   [checked]="isSkuIncluded(sku)"
+                                   [disabled]="isToggling('s' + sku.progProdId)"
+                                   (change)="toggleSku(sku)" />
+                            <i class="bi bi-upc-scan text-muted"></i>
+                            <span class="text-muted small font-monospace">{{ sku.skuCode || ('SKU #' + sku.skuId) }}</span>
+                          </div>
+                        </td>
+                        <td><span class="badge bg-success-subtle text-success border border-success-subtle">SKU</span></td>
+                      </tr>
+                    }
+                  }
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <div class="alert alert-light border d-flex align-items-start gap-2 mt-3 mb-0 py-2 px-3">
+            <i class="bi bi-info-circle text-muted"></i>
+            <span class="small text-muted">
+              Check any assortment or SKU to include it in this view — each pick is independent of the others.
+            </span>
+          </div>
+
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button class="btn btn-dark" (click)="closeSelectionsModal()">Done</button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

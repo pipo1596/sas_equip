@@ -565,14 +565,19 @@ export class CustomerProgramViewsComponent implements OnInit {
     const programId = this.programId;
     const view = this.selectionsView();
     if (!tpId || !custId || !programId || !view) return;
+    const toAdd: number[] = [];
     let current = startInclusive ? progCatId : (progCatId != null ? this.parentOf.get(progCatId) ?? null : null);
     while (current != null) {
-      if (!this.directCategoryIds().has(current)) {
-        await this.service.addCategory(tpId, custId, programId, view.viewId, current);
-        this.directCategoryIds.update(set => new Set(set).add(current as number));
-      }
+      if (!this.directCategoryIds().has(current)) toAdd.push(current);
       current = this.parentOf.get(current) ?? null;
     }
+    if (toAdd.length === 0) return;
+    await this.service.addCategory(tpId, custId, programId, view.viewId, toAdd);
+    this.directCategoryIds.update(set => {
+      const next = new Set(set);
+      toAdd.forEach(id => next.add(id));
+      return next;
+    });
   }
 
   private allCategoryIds(): number[] {
@@ -699,19 +704,24 @@ export class CustomerProgramViewsComponent implements OnInit {
       this.expandedGroupKeys.update(set => new Set(set).add(group.key));
     }
     try {
-      for (const sku of group.skus) {
+      const progProdIds = turningOff
+        ? group.skus.filter(s => this.isSkuIncluded(s)).map(s => s.progProdId)
+        : group.skus.filter(s => !this.isSkuIncluded(s)).map(s => s.progProdId);
+      if (progProdIds.length > 0) {
         if (turningOff) {
-          if (this.isSkuIncluded(sku)) {
-            await this.service.removeSku(tpId, custId, programId, view.viewId, sku.progProdId);
-            this.directProgProdIds.update(set => {
-              const next = new Set(set);
-              next.delete(sku.progProdId);
-              return next;
-            });
-          }
-        } else if (!this.isSkuIncluded(sku)) {
-          await this.service.addSku(tpId, custId, programId, view.viewId, sku.progProdId);
-          this.directProgProdIds.update(set => new Set(set).add(sku.progProdId));
+          await this.service.removeSku(tpId, custId, programId, view.viewId, progProdIds);
+          this.directProgProdIds.update(set => {
+            const next = new Set(set);
+            progProdIds.forEach(id => next.delete(id));
+            return next;
+          });
+        } else {
+          await this.service.addSku(tpId, custId, programId, view.viewId, progProdIds);
+          this.directProgProdIds.update(set => {
+            const next = new Set(set);
+            progProdIds.forEach(id => next.add(id));
+            return next;
+          });
         }
       }
       if (!turningOff) {
@@ -737,14 +747,14 @@ export class CustomerProgramViewsComponent implements OnInit {
     this.selectionsError.set(null);
     try {
       if (this.isCategoryIncluded(cat.progCatId)) {
-        await this.service.removeCategory(tpId, custId, programId, view.viewId, cat.progCatId);
+        await this.service.removeCategory(tpId, custId, programId, view.viewId, [cat.progCatId]);
         this.directCategoryIds.update(set => {
           const next = new Set(set);
           next.delete(cat.progCatId);
           return next;
         });
       } else {
-        await this.service.addCategory(tpId, custId, programId, view.viewId, cat.progCatId);
+        await this.service.addCategory(tpId, custId, programId, view.viewId, [cat.progCatId]);
         this.directCategoryIds.update(set => new Set(set).add(cat.progCatId));
         // Reveal what just got included — expand only this one level, not
         // the whole subtree (sub-assortments for a parent, product groups
@@ -774,14 +784,14 @@ export class CustomerProgramViewsComponent implements OnInit {
     this.selectionsError.set(null);
     try {
       if (this.isSkuIncluded(sku)) {
-        await this.service.removeSku(tpId, custId, programId, view.viewId, sku.progProdId);
+        await this.service.removeSku(tpId, custId, programId, view.viewId, [sku.progProdId]);
         this.directProgProdIds.update(set => {
           const next = new Set(set);
           next.delete(sku.progProdId);
           return next;
         });
       } else {
-        await this.service.addSku(tpId, custId, programId, view.viewId, sku.progProdId);
+        await this.service.addSku(tpId, custId, programId, view.viewId, [sku.progProdId]);
         this.directProgProdIds.update(set => new Set(set).add(sku.progProdId));
         await this.checkAncestors(sku.progCatId, true);
       }

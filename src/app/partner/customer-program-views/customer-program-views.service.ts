@@ -70,20 +70,27 @@ export class CustomerProgramViewsService {
     };
   }
 
-  async addCategory(tpId: number, custId: number, programId: number, viewId: number, progCatId: number): Promise<void> {
-    await this.post({ action: '*CAT_ADD', tpId, custId, programId, viewId, progCatId });
+  // progCatIds/progProdIds below add or remove every id in one call rather
+  // than one row at a time — each id is wrapped as its own object (e.g.
+  // [{progCatId: 1}, {progCatId: 2}]), matching *SKU_BULK's shape elsewhere.
+  async addCategory(tpId: number, custId: number, programId: number, viewId: number, progCatIds: number[]): Promise<void> {
+    const ids = progCatIds.map(id => ({ progCatId: id }));
+    await this.post({ action: '*CAT_ADD', tpId, custId, programId, viewId, progCatIds: ids });
   }
 
-  async removeCategory(tpId: number, custId: number, programId: number, viewId: number, progCatId: number): Promise<void> {
-    await this.post({ action: '*CAT_DEL', tpId, custId, programId, viewId, progCatId });
+  async removeCategory(tpId: number, custId: number, programId: number, viewId: number, progCatIds: number[]): Promise<void> {
+    const ids = progCatIds.map(id => ({ progCatId: id }));
+    await this.post({ action: '*CAT_DEL', tpId, custId, programId, viewId, progCatIds: ids });
   }
 
-  async addSku(tpId: number, custId: number, programId: number, viewId: number, progProdId: number): Promise<void> {
-    await this.post({ action: '*SKU_ADD', tpId, custId, programId, viewId, progProdId });
+  async addSku(tpId: number, custId: number, programId: number, viewId: number, progProdIds: number[]): Promise<void> {
+    const ids = progProdIds.map(id => ({ progProdId: id }));
+    await this.post({ action: '*SKU_ADD', tpId, custId, programId, viewId, progProdIds: ids });
   }
 
-  async removeSku(tpId: number, custId: number, programId: number, viewId: number, progProdId: number): Promise<void> {
-    await this.post({ action: '*SKU_DEL', tpId, custId, programId, viewId, progProdId });
+  async removeSku(tpId: number, custId: number, programId: number, viewId: number, progProdIds: number[]): Promise<void> {
+    const ids = progProdIds.map(id => ({ progProdId: id }));
+    await this.post({ action: '*SKU_DEL', tpId, custId, programId, viewId, progProdIds: ids });
   }
 
   // Mass-selects every category and SKU placement in the program into this

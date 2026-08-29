@@ -10,6 +10,8 @@ export interface CustomerLocation {
   province: string;
   addressId: number | null;
   status: 'ACTIVE' | 'INACTIVE';
+  viewId: number | null;
+  viewName: string | null;
   // Not a TP_CUST_LOCATIONS column — populated only if the API aggregates it
   // from employee-location assignments (no such link exists yet in TP_CUST_EMPLOYEES).
   employeeCount?: number;
@@ -26,6 +28,7 @@ export interface CustomerLocationForm {
   locType: 'REGION' | 'STATION' | 'DEPOT' | 'DEPARTMENT' | 'BRANCH';
   addressId: number | null;
   status: 'ACTIVE' | 'INACTIVE';
+  viewId: number | null;
 }
 
 export interface CustomerLocationsPage {

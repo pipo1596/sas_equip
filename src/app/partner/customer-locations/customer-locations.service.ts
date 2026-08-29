@@ -39,6 +39,12 @@ export class CustomerLocationsService {
     await this.post(this.endpoint, { action: '*DELETE', tpId, custId, locId });
   }
 
+  // Assigns (or clears, when viewId is null) which Program View a location
+  // displays — a location can only carry one View at a time.
+  async updateLocationView(tpId: number, custId: number, locId: number, viewId: number | null): Promise<void> {
+    await this.post(this.endpoint, { action: '*UPD_VW', tpId, custId, locId, viewId });
+  }
+
   // Bulk-replaces the full set of employees assigned to a location in one call —
   // empIds is the complete resulting roster, not a diff of what changed.
   async assignEmployees(tpId: number, custId: number, locId: number, empIds: number[]): Promise<void> {

@@ -29,6 +29,7 @@ export class CustomerLocationFormComponent implements OnInit {
   readonly error = signal<string | null>(null);
   readonly parentOptions = signal<CustomerLocation[]>([]);
   readonly addresses = signal<CustomerAddress[]>([]);
+  readonly viewName = signal<string | null>(null);
 
   isEdit = false;
   locId: number | null = null;
@@ -39,6 +40,7 @@ export class CustomerLocationFormComponent implements OnInit {
     locCode: '', locName: '', locType: 'REGION',
     addressId: null,
     status: 'ACTIVE',
+    viewId: null,
   };
 
   protected get tpId(): number | undefined {
@@ -108,7 +110,9 @@ export class CustomerLocationFormComponent implements OnInit {
       locType:   location.locType ?? 'REGION',
       addressId: location.addressId ?? null,
       status:    location.status ?? 'ACTIVE',
+      viewId:    location.viewId ?? null,
     };
+    this.viewName.set(location.viewName ?? null);
   }
 
   cancel(): void {

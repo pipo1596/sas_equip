@@ -45,22 +45,26 @@
     </div>
   </div>
 
-  <div class="table-responsive">
+  <div>
     <table class="table table-hover align-middle mb-0 table-stacked">
       <thead>
         <tr>
           <th>View</th>
+          <th>Assigned Locations</th>
+          <th class="text-center">Assortments Selected</th>
+          <th class="text-center">SKUs Selected</th>
           <th class="text-center">Status</th>
+          <th class="text-center">Selections</th>
           <th class="text-end">Actions</th>
         </tr>
       </thead>
       <tbody>
         @if (loading()) {
-          <tr><td colspan="3" class="text-center py-4 text-muted">
+          <tr><td colspan="7" class="text-center py-4 text-muted">
             <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>Loading…
           </td></tr>
         } @else if (views().length === 0) {
-          <tr><td colspan="3" class="text-center py-4 text-muted">
+          <tr><td colspan="7" class="text-center py-4 text-muted">
             <i class="bi bi-eye me-2"></i>
             @if (search()) { No views match your search. } @else { No views for this program yet. }
           </td></tr>
@@ -73,12 +77,62 @@
                   <div class="text-muted small">{{ view.description }}</div>
                 }
               </td>
+              <td>
+                <div class="position-relative">
+                  <div class="d-flex flex-wrap align-items-center gap-1">
+                    @if (view.assignedLocations.length) {
+                      <span class="badge rounded-pill d-inline-flex align-items-center gap-1 px-3 py-1 bg-primary-subtle text-primary border border-primary-subtle">
+                        <i class="bi bi-geo-alt"></i>{{ view.assignedLocations[0].locName }}
+                      </span>
+                      @if (view.assignedLocations.length > 1) {
+                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill py-0 px-2"
+                                style="font-size:0.75rem;" (click)="$event.stopPropagation(); toggleLocationRow(view.viewId)">
+                          <i class="bi" [class.bi-plus-lg]="openLocationsPopoverViewId() !== view.viewId" [class.bi-dash-lg]="openLocationsPopoverViewId() === view.viewId"></i>
+                          {{ view.assignedLocations.length - 1 }}
+                        </button>
+                      }
+                    } @else {
+                      <span class="text-muted small">No locations assigned</span>
+                    }
+                    <button type="button" class="btn btn-sm rounded-circle border-0 d-inline-flex align-items-center justify-content-center"
+                            style="width:28px; height:28px; background:#ede9fe; color:#5b21b6;"
+                            (click)="openAssignLocationsModal(view)" title="Assign Locations">
+                      <i class="bi bi-geo-alt"></i>
+                    </button>
+                  </div>
+
+                  @if (view.assignedLocations.length > 1 && openLocationsPopoverViewId() === view.viewId) {
+                    <div class="position-absolute bg-white border rounded-3 shadow p-2"
+                         style="top:100%; left:0; z-index:1000; min-width:220px; margin-top:4px;"
+                         (click)="$event.stopPropagation()">
+                      <div class="d-flex flex-column gap-1">
+                        @for (loc of view.assignedLocations.slice(1); track loc.locId) {
+                          <span class="badge rounded-pill d-inline-flex align-items-center gap-1 px-3 py-1 bg-primary-subtle text-primary border border-primary-subtle">
+                            <i class="bi bi-geo-alt"></i>{{ loc.locName }}
+                          </span>
+                        }
+                      </div>
+                    </div>
+                  }
+                </div>
+              </td>
+              <td class="text-center" [class.text-danger]="view.categorySelectedCount === 0">
+                {{ view.categorySelectedCount }} of {{ view.categoryTotalCount }}
+              </td>
+              <td class="text-center" [class.text-danger]="view.skuSelectedCount === 0">
+                {{ view.skuSelectedCount }} of {{ view.skuTotalCount }}
+              </td>
               <td class="text-center">
                 <span [class]="statusBadge(view.status)">{{ view.status }}</span>
               </td>
-              <td class="text-end">
-                <button class="btn btn-sm btn-dark m-1 px-3" (click)="openSelectionsModal(view)" title="Edit Selections">
+              <td class="text-center">
+                <button class="btn btn-sm btn-dark px-3" (click)="openSelectionsModal(view)" title="Edit Selections">
                   <i class="bi bi-ui-checks"></i>
+                </button>
+              </td>
+              <td class="text-end">
+                <button class="btn btn-sm btn-outline-secondary m-1 px-3" (click)="openCopyModal(view)" title="Copy View">
+                  <i class="bi bi-copy"></i>
                 </button>
                 <button class="btn btn-sm btn-outline-secondary m-1 px-3" (click)="openEditModal(view)" title="Rename / Edit">
                   <i class="bi bi-pencil"></i>
@@ -117,7 +171,7 @@
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header border-0 pb-0">
-          <h5 class="modal-title">{{ editTarget() ? 'Edit View' : 'New View' }}</h5>
+          <h5 class="modal-title">{{ editTarget() ? 'Edit View' : (copySourceView() ? 'Copy View' : 'New View') }}</h5>
           <button class="btn-close" (click)="closeFormModal()" [disabled]="savingForm()"></button>
         </div>
         <div class="modal-body pt-2">
@@ -141,16 +195,24 @@
                       [ngModel]="form().description" (ngModelChange)="form.update(f => ({...f, description: $event}))"></textarea>
           </div>
 
-          <div class="mb-2">
-            <label class="form-label fw-medium">Status</label>
-            <select class="form-select" [ngModel]="form().status" (ngModelChange)="form.update(f => ({...f, status: $event}))">
-              <option value="ACTIVE">Active</option>
-              <option value="INACTIVE">Inactive</option>
-            </select>
-          </div>
+          @if (!copySourceView()) {
+            <div class="mb-2">
+              <label class="form-label fw-medium">Status</label>
+              <select class="form-select" [ngModel]="form().status" (ngModelChange)="form.update(f => ({...f, status: $event}))">
+                <option value="ACTIVE">Active</option>
+                <option value="INACTIVE">Inactive</option>
+              </select>
+            </div>
+          }
 
         </div>
         <div class="modal-footer border-0 pt-0">
+          @if (editTarget()) {
+            <button type="button" class="btn me-auto" style="background:#ede9fe; color:#5b21b6;"
+                    (click)="assignLocationsFromForm()" [disabled]="savingForm()">
+              <i class="bi bi-geo-alt me-2"></i>Assign Locations
+            </button>
+          }
           <button class="btn btn-outline-secondary" (click)="closeFormModal()" [disabled]="savingForm()">Cancel</button>
           <button class="btn btn-dark" (click)="saveForm()" [disabled]="savingForm()">
             @if (savingForm()) {
@@ -350,7 +412,91 @@
 
         </div>
         <div class="modal-footer border-0 pt-0">
-          <button class="btn btn-dark" (click)="closeSelectionsModal()">Done</button>
+          <button type="button" class="btn me-auto" style="background:#ede9fe; color:#5b21b6;"
+                  (click)="assignLocationsFromSelections()">
+            <i class="bi bi-geo-alt me-2"></i>Assign Locations
+          </button>
+          <button class="btn btn-dark" (click)="closeSelectionsModal()">
+            <i class="bi bi-check-lg me-2"></i>Done
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+@if (showAssignLocationsModal()) {
+  <div class="modal-backdrop fade show"></div>
+  <div class="modal d-block" tabindex="-1" role="dialog" aria-modal="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header border-0 pb-0">
+          <div>
+            <h5 class="modal-title mb-1">Assign locations</h5>
+            @if (assignLocationsView(); as view) {
+              <p class="text-muted small mb-0">
+                Choose which locations display <strong>{{ view.viewName }}</strong>. Each location can have only
+                one view, so selecting a location already assigned elsewhere will move it here.
+              </p>
+            }
+          </div>
+          <button class="btn-close" (click)="closeAssignLocationsModal()"></button>
+        </div>
+
+        <div class="modal-body pt-3">
+
+          @if (assignLocationsError()) {
+            <div class="alert alert-danger d-flex align-items-center gap-2 mb-3 py-2 px-3" role="alert">
+              <i class="bi bi-exclamation-triangle-fill"></i>
+              <span>{{ assignLocationsError() }}</span>
+              <button type="button" class="btn-close ms-auto" (click)="assignLocationsError.set(null)"></button>
+            </div>
+          }
+
+          <div class="input-group mb-3" style="max-width: 320px;">
+            <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+            <input type="text" class="form-control border-start-0 ps-0" placeholder="Search locations…"
+                   (input)="onAssignLocationsSearchChange($any($event.target).value)" />
+          </div>
+
+          @if (assignLocationsLoading()) {
+            <div class="text-center py-4 text-muted">
+              <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>Loading…
+            </div>
+          } @else if (filteredAssignLocations().length === 0) {
+            <div class="text-center py-4 text-muted">
+              <i class="bi bi-geo-alt me-2"></i>No locations match your search.
+            </div>
+          } @else {
+            <div class="border rounded" style="max-height: 400px; overflow-y: auto;">
+              @for (loc of filteredAssignLocations(); track loc.locId) {
+                <label class="d-flex align-items-start gap-3 px-3 py-2 border-bottom mb-0" style="cursor:pointer;">
+                  <input type="checkbox" class="form-check-input mt-1"
+                         [checked]="loc.viewId === assignLocationsView()?.viewId"
+                         [disabled]="isLocationTogglingView(loc.locId)"
+                         (change)="toggleLocationView(loc)" />
+                  <div>
+                    <div class="fw-medium">{{ loc.locName }}</div>
+                    <div class="text-muted small">{{ loc.locType }} · {{ loc.city || '—' }}, {{ loc.province || '—' }}</div>
+                    @if (loc.viewId != null && loc.viewId !== assignLocationsView()?.viewId) {
+                      <span class="badge rounded-pill bg-warning-subtle text-warning-emphasis border border-warning-subtle mt-1">
+                        Currently in: {{ loc.viewName }} — will move here
+                      </span>
+                    }
+                  </div>
+                </label>
+              }
+            </div>
+          }
+
+        </div>
+
+        <div class="modal-footer border-0 pt-0 d-flex align-items-center">
+          <span class="text-muted small me-auto">{{ assignedLocationsCount() }} location{{ assignedLocationsCount() === 1 ? '' : 's' }} selected</span>
+          <button class="btn btn-outline-secondary" (click)="closeAssignLocationsModal()">Cancel</button>
+          <button class="btn btn-dark" (click)="closeAssignLocationsModal()">
+            <i class="bi bi-check-lg me-2"></i>Done
+          </button>
         </div>
       </div>
     </div>

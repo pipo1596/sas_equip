@@ -1,3 +1,8 @@
+export interface CustomerProgramViewLocation {
+  locId: number;
+  locName: string;
+}
+
 export interface CustomerProgramView {
   viewId: number;
   programId: number;
@@ -5,6 +10,11 @@ export interface CustomerProgramView {
   viewName: string;
   description: string | null;
   status: 'ACTIVE' | 'INACTIVE';
+  assignedLocations: CustomerProgramViewLocation[];
+  categoryTotalCount: number;
+  categorySelectedCount: number;
+  skuTotalCount: number;
+  skuSelectedCount: number;
   createdTs: string;
   createdBy: string | null;
   updatedTs: string;

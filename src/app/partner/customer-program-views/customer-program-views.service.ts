@@ -2,8 +2,15 @@ import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { repairCp1252MojibakeDeep, decodeWindows1252Text } from '../../shared/cp1252-mojibake.util';
 import {
-  CustomerProgramView, CustomerProgramViewForm, CustomerProgramViewsPage, ViewSelections,
+  CustomerProgramView, CustomerProgramViewForm, CustomerProgramViewsPage, CustomerProgramViewLocation, ViewSelections,
 } from './customer-program-view.model';
+
+// The *LIST action returns the assigned-locations array under the raw key
+// "locations" (null when a view has none) — CustomerProgramView normalizes
+// this to a never-null "assignedLocations" for the rest of the app.
+type CustomerProgramViewRow = Omit<CustomerProgramView, 'assignedLocations'> & {
+  locations: CustomerProgramViewLocation[] | null;
+};
 
 @Injectable({ providedIn: 'root' })
 export class CustomerProgramViewsService {
@@ -12,8 +19,16 @@ export class CustomerProgramViewsService {
 
   async list(tpId: number, custId: number, programId: number, params: { page: number; pageSize: number; search: string }): Promise<CustomerProgramViewsPage> {
     const data = await this.post({ action: '*LIST', tpId, custId, programId, ...params });
+    const rows = (data['data'] as unknown as CustomerProgramViewRow[]) ?? [];
     return {
-      data: (data['data'] as unknown as CustomerProgramView[]) ?? [],
+      data: rows.map(({ locations, ...row }) => ({
+        ...row,
+        assignedLocations: locations ?? [],
+        categoryTotalCount: row.categoryTotalCount ?? 0,
+        categorySelectedCount: row.categorySelectedCount ?? 0,
+        skuTotalCount: row.skuTotalCount ?? 0,
+        skuSelectedCount: row.skuSelectedCount ?? 0,
+      })),
       pagination: (data['pagination'] as unknown as CustomerProgramViewsPage['pagination']) ?? { totalRows: 0, page: params.page, pageSize: params.pageSize },
     };
   }
@@ -26,6 +41,13 @@ export class CustomerProgramViewsService {
   async create(tpId: number, custId: number, programId: number, form: CustomerProgramViewForm): Promise<CustomerProgramView> {
     const data = await this.post({ action: '*CREATE', tpId, custId, programId, ...form });
     return data['view'] as unknown as CustomerProgramView;
+  }
+
+  // Duplicates an existing view's category/SKU selections into a new view —
+  // form carries the (possibly edited) header fields for the new copy, while
+  // viewId tells the backend which view's selections to clone.
+  async copyView(tpId: number, custId: number, programId: number, viewId: number, form: CustomerProgramViewForm): Promise<void> {
+    await this.post({ action: '*COPY', tpId, custId, programId, viewId, ...form });
   }
 
   async update(tpId: number, custId: number, programId: number, viewId: number, form: CustomerProgramViewForm): Promise<void> {

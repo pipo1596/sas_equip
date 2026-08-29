@@ -55,6 +55,7 @@
           <th>Location</th>
           <th>Type</th>
           <th>Address</th>
+          <th>Assigned View</th>
           <th>Employees</th>
           <th class="text-center">Status</th>
           <th class="text-end">Actions</th>
@@ -62,11 +63,11 @@
       </thead>
       <tbody>
         @if (loading()) {
-          <tr><td colspan="6" class="text-center py-4 text-muted">
+          <tr><td colspan="7" class="text-center py-4 text-muted">
             <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>Loading…
           </td></tr>
         } @else if (flatTree().length === 0) {
-          <tr><td colspan="6" class="text-center py-4 text-muted">
+          <tr><td colspan="7" class="text-center py-4 text-muted">
             <i class="bi bi-map me-2"></i>
             @if (search() || typeFilter() !== 'ALL' || statusFilter() !== 'ALL') { No locations match your filters. }
             @else { No locations yet. }
@@ -96,6 +97,17 @@
                 <span [class]="typeBadge(loc.locType)">{{ loc.locType }}</span>
               </td>
               <td class="text-muted small">{{ loc.city || '—' }}, {{ loc.province || '—' }}</td>
+              <td>
+                @if (loc.viewName; as viewName) {
+                  <span class="badge rounded-pill d-inline-flex align-items-center gap-1 px-3 py-1" style="background:#ede9fe; color:#5b21b6;">
+                    <i class="bi bi-eye"></i>{{ viewName }}
+                  </span>
+                } @else {
+                  <span class="badge rounded-pill d-inline-flex align-items-center gap-1 px-3 py-1 bg-danger-subtle text-danger border border-danger-subtle">
+                    <i class="bi bi-exclamation-triangle-fill"></i>No view
+                  </span>
+                }
+              </td>
               <td>
                 <button type="button" class="btn btn-sm btn-light border rounded p-1 px-2" (click)="openAssignModal(loc)" title="Assign employees">
                   <i class="bi bi-people me-1"></i>{{ loc.employeeCount ?? 0 }}

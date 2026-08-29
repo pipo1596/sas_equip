@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, HostListener, inject, signal, computed } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { PartnerModeService } from '../partner-mode.service';
@@ -7,6 +7,8 @@ import { CustomerProgramsService } from '../customer-programs/customer-programs.
 import { CustomerProgram, CustomerProgramCategoryNode, CustomerProgramSku } from '../customer-programs/customer-program.model';
 import { CustomerProgramViewsService } from './customer-program-views.service';
 import { CustomerProgramView, CustomerProgramViewForm } from './customer-program-view.model';
+import { CustomerLocationsService } from '../customer-locations/customer-locations.service';
+import { CustomerLocation } from '../customer-locations/customer-location.model';
 import { isDisplayableImageUrl } from '../../shared/image-url.util';
 
 interface ProductGroup {
@@ -39,6 +41,7 @@ export class CustomerProgramViewsComponent implements OnInit {
   protected readonly customerMode = inject(CustomerModeService);
   private readonly service = inject(CustomerProgramViewsService);
   private readonly programsService = inject(CustomerProgramsService);
+  private readonly locationsService = inject(CustomerLocationsService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
 
@@ -52,16 +55,48 @@ export class CustomerProgramViewsComponent implements OnInit {
   readonly search = signal('');
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
+  // Only one row's "+N more locations" popover open at a time — a floating
+  // panel rather than an inline-expanding row, so it doesn't shift the page
+  // layout underneath it when there are many assigned locations.
+  readonly openLocationsPopoverViewId = signal<number | null>(null);
 
   readonly showFormModal = signal(false);
   readonly savingForm = signal(false);
   readonly formError = signal<string | null>(null);
   readonly editTarget = signal<CustomerProgramView | null>(null);
+  readonly copySourceView = signal<CustomerProgramView | null>(null);
   readonly form = signal<CustomerProgramViewForm>({ viewName: '', description: '', status: 'ACTIVE' });
 
   readonly showDeleteModal = signal(false);
   readonly deleting = signal(false);
   readonly deleteTarget = signal<CustomerProgramView | null>(null);
+
+  // ── Assign Locations modal ─────────────────────────────────────────────────
+
+  readonly showAssignLocationsModal = signal(false);
+  readonly assignLocationsView = signal<CustomerProgramView | null>(null);
+  readonly assignLocationsLoading = signal(false);
+  readonly assignLocationsError = signal<string | null>(null);
+  readonly allLocationsForAssign = signal<CustomerLocation[]>([]);
+  readonly assignLocationsSearch = signal('');
+  readonly assignLocationsTogglingIds = signal<Set<number>>(new Set());
+  private assignLocationsSearchTimer: ReturnType<typeof setTimeout> | null = null;
+
+  readonly filteredAssignLocations = computed(() => {
+    const term = this.assignLocationsSearch().trim().toLowerCase();
+    if (!term) return this.allLocationsForAssign();
+    return this.allLocationsForAssign().filter(loc =>
+      loc.locName.toLowerCase().includes(term) ||
+      loc.locCode.toLowerCase().includes(term) ||
+      loc.city.toLowerCase().includes(term)
+    );
+  });
+
+  readonly assignedLocationsCount = computed(() => {
+    const viewId = this.assignLocationsView()?.viewId;
+    if (viewId == null) return 0;
+    return this.allLocationsForAssign().filter(loc => loc.viewId === viewId).length;
+  });
 
   readonly totalPages = computed(() => Math.max(1, Math.ceil(this.total() / this.pageSize())));
   readonly startRecord = computed(() => this.total() === 0 ? 0 : (this.page() - 1) * this.pageSize() + 1);
@@ -220,6 +255,15 @@ export class CustomerProgramViewsComponent implements OnInit {
     this.loadViews();
   }
 
+  toggleLocationRow(viewId: number): void {
+    this.openLocationsPopoverViewId.update(current => current === viewId ? null : viewId);
+  }
+
+  @HostListener('document:click')
+  closeLocationsPopover(): void {
+    this.openLocationsPopoverViewId.set(null);
+  }
+
   backToPrograms(): void {
     this.router.navigate(['/partner', this.tpId, 'customers', this.customerId, 'uniform-programs']);
   }
@@ -230,6 +274,7 @@ export class CustomerProgramViewsComponent implements OnInit {
 
   openCreateModal(): void {
     this.editTarget.set(null);
+    this.copySourceView.set(null);
     this.form.set({ viewName: '', description: '', status: 'ACTIVE' });
     this.formError.set(null);
     this.showFormModal.set(true);
@@ -237,7 +282,16 @@ export class CustomerProgramViewsComponent implements OnInit {
 
   openEditModal(view: CustomerProgramView): void {
     this.editTarget.set(view);
+    this.copySourceView.set(null);
     this.form.set({ viewName: view.viewName, description: view.description ?? '', status: view.status });
+    this.formError.set(null);
+    this.showFormModal.set(true);
+  }
+
+  openCopyModal(view: CustomerProgramView): void {
+    this.editTarget.set(null);
+    this.copySourceView.set(view);
+    this.form.set({ viewName: `${view.viewName} (Copy)`, description: view.description ?? '', status: 'ACTIVE' });
     this.formError.set(null);
     this.showFormModal.set(true);
   }
@@ -245,6 +299,14 @@ export class CustomerProgramViewsComponent implements OnInit {
   closeFormModal(): void {
     this.showFormModal.set(false);
     this.editTarget.set(null);
+    this.copySourceView.set(null);
+  }
+
+  assignLocationsFromForm(): void {
+    const target = this.editTarget();
+    if (!target) return;
+    this.closeFormModal();
+    this.openAssignLocationsModal(target);
   }
 
   async saveForm(): Promise<void> {
@@ -261,8 +323,11 @@ export class CustomerProgramViewsComponent implements OnInit {
     this.formError.set(null);
     try {
       const target = this.editTarget();
+      const copySource = this.copySourceView();
       if (target) {
         await this.service.update(tpId, custId, programId, target.viewId, form);
+      } else if (copySource) {
+        await this.service.copyView(tpId, custId, programId, copySource.viewId, form);
       } else {
         await this.service.create(tpId, custId, programId, form);
       }
@@ -306,6 +371,68 @@ export class CustomerProgramViewsComponent implements OnInit {
     }
   }
 
+  // ── Assign Locations modal ─────────────────────────────────────────────────
+
+  async openAssignLocationsModal(view: CustomerProgramView): Promise<void> {
+    this.assignLocationsView.set(view);
+    this.assignLocationsSearch.set('');
+    this.assignLocationsError.set(null);
+    this.allLocationsForAssign.set([]);
+    this.showAssignLocationsModal.set(true);
+    const tpId = this.tpId;
+    const custId = this.customerId;
+    if (!tpId || !custId) return;
+    this.assignLocationsLoading.set(true);
+    try {
+      this.allLocationsForAssign.set(await this.locationsService.listAll(tpId, custId));
+    } catch (err) {
+      this.assignLocationsError.set(err instanceof Error ? err.message : 'Failed to load locations.');
+    } finally {
+      this.assignLocationsLoading.set(false);
+    }
+  }
+
+  closeAssignLocationsModal(): void {
+    this.showAssignLocationsModal.set(false);
+    this.assignLocationsView.set(null);
+    this.loadViews();
+  }
+
+  onAssignLocationsSearchChange(value: string): void {
+    if (this.assignLocationsSearchTimer) clearTimeout(this.assignLocationsSearchTimer);
+    this.assignLocationsSearchTimer = setTimeout(() => this.assignLocationsSearch.set(value), 200);
+  }
+
+  isLocationTogglingView(locId: number): boolean {
+    return this.assignLocationsTogglingIds().has(locId);
+  }
+
+  async toggleLocationView(loc: CustomerLocation): Promise<void> {
+    const tpId = this.tpId;
+    const custId = this.customerId;
+    const view = this.assignLocationsView();
+    if (!tpId || !custId || !view) return;
+    if (this.isLocationTogglingView(loc.locId)) return;
+    this.assignLocationsTogglingIds.update(set => new Set(set).add(loc.locId));
+    this.assignLocationsError.set(null);
+    const isCurrentlyThisView = loc.viewId === view.viewId;
+    const newViewId = isCurrentlyThisView ? null : view.viewId;
+    try {
+      await this.locationsService.updateLocationView(tpId, custId, loc.locId, newViewId);
+      this.allLocationsForAssign.update(list => list.map(l =>
+        l.locId === loc.locId ? { ...l, viewId: newViewId, viewName: newViewId != null ? view.viewName : null } : l
+      ));
+    } catch (err) {
+      this.assignLocationsError.set(err instanceof Error ? err.message : 'Failed to update location.');
+    } finally {
+      this.assignLocationsTogglingIds.update(set => {
+        const next = new Set(set);
+        next.delete(loc.locId);
+        return next;
+      });
+    }
+  }
+
   statusBadge(status: string): string {
     return status === 'ACTIVE'
       ? 'badge bg-success-subtle text-success border border-success-subtle'
@@ -334,6 +461,14 @@ export class CustomerProgramViewsComponent implements OnInit {
     this.selectionsView.set(null);
     if (this.syncedTimer) clearTimeout(this.syncedTimer);
     this.selectionsSynced.set(false);
+    this.loadViews();
+  }
+
+  assignLocationsFromSelections(): void {
+    const view = this.selectionsView();
+    if (!view) return;
+    this.closeSelectionsModal();
+    this.openAssignLocationsModal(view);
   }
 
   private async loadSelections(): Promise<void> {

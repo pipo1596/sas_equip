@@ -98,6 +98,23 @@
           </div>
         </div>
 
+        @if (isEdit) {
+          <div class="card mb-4">
+            <div class="card-body">
+              <div class="text-muted small text-uppercase mb-2" style="font-size:0.7rem; letter-spacing:0.04em;">Assigned View</div>
+              @if (viewName(); as name) {
+                <span class="badge rounded-pill d-inline-flex align-items-center gap-1 px-3 py-1" style="background:#ede9fe; color:#5b21b6;">
+                  <i class="bi bi-eye"></i>{{ name }}
+                </span>
+              } @else {
+                <span class="badge rounded-pill d-inline-flex align-items-center gap-1 px-3 py-1 bg-danger-subtle text-danger border border-danger-subtle">
+                  <i class="bi bi-exclamation-triangle-fill"></i>No view
+                </span>
+              }
+            </div>
+          </div>
+        }
+
       </div>
     </div>
 

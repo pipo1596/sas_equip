@@ -211,6 +211,15 @@
 
           <li class="nav-item">
             <a class="sidebar-nav-link"
+               [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'customers', customerMode.activeCustomer()?.custId, 'shipping-methods']"
+               routerLinkActive="active">
+              <i class="bi bi-truck nav-icon"></i>
+              <span>Shipping Methods</span>
+            </a>
+          </li>
+
+          <li class="nav-item">
+            <a class="sidebar-nav-link"
                [routerLink]="['/partner', partnerMode.activePartner()?.tpId, 'customers', customerMode.activeCustomer()?.custId, 'price-lists']"
                routerLinkActive="active">
               <i class="bi bi-tags nav-icon"></i>

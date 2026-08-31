@@ -27,6 +27,7 @@ export const environment = {
     customerRoles: 'APITPCROLE',
     customerAddresses: 'APITPCADDR',
     customerContacts: 'APITPCCONT',
+    customerShippingMethods: 'APITPCSHP',
     customerAttachments: 'APITPCATTC',
     customerPriceLists: 'APITPCPRL',
     customerPriceListItems: 'APITPCPRI',

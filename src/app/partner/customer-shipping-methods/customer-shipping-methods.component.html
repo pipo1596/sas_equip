@@ -1,0 +1,262 @@
+<section class="page-shell">
+
+  <div class="page-shell-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div>
+      <h1 class="page-title">Shipping Methods</h1>
+      <p class="page-subtitle">Manage checkout shipping methods for <strong>{{ customerMode.activeCustomer()?.customerName }}</strong></p>
+    </div>
+    @if (methods().length > 0) {
+      <button class="btn btn-dark" type="button" (click)="openAddModal()">
+        <i class="bi bi-plus-lg me-2"></i>Add shipping method
+      </button>
+    }
+  </div>
+
+  @if (loading()) {
+    <div class="text-center py-5 text-muted">
+      <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>
+      Loading…
+    </div>
+  } @else if (loadError()) {
+    <div class="alert alert-danger d-flex align-items-center gap-2 mt-3" role="alert">
+      <i class="bi bi-exclamation-triangle-fill"></i>
+      <span>{{ loadError() }}</span>
+    </div>
+  } @else if (methods().length === 0) {
+    <div class="text-center py-5 text-muted mt-3">
+      <i class="bi bi-truck fs-2 d-block mb-3 opacity-25"></i>
+      <p class="mb-3">No shipping methods on file yet.</p>
+      <button class="btn btn-outline-dark btn-sm" type="button" (click)="openAddModal()">
+        <i class="bi bi-plus-lg me-2"></i>Add first shipping method
+      </button>
+    </div>
+  } @else {
+    <div class="table-responsive mt-3">
+      <table class="table table-hover align-middle mb-0">
+        <thead>
+          <tr>
+            <th>Method</th>
+            <th>Carrier / Service</th>
+            <th>Estimated Delivery</th>
+            <th>Rate</th>
+            <th>Paid By</th>
+            <th>Min. Order</th>
+            <th class="text-center">Status</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (m of methods(); track m.shipMethodId) {
+            <tr>
+              <td>
+                <div class="d-flex align-items-center gap-2">
+                  <span class="fw-semibold">{{ m.methodName }}</span>
+                  @if (m.isDefault === 'Y') {
+                    <span class="badge rounded-pill fw-semibold px-2 py-1"
+                          style="background:#FEF3C7; color:#B45309; border:1px solid #FDE68A; font-size:.65rem;">
+                      <i class="bi bi-star-fill me-1" style="font-size:.55rem;"></i>Default
+                    </span>
+                  }
+                </div>
+              </td>
+              <td class="small">
+                {{ m.carrier || '—' }}
+                @if (m.serviceCode) {
+                  <div class="text-muted" style="font-size:.75rem;">{{ m.serviceCode }}</div>
+                }
+              </td>
+              <td class="small text-muted">{{ m.estimatedDelivery || '—' }}</td>
+              <td class="small">{{ rateLabel(m) }}</td>
+              <td class="small">{{ m.paidBy || '—' }}</td>
+              <td class="small">{{ m.minOrderAmount != null ? ('$' + m.minOrderAmount.toFixed(2)) : '—' }}</td>
+              <td class="text-center">
+                <span class="badge rounded-pill fw-semibold px-2 py-1"
+                      [class]="m.status === 'ACTIVE'
+                        ? 'bg-success-subtle text-success border border-success-subtle'
+                        : 'bg-secondary-subtle text-secondary border border-secondary-subtle'"
+                      style="font-size:.7rem;">
+                  {{ m.status === 'ACTIVE' ? 'Active' : 'Inactive' }}
+                </span>
+              </td>
+              <td class="text-end">
+                <button class="btn btn-sm btn-outline-secondary m-1 px-3" (click)="openEditModal(m)" title="Edit"><i class="bi bi-pencil"></i></button>
+                <button class="btn btn-sm btn-outline-danger m-1 px-3" (click)="openDeleteModal(m)" title="Delete"><i class="bi bi-trash"></i></button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+</section>
+
+<!-- Add / Edit Modal -->
+@if (showFormModal()) {
+  <div class="modal-backdrop fade show"></div>
+  <div class="modal d-block" tabindex="-1" role="dialog" aria-modal="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+
+        <div class="modal-header border-0 pb-0">
+          <div>
+            <h5 class="modal-title mb-0">Shipping method</h5>
+            <p class="text-muted small mb-0">Offered to this customer at checkout</p>
+          </div>
+          <button class="btn-close" (click)="closeFormModal()" [disabled]="saving()"></button>
+        </div>
+
+        <div class="modal-body pt-3">
+          <form (ngSubmit)="saveMethod()" id="shipForm" novalidate>
+
+            <div class="row gy-3 gx-3">
+
+              <div class="col-12">
+                <label class="form-label small fw-semibold text-muted" for="sf-name">Method name <span class="text-danger">*</span></label>
+                <input id="sf-name" type="text" name="methodName" maxlength="200" placeholder="e.g. Standard Ground"
+                       class="form-control" [class.is-invalid]="submitted() && !form.methodName"
+                       [(ngModel)]="form.methodName" />
+                <div class="invalid-feedback">Method name is required.</div>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label small fw-semibold text-muted" for="sf-carrier">Carrier</label>
+                <select id="sf-carrier" class="form-select" [(ngModel)]="form.carrier" name="carrier">
+                  <option value="">— Select a carrier —</option>
+                  @for (c of carrierOptions; track c) {
+                    <option [value]="c">{{ c }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label small fw-semibold text-muted" for="sf-service">Service / code</label>
+                <input id="sf-service" type="text" class="form-control" [(ngModel)]="form.serviceCode" name="serviceCode"
+                       maxlength="100" placeholder="e.g. Regular Parcel" />
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label small fw-semibold text-muted" for="sf-delivery">Estimated delivery</label>
+                <input id="sf-delivery" type="text" class="form-control" [(ngModel)]="form.estimatedDelivery" name="estimatedDelivery"
+                       maxlength="100" placeholder="e.g. 5-7 business days" />
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label small fw-semibold text-muted" for="sf-rateType">Rate type</label>
+                <select id="sf-rateType" class="form-select" [(ngModel)]="form.rateType" name="rateType">
+                  @for (o of rateTypeOptions; track o.value) {
+                    <option [value]="o.value">{{ o.label }}</option>
+                  }
+                </select>
+              </div>
+
+              @if (form.rateType === 'FLAT') {
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold text-muted" for="sf-flatAmount">Flat amount</label>
+                  <div class="input-group">
+                    <span class="input-group-text">$</span>
+                    <input id="sf-flatAmount" type="number" step="0.01" min="0" class="form-control"
+                           [ngModel]="form.flatAmount" (ngModelChange)="form.flatAmount = $event" name="flatAmount" />
+                  </div>
+                </div>
+              }
+
+              <div class="col-md-6">
+                <label class="form-label small fw-semibold text-muted" for="sf-paidBy">Paid by</label>
+                <select id="sf-paidBy" class="form-select" [(ngModel)]="form.paidBy" name="paidBy">
+                  <option value="">— Select —</option>
+                  @for (o of paidByOptions; track o.value) {
+                    <option [value]="o.value">{{ o.label }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="col-12">
+                <label class="form-label small fw-semibold text-muted" for="sf-minOrder">Minimum order <span class="fw-normal">(optional)</span></label>
+                <div class="input-group">
+                  <span class="input-group-text">$</span>
+                  <input id="sf-minOrder" type="number" step="0.01" min="0" class="form-control"
+                         [ngModel]="form.minOrderAmount" (ngModelChange)="form.minOrderAmount = $event" name="minOrderAmount" />
+                </div>
+              </div>
+
+              <div class="col-12">
+                <div class="form-check form-switch">
+                  <input id="sf-default" type="checkbox" role="switch" class="form-check-input" [(ngModel)]="form.isDefault" name="isDefault" />
+                  <label class="form-check-label" for="sf-default">Set as default method</label>
+                </div>
+                @if (defaultConflict) {
+                  <div class="text-danger small mt-1">Another method is already default.</div>
+                }
+              </div>
+
+              <div class="col-12">
+                <div class="form-check form-switch">
+                  <input id="sf-active" type="checkbox" role="switch" class="form-check-input" [(ngModel)]="form.active" name="active" />
+                  <label class="form-check-label" for="sf-active">Active</label>
+                </div>
+              </div>
+
+            </div>
+
+            @if (saveError()) {
+              <div class="alert alert-danger d-flex align-items-center gap-2 mt-3 mb-0" role="alert">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <span>{{ saveError() }}</span>
+              </div>
+            }
+
+          </form>
+        </div>
+
+        <div class="modal-footer border-0 pt-0">
+          <button class="btn btn-outline-secondary" type="button" (click)="closeFormModal()" [disabled]="saving()">Cancel</button>
+          <button class="btn btn-primary" type="submit" form="shipForm" [disabled]="saving()">
+            @if (saving()) {
+              <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving…
+            } @else {
+              <i class="bi bi-check-lg me-1"></i>{{ editingId() === null ? 'Add method' : 'Save method' }}
+            }
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Delete Confirm Modal -->
+@if (showDeleteModal()) {
+  <div class="modal-backdrop fade show"></div>
+  <div class="modal d-block" tabindex="-1" role="dialog" aria-modal="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i>Delete Shipping Method</h5>
+          <button class="btn-close" (click)="closeDeleteModal()" [disabled]="deleting()"></button>
+        </div>
+        <div class="modal-body pt-2">
+          @if (deleteTarget(); as target) {
+            <p class="mb-0">Delete shipping method <strong>{{ target.methodName }}</strong>? This cannot be undone.</p>
+          }
+          @if (deleteError()) {
+            <div class="alert alert-danger d-flex align-items-center gap-2 mt-3 mb-0" role="alert">
+              <i class="bi bi-exclamation-triangle-fill"></i>
+              <span>{{ deleteError() }}</span>
+            </div>
+          }
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button class="btn btn-outline-secondary" type="button" (click)="closeDeleteModal()" [disabled]="deleting()">Cancel</button>
+          <button class="btn btn-danger" type="button" (click)="confirmDelete()" [disabled]="deleting()">
+            @if (deleting()) {
+              <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Deleting…
+            } @else {
+              <i class="bi bi-trash me-2"></i>Delete
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

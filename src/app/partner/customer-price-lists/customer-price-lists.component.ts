@@ -5,6 +5,7 @@ import { PartnerModeService } from '../partner-mode.service';
 import { CustomerModeService } from '../partner-customers/customer-mode.service';
 import { CustomerPriceListsService } from './customer-price-lists.service';
 import { CustomerPriceList } from './customer-price-list.model';
+import { ImageUploadService } from '../../shared/image-upload.service';
 
 @Component({
   selector: 'app-customer-price-lists',
@@ -16,6 +17,7 @@ export class CustomerPriceListsComponent implements OnInit {
   protected readonly partnerMode = inject(PartnerModeService);
   protected readonly customerMode = inject(CustomerModeService);
   private readonly service = inject(CustomerPriceListsService);
+  private readonly imageUploadService = inject(ImageUploadService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
 
@@ -31,6 +33,11 @@ export class CustomerPriceListsComponent implements OnInit {
   readonly showDeleteModal = signal(false);
   readonly deleting = signal(false);
   readonly deleteTarget = signal<CustomerPriceList | null>(null);
+
+  readonly csvUploading = signal(false);
+  readonly csvInducing = signal(false);
+  readonly csvError = signal<string | null>(null);
+  readonly csvSuccess = signal(false);
 
   readonly totalPages = computed(() => Math.max(1, Math.ceil(this.total() / this.pageSize())));
 
@@ -116,6 +123,43 @@ export class CustomerPriceListsComponent implements OnInit {
 
   newPriceList(): void {
     this.router.navigate(['/partner', this.tpId, 'customers', this.customerId, 'price-lists', 'new']);
+  }
+
+  async onCsvSelected(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+    const tpId = this.tpId;
+    if (!tpId) return;
+
+    this.csvError.set(null);
+    this.csvSuccess.set(false);
+    this.csvUploading.set(true);
+
+    let csvUrl: string;
+    try {
+      csvUrl = await this.imageUploadService.upload(
+        'price_list_csv', file, tpId, { tpId, subfolder: 'pricing_import' }, 'pricing.csv',
+      );
+    } catch (err) {
+      this.csvError.set(err instanceof Error ? err.message : 'CSV upload failed.');
+      this.csvUploading.set(false);
+      return;
+    }
+
+    this.csvUploading.set(false);
+    this.csvInducing.set(true);
+
+    try {
+      await this.service.inductFromCsv(tpId, csvUrl);
+      this.csvSuccess.set(true);
+      setTimeout(() => this.csvSuccess.set(false), 6000);
+    } catch (err) {
+      this.csvError.set(err instanceof Error ? err.message : 'Price list induction failed.');
+    } finally {
+      this.csvInducing.set(false);
+    }
   }
 
   editPriceList(priceList: CustomerPriceList): void {

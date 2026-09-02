@@ -3,6 +3,9 @@ import { PartnerCustomersComponent } from './partner-customers.component';
 import { CustomerFormComponent } from './customer-form.component';
 import { CustomerOverviewComponent } from './customer-overview.component';
 import { CustomerRolesComponent } from '../customer-roles/customer-roles.component';
+import { CustomerRoleDetailComponent } from '../customer-roles/customer-role-detail.component';
+import { CustomerAllotmentRuleEditorComponent } from '../customer-allotment-rules/customer-allotment-rule-editor.component';
+import { CustomerPaymentLedgersComponent } from '../customer-payment-ledgers/customer-payment-ledgers.component';
 import { CustomerEmployeesComponent } from '../customer-employees/customer-employees.component';
 import { CustomerEmployeeFormComponent } from '../customer-employees/customer-employee-form.component';
 import { CustomerLocationsComponent } from '../customer-locations/customer-locations.component';
@@ -31,6 +34,10 @@ export const CUSTOMERS_ROUTES: Routes = [
   { path: ':customerId/uniform-programs/:programId/tree', component: CustomerProgramTreeComponent },
   { path: ':customerId/uniform-programs/:programId/views', component: CustomerProgramViewsComponent },
   { path: ':customerId/roles', component: CustomerRolesComponent },
+  { path: ':customerId/roles/:roleId', component: CustomerRoleDetailComponent },
+  { path: ':customerId/roles/:roleId/rules/new', component: CustomerAllotmentRuleEditorComponent },
+  { path: ':customerId/roles/:roleId/rules/:ruleId', component: CustomerAllotmentRuleEditorComponent },
+  { path: ':customerId/payment-ledgers', component: CustomerPaymentLedgersComponent },
   { path: ':customerId/employees', component: CustomerEmployeesComponent },
   { path: ':customerId/employees/new', component: CustomerEmployeeFormComponent },
   { path: ':customerId/employees/:employeeId/edit', component: CustomerEmployeeFormComponent },

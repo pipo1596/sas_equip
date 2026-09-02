@@ -5,6 +5,8 @@ import { PartnerModeService } from '../partner-mode.service';
 import { CustomerModeService } from '../partner-customers/customer-mode.service';
 import { CustomerRolesService } from './customer-roles.service';
 import { CustomerRole, CustomerRoleForm } from './customer-role.model';
+import { CustomerAllotmentRulesService } from '../customer-allotment-rules/customer-allotment-rules.service';
+import { CustomerAllotmentRuleForm } from '../customer-allotment-rules/customer-allotment-rule.model';
 
 interface RoleForm {
   roleName: string;
@@ -12,10 +14,19 @@ interface RoleForm {
   allotmentType: 'NONE' | 'DOLLAR' | 'POINT' | 'ITEM' | 'COMBO';
   description: string;
   isActive: 'Y' | 'N';
+  canOrderSelf: 'Y' | 'N';
+  canApprove: 'Y' | 'N';
+  canShopForOthers: 'Y' | 'N';
+  canManageTeamBalances: 'Y' | 'N';
+  // Local-only: seeds the auto-created default Allotment Rule when
+  // allotmentType !== 'NONE'. Not part of CustomerRoleForm/APITPCROLE.
+  quickAmount: number | null;
 }
 
 const BLANK_FORM: RoleForm = {
   roleName: '', accessLevel: 'EMPLOYEE', allotmentType: 'NONE', description: '', isActive: 'Y',
+  canOrderSelf: 'Y', canApprove: 'N', canShopForOthers: 'N', canManageTeamBalances: 'N',
+  quickAmount: null,
 };
 
 @Component({
@@ -28,6 +39,7 @@ export class CustomerRolesComponent implements OnInit {
   protected readonly partnerMode = inject(PartnerModeService);
   protected readonly customerMode = inject(CustomerModeService);
   private readonly service = inject(CustomerRolesService);
+  private readonly rulesService = inject(CustomerAllotmentRulesService);
   private readonly route = inject(ActivatedRoute);
 
   readonly roles = signal<CustomerRole[]>([]);
@@ -44,6 +56,7 @@ export class CustomerRolesComponent implements OnInit {
   readonly saving = signal(false);
   readonly saveError = signal<string | null>(null);
   readonly submitted = signal(false);
+  readonly saveWarning = signal<string | null>(null);
 
   readonly showDeleteModal = signal(false);
   readonly deleting = signal(false);
@@ -158,6 +171,13 @@ export class CustomerRolesComponent implements OnInit {
       allotmentType: role.allotmentType,
       description:   role.description ?? '',
       isActive:      role.isActive,
+      // Carried through even though this modal doesn't show them — a save
+      // here must not blank out permissions set on the role detail page.
+      canOrderSelf:          role.canOrderSelf,
+      canApprove:            role.canApprove,
+      canShopForOthers:      role.canShopForOthers,
+      canManageTeamBalances: role.canManageTeamBalances,
+      quickAmount: null,
     };
     this.saveError.set(null);
     this.submitted.set(false);
@@ -177,11 +197,16 @@ export class CustomerRolesComponent implements OnInit {
 
     this.saving.set(true);
     this.saveError.set(null);
+    this.saveWarning.set(null);
     try {
-      const payload: CustomerRoleForm = { ...this.form };
+      const { quickAmount, ...rolePayload } = this.form;
+      const payload: CustomerRoleForm = { ...rolePayload };
       const id = this.editingId();
       if (id === null) {
-        await this.service.create(tpId, custId, payload);
+        const created = await this.service.create(tpId, custId, payload);
+        if (payload.allotmentType !== 'NONE') {
+          await this.createDefaultRule(tpId, custId, created.roleId, payload.allotmentType, quickAmount);
+        }
       } else {
         await this.service.update(tpId, custId, id, payload);
       }
@@ -191,6 +216,50 @@ export class CustomerRolesComponent implements OnInit {
       this.saveError.set(err instanceof Error ? err.message : 'Failed to save role.');
     } finally {
       this.saving.set(false);
+    }
+  }
+
+  // Quick-add convenience: when a new role is created with an allotment
+  // type other than NONE, seed one default Allotment Rule so the role
+  // isn't left with an allotment type but zero rules. Left as DRAFT since
+  // UNITS/DOLLAR_UNITS rules are created with an empty scope (unit
+  // quantities need a concrete assortment — see the rule editor's own
+  // scope-vs-unit-type rule) and are functionally incomplete until edited.
+  private async createDefaultRule(
+    tpId: number, custId: number, roleId: number,
+    allotmentType: 'DOLLAR' | 'POINT' | 'ITEM' | 'COMBO', amount: number | null,
+  ): Promise<void> {
+    const allotType = { DOLLAR: 'DOLLAR', ITEM: 'UNITS', COMBO: 'DOLLAR_UNITS', POINT: 'POINTS' }[allotmentType] as
+      'DOLLAR' | 'UNITS' | 'DOLLAR_UNITS' | 'POINTS';
+    const needsScope = allotType === 'UNITS' || allotType === 'DOLLAR_UNITS';
+    const form: CustomerAllotmentRuleForm = {
+      ruleName: 'Default',
+      status: 'DRAFT',
+      allotType,
+      dollarAmount: (allotType === 'DOLLAR' || allotType === 'DOLLAR_UNITS') ? amount : null,
+      pointsAmount: allotType === 'POINTS' ? amount : null,
+      scopeAllAssortments: needsScope ? 'N' : 'Y',
+      renewalBasis: 'FIXED',
+      renewalPeriodMonths: 12,
+      renewalTime: '00:00:00',
+      hireDaysOffset: null,
+      cycleStartDate: new Date().toISOString().slice(0, 10),
+      expirationDate: null,
+      onExpirationAction: 'AUTO_RENEW',
+      carryoverType: 'FORFEIT',
+      carryoverPct: null,
+      autoCreateNewEmp: 'Y',
+      prorateMidCycle: 'Y',
+      notifyNewCycle: 'N',
+      notifyLowBalance: 'N',
+      notifyCarryover: 'N',
+      requireApproval: 'N',
+      allowCcFallback: 'Y',
+    };
+    try {
+      await this.rulesService.create(tpId, custId, roleId, form);
+    } catch {
+      this.saveWarning.set('Role created, but its default allotment rule could not be created — add one from the role’s Allotment Rules tab.');
     }
   }
 

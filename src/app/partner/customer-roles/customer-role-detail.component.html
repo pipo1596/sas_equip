@@ -1,0 +1,320 @@
+<section class="page-shell">
+
+  <div class="page-shell-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div>
+      <a class="text-decoration-none small text-muted d-inline-block mb-1"
+         [routerLink]="['/partner', tpId, 'customers', customerId, 'roles']">
+        <i class="bi bi-arrow-left me-1"></i>All roles
+      </a>
+      <h1 class="page-title mb-0">{{ role()?.roleName || 'Role' }}</h1>
+      <p class="page-subtitle mb-0">{{ role()?.accessLevel }} · for <strong>{{ customerMode.activeCustomer()?.customerName }}</strong></p>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="text-center py-5 text-muted">
+      <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>
+      Loading…
+    </div>
+  } @else if (loadError()) {
+    <div class="alert alert-danger d-flex align-items-center gap-2 mt-3" role="alert">
+      <i class="bi bi-exclamation-triangle-fill"></i><span>{{ loadError() }}</span>
+    </div>
+  } @else {
+
+  <ul class="nav nav-tabs mb-3">
+    <li class="nav-item">
+      <button class="nav-link" [class.active]="activeTab() === 'rules'" (click)="setTab('rules')">Allotment Rules</button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" [class.active]="activeTab() === 'ledgers'" (click)="setTab('ledgers')">Payment Ledgers</button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" [class.active]="activeTab() === 'permissions'" (click)="setTab('permissions')">Permissions</button>
+    </li>
+  </ul>
+
+  <!-- Allotment Rules tab -->
+  @if (activeTab() === 'rules') {
+    <div class="d-flex justify-content-end mb-3">
+      <button type="button" class="btn btn-dark" (click)="newRule()"><i class="bi bi-plus-lg me-2"></i>New Rule</button>
+    </div>
+
+    @if (rulesError()) {
+      <div class="alert alert-danger d-flex align-items-center gap-2 mb-3">
+        <i class="bi bi-exclamation-triangle-fill"></i><span>{{ rulesError() }}</span>
+      </div>
+    }
+
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead>
+          <tr>
+            <th>Rule</th>
+            <th class="text-center">Status</th>
+            <th>Type</th>
+            <th>Amount</th>
+            <th>Scope</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (rulesLoading()) {
+            <tr><td colspan="6" class="text-center py-4 text-muted">
+              <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>Loading…
+            </td></tr>
+          } @else if (rules().length === 0) {
+            <tr><td colspan="6" class="text-center py-4 text-muted">
+              <i class="bi bi-wallet2 me-2"></i>No allotment rules yet.
+            </td></tr>
+          } @else {
+            @for (r of rules(); track r.ruleId) {
+              <tr>
+                <td class="fw-semibold">{{ r.ruleName }}</td>
+                <td class="text-center"><span [class]="ruleStatusBadge(r.status)">{{ r.status === 'ACTIVE' ? 'Active' : 'Draft' }}</span></td>
+                <td>{{ allotTypeLabel(r.allotType) }}</td>
+                <td>{{ amountSummary(r) }}</td>
+                <td>{{ scopeSummary(r) }}</td>
+                <td class="text-end">
+                  <button class="btn btn-sm btn-outline-secondary m-1 px-3" (click)="editRule(r)" title="Edit"><i class="bi bi-pencil"></i></button>
+                  <button class="btn btn-sm btn-outline-danger m-1 px-3" (click)="openDeleteRuleModal(r)" title="Delete"><i class="bi bi-trash"></i></button>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  <!-- Payment Ledgers tab -->
+  @if (activeTab() === 'ledgers') {
+    <div class="d-flex justify-content-end mb-3">
+      <button type="button" class="btn btn-dark" (click)="openAddLedgerModal()"><i class="bi bi-plus-lg me-2"></i>New Ledger</button>
+    </div>
+
+    @if (ledgersError()) {
+      <div class="alert alert-danger d-flex align-items-center gap-2 mb-3">
+        <i class="bi bi-exclamation-triangle-fill"></i><span>{{ ledgersError() }}</span>
+      </div>
+    }
+
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead>
+          <tr>
+            <th>Ledger</th>
+            <th class="text-center">Type</th>
+            <th class="text-center">Amount</th>
+            <th class="text-center">Status</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (ledgersLoading()) {
+            <tr><td colspan="5" class="text-center py-4 text-muted">
+              <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>Loading…
+            </td></tr>
+          } @else if (ledgers().length === 0) {
+            <tr><td colspan="5" class="text-center py-4 text-muted">
+              <i class="bi bi-wallet2 me-2"></i>No payment ledgers yet.
+            </td></tr>
+          } @else {
+            @for (l of ledgers(); track l.ledgerId) {
+              <tr>
+                <td class="fw-semibold">{{ l.ledgerName }}</td>
+                <td class="text-center">{{ ledgerTypeLabel(l.ledgerType) }}</td>
+                <td class="text-center">{{ ledgerAmountLabel(l) }}</td>
+                <td class="text-center"><span [class]="ledgerStatusBadge(l.status)">{{ l.status === 'ACTIVE' ? 'Active' : 'Inactive' }}</span></td>
+                <td class="text-end">
+                  <button class="btn btn-sm btn-outline-secondary m-1 px-3" (click)="openEditLedgerModal(l)" title="Edit"><i class="bi bi-pencil"></i></button>
+                  <button class="btn btn-sm btn-outline-danger m-1 px-3" (click)="openDeleteLedgerModal(l)" title="Delete"><i class="bi bi-trash"></i></button>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  <!-- Permissions tab -->
+  @if (activeTab() === 'permissions') {
+    <div class="card">
+      <div class="card-body">
+        <h6 class="card-title fw-semibold mb-3">Permissions</h6>
+
+        <div class="d-flex align-items-center justify-content-between py-2 border-bottom">
+          <span>Can place orders for themselves</span>
+          <div class="form-check form-switch mb-0">
+            <input class="form-check-input" type="checkbox" role="switch"
+                   [checked]="permForm.canOrderSelf === 'Y'" (change)="togglePerm('canOrderSelf', $any($event.target).checked)" />
+          </div>
+        </div>
+        <div class="d-flex align-items-center justify-content-between py-2 border-bottom">
+          <span>Can approve orders in their queue</span>
+          <div class="form-check form-switch mb-0">
+            <input class="form-check-input" type="checkbox" role="switch"
+                   [checked]="permForm.canApprove === 'Y'" (change)="togglePerm('canApprove', $any($event.target).checked)" />
+          </div>
+        </div>
+        <div class="d-flex align-items-center justify-content-between py-2 border-bottom">
+          <span>Can shop on behalf of employees (in-person clerk)</span>
+          <div class="form-check form-switch mb-0">
+            <input class="form-check-input" type="checkbox" role="switch"
+                   [checked]="permForm.canShopForOthers === 'Y'" (change)="togglePerm('canShopForOthers', $any($event.target).checked)" />
+          </div>
+        </div>
+        <div class="d-flex align-items-center justify-content-between py-2">
+          <span>Can view and manage allotment balances for their team</span>
+          <div class="form-check form-switch mb-0">
+            <input class="form-check-input" type="checkbox" role="switch"
+                   [checked]="permForm.canManageTeamBalances === 'Y'" (change)="togglePerm('canManageTeamBalances', $any($event.target).checked)" />
+          </div>
+        </div>
+
+        @if (permSaveError()) {
+          <div class="alert alert-danger d-flex align-items-center gap-2 mt-3 mb-0" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i><span>{{ permSaveError() }}</span>
+          </div>
+        }
+
+        <div class="d-flex align-items-center justify-content-end gap-2 mt-3">
+          @if (permSaved()) {
+            <span class="text-success small"><i class="bi bi-check-circle-fill me-1"></i>Saved</span>
+          }
+          <button type="button" class="btn btn-dark" (click)="savePermissions()" [disabled]="permSaving()">
+            @if (permSaving()) {
+              <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving…
+            } @else {
+              <i class="bi bi-check-lg me-1"></i>Save permissions
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  }
+
+</section>
+
+<!-- Delete Rule Confirm Modal -->
+@if (showDeleteRuleModal()) {
+  <div class="modal-backdrop fade show"></div>
+  <div class="modal d-block" tabindex="-1" role="dialog" aria-modal="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i>Delete Allotment Rule</h5>
+          <button class="btn-close" (click)="closeDeleteRuleModal()" [disabled]="deletingRule()"></button>
+        </div>
+        <div class="modal-body pt-2">
+          @if (deleteRuleTarget(); as target) {
+            <p class="mb-0">Delete rule <strong>{{ target.ruleName }}</strong>? This cannot be undone.</p>
+          }
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button class="btn btn-outline-secondary" (click)="closeDeleteRuleModal()" [disabled]="deletingRule()">Cancel</button>
+          <button class="btn btn-danger" (click)="confirmDeleteRule()" [disabled]="deletingRule()">
+            @if (deletingRule()) { <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Deleting… }
+            @else { <i class="bi bi-trash me-2"></i>Delete }
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Ledger Add/Edit Modal -->
+@if (showLedgerFormModal()) {
+  <div class="modal-backdrop fade show"></div>
+  <div class="modal d-block" tabindex="-1" role="dialog" aria-modal="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title">{{ editingLedgerId() === null ? 'New payment ledger' : 'Edit payment ledger' }}</h5>
+          <button class="btn-close" (click)="closeLedgerFormModal()" [disabled]="ledgerSaving()"></button>
+        </div>
+        <div class="modal-body pt-3">
+          <form (ngSubmit)="saveLedger()" id="roleLedgerForm" novalidate>
+            <div class="row gy-2 gx-3">
+              <div class="col-12">
+                <label class="form-label small fw-semibold text-uppercase text-muted" for="rlf-name">Ledger Name</label>
+                <input id="rlf-name" type="text" name="ledgerName" maxlength="150" placeholder="e.g. ANB Footwear Allowance"
+                       class="form-control" [class.is-invalid]="ledgerSubmitted() && !ledgerForm.ledgerName"
+                       [(ngModel)]="ledgerForm.ledgerName" />
+                <div class="invalid-feedback">Ledger name is required.</div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label small fw-semibold text-uppercase text-muted" for="rlf-type">Type</label>
+                <select id="rlf-type" class="form-select" [(ngModel)]="ledgerForm.ledgerType" name="ledgerType" (ngModelChange)="onLedgerTypeChange()">
+                  <option value="DOLLAR">Dollar</option>
+                  <option value="POINTS">Points</option>
+                  <option value="CREDIT_CARD">Credit card</option>
+                </select>
+              </div>
+              @if (ledgerForm.ledgerType !== 'CREDIT_CARD') {
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold text-uppercase text-muted" for="rlf-amount">Amount</label>
+                  <input id="rlf-amount" type="number" min="0" step="0.01" class="form-control"
+                         [ngModel]="ledgerForm.amount" (ngModelChange)="ledgerForm.amount = $event" name="amount"
+                         placeholder="Leave blank for unlimited" />
+                </div>
+              }
+              <div class="col-md-6">
+                <label class="form-label small fw-semibold text-uppercase text-muted" for="rlf-status">Status</label>
+                <select id="rlf-status" class="form-select" [(ngModel)]="ledgerForm.status" name="status">
+                  <option value="ACTIVE">Active</option>
+                  <option value="INACTIVE">Inactive</option>
+                </select>
+              </div>
+            </div>
+            @if (ledgerSaveError()) {
+              <div class="alert alert-danger d-flex align-items-center gap-2 mt-3 mb-0" role="alert">
+                <i class="bi bi-exclamation-triangle-fill"></i><span>{{ ledgerSaveError() }}</span>
+              </div>
+            }
+          </form>
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button class="btn btn-outline-secondary" type="button" (click)="closeLedgerFormModal()" [disabled]="ledgerSaving()">Cancel</button>
+          <button class="btn btn-dark" type="submit" form="roleLedgerForm" [disabled]="ledgerSaving()">
+            @if (ledgerSaving()) {
+              <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving…
+            } @else {
+              <i class="bi bi-check-lg me-1"></i>{{ editingLedgerId() === null ? 'Create ledger' : 'Save changes' }}
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Delete Ledger Confirm Modal -->
+@if (showDeleteLedgerModal()) {
+  <div class="modal-backdrop fade show"></div>
+  <div class="modal d-block" tabindex="-1" role="dialog" aria-modal="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i>Delete Payment Ledger</h5>
+          <button class="btn-close" (click)="closeDeleteLedgerModal()" [disabled]="deletingLedger()"></button>
+        </div>
+        <div class="modal-body pt-2">
+          @if (deleteLedgerTarget(); as target) {
+            <p class="mb-0">Delete ledger <strong>{{ target.ledgerName }}</strong>? This cannot be undone.</p>
+          }
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button class="btn btn-outline-secondary" (click)="closeDeleteLedgerModal()" [disabled]="deletingLedger()">Cancel</button>
+          <button class="btn btn-danger" (click)="confirmDeleteLedger()" [disabled]="deletingLedger()">
+            @if (deletingLedger()) { <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Deleting… }
+            @else { <i class="bi bi-trash me-2"></i>Delete }
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

@@ -7,6 +7,10 @@ export interface CustomerRole {
   allotmentType: 'NONE' | 'DOLLAR' | 'POINT' | 'ITEM' | 'COMBO';
   description: string | null;
   isActive: 'Y' | 'N';
+  canOrderSelf: 'Y' | 'N';
+  canApprove: 'Y' | 'N';
+  canShopForOthers: 'Y' | 'N';
+  canManageTeamBalances: 'Y' | 'N';
   createdTs: string;
   createdBy: string | null;
   updatedTs: string;
@@ -19,6 +23,10 @@ export interface CustomerRoleForm {
   allotmentType: 'NONE' | 'DOLLAR' | 'POINT' | 'ITEM' | 'COMBO';
   description: string;
   isActive: 'Y' | 'N';
+  canOrderSelf: 'Y' | 'N';
+  canApprove: 'Y' | 'N';
+  canShopForOthers: 'Y' | 'N';
+  canManageTeamBalances: 'Y' | 'N';
 }
 
 export interface CustomerRolesPage {

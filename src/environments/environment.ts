@@ -28,6 +28,8 @@ export const environment = {
     customerAddresses: 'APITPCADDR',
     customerContacts: 'APITPCCONT',
     customerShippingMethods: 'APITPCSHP',
+    customerAllotmentRules: 'APITPCARL',
+    customerPaymentLedgers: 'APITPCLDG',
     customerAttachments: 'APITPCATTC',
     customerPriceLists: 'APITPCPRL',
     customerPriceListItems: 'APITPCPRI',

@@ -16,6 +16,13 @@ export class CustomerProgramsService {
     return data as unknown as CustomerProgramsPage;
   }
 
+  // Full, unpaginated list — used to populate assortment/scope pickers
+  // (Allotment Rules) rather than as a page-rendering source.
+  async listAll(tpId: number, custId: number): Promise<CustomerProgram[]> {
+    const data = await this.post({ action: '*LIST_ALL', tpId, custId });
+    return (data['data'] as unknown as CustomerProgram[]) ?? [];
+  }
+
   async get(tpId: number, custId: number, programId: number): Promise<CustomerProgram> {
     const data = await this.post({ action: '*GET', tpId, custId, programId });
     return data as unknown as CustomerProgram;

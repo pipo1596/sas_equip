@@ -3,7 +3,6 @@ import { PartnerCustomersComponent } from './partner-customers.component';
 import { CustomerFormComponent } from './customer-form.component';
 import { CustomerOverviewComponent } from './customer-overview.component';
 import { CustomerRolesComponent } from '../customer-roles/customer-roles.component';
-import { CustomerRoleFormComponent } from '../customer-roles/customer-role-form.component';
 import { CustomerEmployeesComponent } from '../customer-employees/customer-employees.component';
 import { CustomerEmployeeFormComponent } from '../customer-employees/customer-employee-form.component';
 import { CustomerLocationsComponent } from '../customer-locations/customer-locations.component';
@@ -32,8 +31,6 @@ export const CUSTOMERS_ROUTES: Routes = [
   { path: ':customerId/uniform-programs/:programId/tree', component: CustomerProgramTreeComponent },
   { path: ':customerId/uniform-programs/:programId/views', component: CustomerProgramViewsComponent },
   { path: ':customerId/roles', component: CustomerRolesComponent },
-  { path: ':customerId/roles/new', component: CustomerRoleFormComponent },
-  { path: ':customerId/roles/:roleId/edit', component: CustomerRoleFormComponent },
   { path: ':customerId/employees', component: CustomerEmployeesComponent },
   { path: ':customerId/employees/new', component: CustomerEmployeeFormComponent },
   { path: ':customerId/employees/:employeeId/edit', component: CustomerEmployeeFormComponent },

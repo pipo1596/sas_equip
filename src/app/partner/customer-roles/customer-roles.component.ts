@@ -1,10 +1,22 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
-import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { PartnerModeService } from '../partner-mode.service';
 import { CustomerModeService } from '../partner-customers/customer-mode.service';
 import { CustomerRolesService } from './customer-roles.service';
-import { CustomerRole } from './customer-role.model';
+import { CustomerRole, CustomerRoleForm } from './customer-role.model';
+
+interface RoleForm {
+  roleName: string;
+  accessLevel: 'EMPLOYEE' | 'APPROVER' | 'ADMIN';
+  allotmentType: 'NONE' | 'DOLLAR' | 'POINT' | 'ITEM' | 'COMBO';
+  description: string;
+  isActive: 'Y' | 'N';
+}
+
+const BLANK_FORM: RoleForm = {
+  roleName: '', accessLevel: 'EMPLOYEE', allotmentType: 'NONE', description: '', isActive: 'Y',
+};
 
 @Component({
   selector: 'app-customer-roles',
@@ -16,7 +28,6 @@ export class CustomerRolesComponent implements OnInit {
   protected readonly partnerMode = inject(PartnerModeService);
   protected readonly customerMode = inject(CustomerModeService);
   private readonly service = inject(CustomerRolesService);
-  private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
 
   readonly roles = signal<CustomerRole[]>([]);
@@ -28,9 +39,17 @@ export class CustomerRolesComponent implements OnInit {
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
 
+  readonly showFormModal = signal(false);
+  readonly editingId = signal<number | null>(null);
+  readonly saving = signal(false);
+  readonly saveError = signal<string | null>(null);
+  readonly submitted = signal(false);
+
   readonly showDeleteModal = signal(false);
   readonly deleting = signal(false);
   readonly deleteTarget = signal<CustomerRole | null>(null);
+
+  form: RoleForm = { ...BLANK_FORM };
 
   readonly totalPages = computed(() => Math.max(1, Math.ceil(this.total() / this.pageSize())));
 
@@ -123,15 +142,56 @@ export class CustomerRolesComponent implements OnInit {
     this.loadRoles();
   }
 
-  newRole(): void {
-    this.router.navigate(['/partner', this.tpId, 'customers', this.customerId, 'roles', 'new']);
+  openAddModal(): void {
+    this.editingId.set(null);
+    this.form = { ...BLANK_FORM };
+    this.saveError.set(null);
+    this.submitted.set(false);
+    this.showFormModal.set(true);
   }
 
-  editRole(role: CustomerRole): void {
-    this.router.navigate(
-      ['/partner', this.tpId, 'customers', this.customerId, 'roles', role.roleId, 'edit'],
-      { state: { role } },
-    );
+  openEditModal(role: CustomerRole): void {
+    this.editingId.set(role.roleId);
+    this.form = {
+      roleName:      role.roleName,
+      accessLevel:   role.accessLevel,
+      allotmentType: role.allotmentType,
+      description:   role.description ?? '',
+      isActive:      role.isActive,
+    };
+    this.saveError.set(null);
+    this.submitted.set(false);
+    this.showFormModal.set(true);
+  }
+
+  closeFormModal(): void {
+    this.showFormModal.set(false);
+  }
+
+  async saveRole(): Promise<void> {
+    const tpId = this.tpId;
+    const custId = this.customerId;
+    if (!tpId || !custId) return;
+    this.submitted.set(true);
+    if (!this.form.roleName) return;
+
+    this.saving.set(true);
+    this.saveError.set(null);
+    try {
+      const payload: CustomerRoleForm = { ...this.form };
+      const id = this.editingId();
+      if (id === null) {
+        await this.service.create(tpId, custId, payload);
+      } else {
+        await this.service.update(tpId, custId, id, payload);
+      }
+      this.showFormModal.set(false);
+      await this.loadRoles();
+    } catch (err) {
+      this.saveError.set(err instanceof Error ? err.message : 'Failed to save role.');
+    } finally {
+      this.saving.set(false);
+    }
   }
 
   openDeleteModal(role: CustomerRole): void {

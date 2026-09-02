@@ -10,6 +10,14 @@
     </button>
   </div>
 
+  <div class="alert alert-info d-flex align-items-start gap-2 mb-3">
+    <i class="bi bi-wallet2 mt-1"></i>
+    <span>
+      A <strong>payment ledger</strong> is a reusable pool a rule draws from, in precedence order — Ledger 1 first, then fallbacks, then a personal credit card.
+      The <strong>same ledger can back multiple rules and roles</strong>, so a shared budget can cover more than one assortment.
+    </span>
+  </div>
+
   @if (error()) {
     <div class="alert alert-danger d-flex align-items-center gap-2 mb-3">
       <i class="bi bi-exclamation-triangle-fill"></i><span>{{ error() }}</span>

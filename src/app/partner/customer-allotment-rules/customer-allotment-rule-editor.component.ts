@@ -485,6 +485,9 @@ export class CustomerAllotmentRuleEditorComponent implements OnInit {
       let ruleId = this.ruleId;
       if (ruleId === null) {
         const created = await this.service.create(tpId, custId, roleId, this.form);
+        if (!created?.ruleId) {
+          throw new Error('The server did not return the new rule’s ID — the rule may not have been created.');
+        }
         ruleId = created.ruleId;
       } else {
         await this.service.update(tpId, custId, roleId, ruleId, this.form);

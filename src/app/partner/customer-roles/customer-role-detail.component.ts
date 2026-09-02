@@ -6,7 +6,7 @@ import { CustomerModeService } from '../partner-customers/customer-mode.service'
 import { CustomerRolesService } from './customer-roles.service';
 import { CustomerRole, CustomerRoleForm } from './customer-role.model';
 import { CustomerAllotmentRulesService } from '../customer-allotment-rules/customer-allotment-rules.service';
-import { CustomerAllotmentRule } from '../customer-allotment-rules/customer-allotment-rule.model';
+import { CustomerAllotmentRule, RuleAssortmentScope, RuleLedgerSlot } from '../customer-allotment-rules/customer-allotment-rule.model';
 import { CustomerPaymentLedgersService } from '../customer-payment-ledgers/customer-payment-ledgers.service';
 import { CustomerPaymentLedger, CustomerPaymentLedgerForm } from '../customer-payment-ledgers/customer-payment-ledger.model';
 
@@ -48,6 +48,11 @@ export class CustomerRoleDetailComponent implements OnInit {
   readonly showDeleteRuleModal = signal(false);
   readonly deleteRuleTarget = signal<CustomerAllotmentRule | null>(null);
   readonly deletingRule = signal(false);
+  readonly roleEmployeeCount = signal(0);
+  readonly ruleScopes = signal<Record<number, RuleAssortmentScope[]>>({});
+  readonly expandedRuleIds = signal<Set<number>>(new Set());
+  readonly ruleLedgerChains = signal<Record<number, RuleLedgerSlot[]>>({});
+  readonly ruleLedgerChainsLoading = signal<Set<number>>(new Set());
 
   // ── Payment Ledgers tab ──────────────────────────────────────────────────
   readonly ledgers = signal<CustomerPaymentLedger[]>([]);
@@ -141,11 +146,123 @@ export class CustomerRoleDetailComponent implements OnInit {
     this.rulesError.set(null);
     try {
       this.rules.set(await this.rulesService.listAll(tpId, custId, roleId));
+      await Promise.all([this.loadRuleScopes(), this.loadRoleEmployeeCount()]);
     } catch (err) {
       this.rulesError.set(err instanceof Error ? err.message : 'Failed to load allotment rules.');
     } finally {
       this.rulesLoading.set(false);
     }
+  }
+
+  private async loadRuleScopes(): Promise<void> {
+    const tpId = this.tpId;
+    const custId = this.customerId;
+    const roleId = this.roleId;
+    if (!tpId || !custId || roleId == null) return;
+    const scoped = this.rules().filter(r => r.scopeAllAssortments === 'N');
+    const entries = await Promise.all(scoped.map(async r => {
+      try {
+        return [r.ruleId, await this.rulesService.getScope(tpId, custId, roleId, r.ruleId)] as const;
+      } catch {
+        return [r.ruleId, [] as RuleAssortmentScope[]] as const;
+      }
+    }));
+    const map: Record<number, RuleAssortmentScope[]> = {};
+    entries.forEach(([id, scope]) => { map[id] = scope; });
+    this.ruleScopes.set(map);
+  }
+
+  private async loadRoleEmployeeCount(): Promise<void> {
+    const tpId = this.tpId;
+    const custId = this.customerId;
+    const roleId = this.roleId;
+    if (!tpId || !custId || roleId == null) return;
+    try {
+      const counts = await this.rolesService.getRoleEmployeeCounts(tpId, custId);
+      this.roleEmployeeCount.set(counts[roleId] ?? 0);
+    } catch {
+      // Non-critical — the stat card just falls back to 0.
+    }
+  }
+
+  toggleRuleExpand(ruleId: number): void {
+    const expanded = new Set(this.expandedRuleIds());
+    if (expanded.has(ruleId)) {
+      expanded.delete(ruleId);
+      this.expandedRuleIds.set(expanded);
+      return;
+    }
+    expanded.add(ruleId);
+    this.expandedRuleIds.set(expanded);
+    if (!this.ruleLedgerChains()[ruleId]) this.loadRuleLedgerChain(ruleId);
+  }
+
+  private async loadRuleLedgerChain(ruleId: number): Promise<void> {
+    const tpId = this.tpId;
+    const custId = this.customerId;
+    const roleId = this.roleId;
+    if (!tpId || !custId || roleId == null) return;
+    this.ruleLedgerChainsLoading.update(s => new Set(s).add(ruleId));
+    try {
+      const chain = await this.rulesService.getLedgerChain(tpId, custId, roleId, ruleId);
+      this.ruleLedgerChains.update(m => ({ ...m, [ruleId]: chain }));
+    } catch {
+      // Leave empty — the expanded section just shows "none" for every slot.
+    } finally {
+      this.ruleLedgerChainsLoading.update(s => {
+        const next = new Set(s);
+        next.delete(ruleId);
+        return next;
+      });
+    }
+  }
+
+  scopeFor(ruleId: number): RuleAssortmentScope[] {
+    return this.ruleScopes()[ruleId] ?? [];
+  }
+
+  ledgerAt(ruleId: number, precedence: number): RuleLedgerSlot | null {
+    return (this.ruleLedgerChains()[ruleId] ?? []).find(s => s.precedence === precedence) ?? null;
+  }
+
+  // ── Rules summary stat cards ─────────────────────────────────────────────
+
+  private unitsForRule(ruleId: number): number {
+    return (this.ruleScopes()[ruleId] ?? []).reduce((sum, s) => sum + (s.unitQty ?? 0), 0);
+  }
+
+  private get totalDollar(): number {
+    return this.rules()
+      .filter(r => r.allotType === 'DOLLAR' || r.allotType === 'DOLLAR_UNITS')
+      .reduce((sum, r) => sum + (r.dollarAmount ?? 0), 0);
+  }
+
+  private get totalPoints(): number {
+    return this.rules()
+      .filter(r => r.allotType === 'POINTS')
+      .reduce((sum, r) => sum + (r.pointsAmount ?? 0), 0);
+  }
+
+  private get totalUnits(): number {
+    return this.rules()
+      .filter(r => r.allotType === 'UNITS' || r.allotType === 'DOLLAR_UNITS')
+      .reduce((sum, r) => sum + this.unitsForRule(r.ruleId), 0);
+  }
+
+  get totalPerEmployeeLabel(): string {
+    const parts: string[] = [];
+    if (this.totalDollar > 0) parts.push(`$${this.totalDollar.toFixed(2)}`);
+    if (this.totalPoints > 0) parts.push(`${this.totalPoints} pts`);
+    if (this.totalUnits > 0) parts.push(`${this.totalUnits} unit${this.totalUnits === 1 ? '' : 's'}`);
+    return parts.length ? parts.join(' · ') : '—';
+  }
+
+  get totalPerEmployeeBreakdown(): string {
+    return this.rules().map(r => this.amountSummary(r)).join(' + ') || 'No rules yet';
+  }
+
+  get distinctRenewalCycles(): number[] {
+    return Array.from(new Set(this.rules().map(r => r.renewalPeriodMonths))).sort((a, b) => a - b);
   }
 
   newRule(): void {
@@ -206,16 +323,69 @@ export class CustomerRoleDetailComponent implements OnInit {
 
   amountSummary(rule: CustomerAllotmentRule): string {
     switch (rule.allotType) {
-      case 'DOLLAR': return rule.dollarAmount != null ? `$${rule.dollarAmount.toFixed(2)}` : '—';
-      case 'DOLLAR_UNITS': return rule.dollarAmount != null ? `$${rule.dollarAmount.toFixed(2)} + units` : 'Units';
-      case 'UNITS': return 'Per assortment';
-      case 'POINTS': return rule.pointsAmount != null ? `${rule.pointsAmount} pts` : '—';
-      default: return '—';
+      case 'DOLLAR':
+        return rule.dollarAmount != null ? `$${rule.dollarAmount.toFixed(2)}` : '—';
+      case 'DOLLAR_UNITS': {
+        const units = this.unitsForRule(rule.ruleId);
+        const dollar = rule.dollarAmount != null ? `$${rule.dollarAmount.toFixed(2)}` : '$0.00';
+        return `${dollar} + ${units} unit${units === 1 ? '' : 's'}`;
+      }
+      case 'UNITS': {
+        const units = this.unitsForRule(rule.ruleId);
+        return `${units} unit${units === 1 ? '' : 's'}`;
+      }
+      case 'POINTS':
+        return rule.pointsAmount != null ? `${rule.pointsAmount} pts` : '—';
+      default:
+        return '—';
     }
   }
 
-  scopeSummary(rule: CustomerAllotmentRule): string {
-    return rule.scopeAllAssortments === 'Y' ? 'All assortments' : 'Specific assortments';
+  scopeNamesLabel(ruleId: number): string {
+    const scope = this.ruleScopes()[ruleId] ?? [];
+    if (scope.length === 0) return 'No assortments';
+    if (scope.length === 1) return scope[0].programName;
+    return `${scope[0].programName} +${scope.length - 1} more`;
+  }
+
+  ruleSubtitle(rule: CustomerAllotmentRule): string {
+    const scopeLabel = rule.scopeAllAssortments === 'Y' ? 'All assortments' : this.scopeNamesLabel(rule.ruleId);
+    return `${scopeLabel} · ${this.allotTypeLabel(rule.allotType)} · renews every ${rule.renewalPeriodMonths} months`;
+  }
+
+  formatDate(iso: string | null): string {
+    if (!iso) return '—';
+    try {
+      return new Date(`${iso}T00:00:00`).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    } catch {
+      return iso;
+    }
+  }
+
+  nextRenewalLabel(rule: CustomerAllotmentRule): string {
+    if (rule.renewalBasis !== 'FIXED') return 'Per employee';
+    if (!rule.cycleStartDate) return '—';
+    const d = new Date(`${rule.cycleStartDate}T00:00:00`);
+    d.setMonth(d.getMonth() + rule.renewalPeriodMonths);
+    return this.formatDate(d.toISOString().slice(0, 10));
+  }
+
+  carryoverLabel(rule: CustomerAllotmentRule): string {
+    switch (rule.carryoverType) {
+      case 'FORFEIT': return 'Forfeit unused';
+      case 'FULL': return 'Full carryover';
+      case 'PARTIAL': return `Partial carryover (${rule.carryoverPct ?? 0}%)`;
+      default: return rule.carryoverType;
+    }
+  }
+
+  renewalBasisLabel(rule: CustomerAllotmentRule): string {
+    switch (rule.renewalBasis) {
+      case 'FIXED': return 'Fixed date';
+      case 'HIRE': return 'Hire date anniversary';
+      case 'HIREDAYS': return `Hire date + ${rule.hireDaysOffset ?? 0}d`;
+      default: return rule.renewalBasis;
+    }
   }
 
   ruleStatusBadge(status: string): string {

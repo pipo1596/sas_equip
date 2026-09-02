@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { repairCp1252MojibakeDeep, decodeWindows1252Text } from '../../shared/cp1252-mojibake.util';
+import { parseArrayResponse } from '../../shared/parse-array-response.util';
 import {
   CustomerProgram, CustomerProgramForm, CustomerProgramsPage, CustomerProgramTree,
   CustomerProgramSkuCandidate,
@@ -20,7 +21,7 @@ export class CustomerProgramsService {
   // (Allotment Rules) rather than as a page-rendering source.
   async listAll(tpId: number, custId: number): Promise<CustomerProgram[]> {
     const data = await this.post({ action: '*LIST_ALL', tpId, custId });
-    return (data['data'] as unknown as CustomerProgram[]) ?? [];
+    return parseArrayResponse<CustomerProgram>(data, 'CustomerProgramsService *LIST_ALL');
   }
 
   async get(tpId: number, custId: number, programId: number): Promise<CustomerProgram> {

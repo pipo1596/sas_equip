@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { repairCp1252MojibakeDeep, decodeWindows1252Text } from '../../shared/cp1252-mojibake.util';
+import { parseArrayResponse } from '../../shared/parse-array-response.util';
 import { CustomerPaymentLedger, CustomerPaymentLedgerForm, CustomerPaymentLedgersPage } from './customer-payment-ledger.model';
 
 @Injectable({ providedIn: 'root' })
@@ -15,7 +16,7 @@ export class CustomerPaymentLedgersService {
 
   async listAll(tpId: number, custId: number): Promise<CustomerPaymentLedger[]> {
     const data = await this.post({ action: '*LIST_ALL', tpId, custId });
-    return (data['data'] as unknown as CustomerPaymentLedger[]) ?? [];
+    return parseArrayResponse<CustomerPaymentLedger>(data, 'CustomerPaymentLedgersService *LIST_ALL');
   }
 
   async get(tpId: number, custId: number, ledgerId: number): Promise<CustomerPaymentLedger> {
@@ -25,7 +26,9 @@ export class CustomerPaymentLedgersService {
 
   async create(tpId: number, custId: number, form: CustomerPaymentLedgerForm): Promise<CustomerPaymentLedger> {
     const data = await this.post({ action: '*CREATE', tpId, custId, ...form });
-    return data['ledger'] as unknown as CustomerPaymentLedger;
+    // Tolerate either { ledger: {...} } or the created row returned flat at
+    // the top level — the real backend's exact shape wasn't confirmed yet.
+    return (data['ledger'] ?? data) as unknown as CustomerPaymentLedger;
   }
 
   async update(tpId: number, custId: number, ledgerId: number, form: CustomerPaymentLedgerForm): Promise<void> {

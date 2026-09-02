@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { repairCp1252MojibakeDeep, decodeWindows1252Text } from '../../shared/cp1252-mojibake.util';
+import { parseArrayResponse } from '../../shared/parse-array-response.util';
 import {
   CustomerAllotmentRule, CustomerAllotmentRuleForm, CustomerAllotmentRulesPage,
   RuleAssortmentScope, RuleQuotaLimit, RuleQuotaLimitForm, RuleLedgerSlot,
@@ -18,7 +19,7 @@ export class CustomerAllotmentRulesService {
 
   async listAll(tpId: number, custId: number, roleId: number): Promise<CustomerAllotmentRule[]> {
     const data = await this.post({ action: '*LIST_ALL', tpId, custId, roleId });
-    return (data['data'] as unknown as CustomerAllotmentRule[]) ?? [];
+    return parseArrayResponse<CustomerAllotmentRule>(data, 'CustomerAllotmentRulesService *LIST_ALL');
   }
 
   async get(tpId: number, custId: number, roleId: number, ruleId: number): Promise<CustomerAllotmentRule> {
@@ -28,7 +29,9 @@ export class CustomerAllotmentRulesService {
 
   async create(tpId: number, custId: number, roleId: number, form: CustomerAllotmentRuleForm): Promise<CustomerAllotmentRule> {
     const data = await this.post({ action: '*CREATE', tpId, custId, roleId, ...form });
-    return data['rule'] as unknown as CustomerAllotmentRule;
+    // Tolerate either { rule: {...} } or the created row returned flat at
+    // the top level — the real backend's exact shape wasn't confirmed yet.
+    return (data['rule'] ?? data) as unknown as CustomerAllotmentRule;
   }
 
   async update(tpId: number, custId: number, roleId: number, ruleId: number, form: CustomerAllotmentRuleForm): Promise<void> {
@@ -41,7 +44,7 @@ export class CustomerAllotmentRulesService {
 
   async getScope(tpId: number, custId: number, roleId: number, ruleId: number): Promise<RuleAssortmentScope[]> {
     const data = await this.post({ action: '*SCOPE_GET', tpId, custId, roleId, ruleId });
-    return (data['data'] as unknown as RuleAssortmentScope[]) ?? [];
+    return parseArrayResponse<RuleAssortmentScope>(data, 'CustomerAllotmentRulesService *SCOPE_GET');
   }
 
   // Bulk-replaces the rule's assortment scope in one call.
@@ -51,12 +54,12 @@ export class CustomerAllotmentRulesService {
 
   async listQuotas(tpId: number, custId: number, roleId: number, ruleId: number): Promise<RuleQuotaLimit[]> {
     const data = await this.post({ action: '*QUOTA_LIST', tpId, custId, roleId, ruleId });
-    return (data['data'] as unknown as RuleQuotaLimit[]) ?? [];
+    return parseArrayResponse<RuleQuotaLimit>(data, 'CustomerAllotmentRulesService *QUOTA_LIST');
   }
 
   async createQuota(tpId: number, custId: number, roleId: number, ruleId: number, form: RuleQuotaLimitForm): Promise<RuleQuotaLimit> {
     const data = await this.post({ action: '*QUOTA_CREATE', tpId, custId, roleId, ruleId, ...form });
-    return data['quota'] as unknown as RuleQuotaLimit;
+    return (data['quota'] ?? data) as unknown as RuleQuotaLimit;
   }
 
   async updateQuota(tpId: number, custId: number, roleId: number, ruleId: number, quotaId: number, form: RuleQuotaLimitForm): Promise<void> {
@@ -69,7 +72,7 @@ export class CustomerAllotmentRulesService {
 
   async getLedgerChain(tpId: number, custId: number, roleId: number, ruleId: number): Promise<RuleLedgerSlot[]> {
     const data = await this.post({ action: '*LEDGER_GET', tpId, custId, roleId, ruleId });
-    return (data['data'] as unknown as RuleLedgerSlot[]) ?? [];
+    return parseArrayResponse<RuleLedgerSlot>(data, 'CustomerAllotmentRulesService *LEDGER_GET');
   }
 
   // Bulk-replaces the rule's ledger precedence chain — an omitted

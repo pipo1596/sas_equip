@@ -235,9 +235,9 @@ export class CustomerRolesComponent implements OnInit {
   allotmentLabel(type: string): string {
     switch (type) {
       case 'DOLLAR': return 'Dollar';
-      case 'POINT': return 'Point';
-      case 'ITEM': return 'Item';
-      case 'COMBO': return 'Combo';
+      case 'POINT': return 'Points';
+      case 'ITEM': return 'Units';
+      case 'COMBO': return 'Dollar + Units';
       default: return 'None';
     }
   }

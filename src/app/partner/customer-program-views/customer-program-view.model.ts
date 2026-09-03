@@ -13,8 +13,8 @@ export interface CustomerProgramView {
   assignedLocations: CustomerProgramViewLocation[];
   categoryTotalCount: number;
   categorySelectedCount: number;
-  skuTotalCount: number;
-  skuSelectedCount: number;
+  prodTotalCount: number;
+  prodSelectedCount: number;
   createdTs: string;
   createdBy: string | null;
   updatedTs: string;

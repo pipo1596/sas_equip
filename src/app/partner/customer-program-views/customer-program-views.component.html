@@ -52,7 +52,7 @@
           <th>View</th>
           <th>Assigned Locations</th>
           <th class="text-center">Assortments Selected</th>
-          <th class="text-center">SKUs Selected</th>
+          <th class="text-center">Products Selected</th>
           <th class="text-center">Status</th>
           <th class="text-center">Selections</th>
           <th class="text-end">Actions</th>
@@ -119,8 +119,8 @@
               <td class="text-center" [class.text-danger]="view.categorySelectedCount === 0">
                 {{ view.categorySelectedCount }} of {{ view.categoryTotalCount }}
               </td>
-              <td class="text-center" [class.text-danger]="view.skuSelectedCount === 0">
-                {{ view.skuSelectedCount }} of {{ view.skuTotalCount }}
+              <td class="text-center" [class.text-danger]="view.prodSelectedCount === 0">
+                {{ view.prodSelectedCount }} of {{ view.prodTotalCount }}
               </td>
               <td class="text-center">
                 <span [class]="statusBadge(view.status)">{{ view.status }}</span>

@@ -26,8 +26,8 @@ export class CustomerProgramViewsService {
         assignedLocations: locations ?? [],
         categoryTotalCount: row.categoryTotalCount ?? 0,
         categorySelectedCount: row.categorySelectedCount ?? 0,
-        skuTotalCount: row.skuTotalCount ?? 0,
-        skuSelectedCount: row.skuSelectedCount ?? 0,
+        prodTotalCount: row.prodTotalCount ?? 0,
+        prodSelectedCount: row.prodSelectedCount ?? 0,
       })),
       pagination: (data['pagination'] as unknown as CustomerProgramViewsPage['pagination']) ?? { totalRows: 0, page: params.page, pageSize: params.pageSize },
     };

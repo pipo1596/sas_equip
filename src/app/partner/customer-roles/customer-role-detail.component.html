@@ -133,8 +133,8 @@
                     <i class="bi bi-check2-all me-1"></i>All assortments
                   </span>
                 } @else {
-                  @for (p of scopeFor(r.ruleId).slice(0, 1); track p.programId) {
-                    <span class="badge rounded-pill" style="background:#EFF4FB; color:#185FA5; border:1px solid #BDD4ED;">{{ p.programName }}</span>
+                  @for (c of scopeFor(r.ruleId).slice(0, 1); track c.progCatId) {
+                    <span class="badge rounded-pill" style="background:#EFF4FB; color:#185FA5; border:1px solid #BDD4ED;">{{ c.categoryName }}</span>
                   }
                   @if (scopeFor(r.ruleId).length > 1) {
                     <span class="badge rounded-pill bg-light text-dark border">+{{ scopeFor(r.ruleId).length - 1 }} more</span>
@@ -207,15 +207,17 @@
                 </div>
               }
 
-              <div class="text-uppercase text-muted mb-1" style="font-size:.65rem; letter-spacing:.04em;">Assortments covered</div>
+              <div class="text-uppercase text-muted mb-1" style="font-size:.65rem; letter-spacing:.04em;">Categories covered</div>
               <div class="d-flex flex-wrap gap-1">
                 @if (r.scopeAllAssortments === 'Y') {
                   <span class="badge rounded-pill" style="background:#EFF4FB; color:#185FA5; border:1px solid #BDD4ED;">All assortments</span>
                 } @else if (scopeFor(r.ruleId).length === 0) {
-                  <span class="text-muted small">No assortments</span>
+                  <span class="text-muted small">No categories</span>
                 } @else {
-                  @for (p of scopeFor(r.ruleId); track p.programId) {
-                    <span class="badge rounded-pill" style="background:#EFF4FB; color:#185FA5; border:1px solid #BDD4ED;">{{ p.programName }}</span>
+                  @for (c of scopeFor(r.ruleId); track c.progCatId) {
+                    <span class="badge rounded-pill" style="background:#EFF4FB; color:#185FA5; border:1px solid #BDD4ED;">
+                      <span class="opacity-75">{{ c.programName }}:</span> {{ c.categoryName }}
+                    </span>
                   }
                 }
               </div>

@@ -88,24 +88,24 @@
         </div>
         @if (needsUnitScope) {
           <p class="text-muted small mb-3">
-            Unit quantities are set per assortment, so "all assortments" isn't available for Units / Dollar + Units rules — pick the specific assortments below.
+            Unit quantities are set per category, so "all assortments" isn't available for Units / Dollar + Units rules — pick the specific categories below.
           </p>
         }
 
         @if (form.scopeAllAssortments === 'N') {
           <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
-            @for (p of scopedPrograms; track p.programId) {
+            @for (c of scopedCategories; track c.progCatId) {
               <span class="badge rounded-pill bg-light text-dark border d-inline-flex align-items-center gap-1 px-3 py-2">
-                {{ p.programName }}
-                <button type="button" class="btn-close btn-close-sm" style="font-size:0.6rem;" (click)="removeFromScope(p.programId)"></button>
+                <span class="text-muted me-1">{{ c.programName }}:</span>{{ c.categoryName }}
+                <button type="button" class="btn-close btn-close-sm" style="font-size:0.6rem;" (click)="removeFromScope(c.progCatId)"></button>
               </span>
             }
             <button type="button" class="btn btn-sm btn-outline-secondary" (click)="openScopeModal()">
               <i class="bi bi-plus-lg me-1"></i>Add
             </button>
           </div>
-          @if (scopedPrograms.length === 0) {
-            <p class="text-muted small mb-0">No assortments selected yet.</p>
+          @if (scopedCategories.length === 0) {
+            <p class="text-muted small mb-0">No categories selected yet.</p>
           }
         }
       </div>
@@ -115,22 +115,23 @@
     @if (needsUnitScope) {
       <div class="card mb-3">
         <div class="card-body">
-          <h6 class="card-title fw-semibold mb-2">Unit Allotment — by Assortment</h6>
-          @if (scopedPrograms.length === 0) {
-            <p class="text-muted small mb-0">Add assortments to Scope above to set unit quantities.</p>
+          <h6 class="card-title fw-semibold mb-2">Unit Allotment — by Category</h6>
+          @if (scopedCategories.length === 0) {
+            <p class="text-muted small mb-0">Add categories to Scope above to set unit quantities.</p>
           } @else {
             <table class="table table-sm align-middle mb-0">
               <thead>
-                <tr><th>Assortment</th><th style="width:160px;">Unit qty / cycle</th></tr>
+                <tr><th>Assortment</th><th>Category</th><th style="width:160px;">Unit qty / cycle</th></tr>
               </thead>
               <tbody>
-                @for (p of scopedPrograms; track p.programId) {
+                @for (c of scopedCategories; track c.progCatId) {
                   <tr>
-                    <td>{{ p.programName }}</td>
+                    <td class="text-muted small">{{ c.programName }}</td>
+                    <td>{{ c.categoryName }}</td>
                     <td>
                       <input type="number" min="0" class="form-control form-control-sm"
-                             [value]="unitQtyFor(p.programId)"
-                             (input)="onUnitQtyChange(p.programId, $any($event.target).value)" />
+                             [value]="unitQtyFor(c.progCatId)"
+                             (input)="onUnitQtyChange(c.progCatId, $any($event.target).value)" />
                     </td>
                   </tr>
                 }
@@ -319,29 +320,49 @@
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header border-0 pb-0">
-          <h5 class="modal-title">Add Assortments to Scope</h5>
+          <h5 class="modal-title">Add Category to Scope</h5>
           <button class="btn-close" (click)="closeScopeModal()"></button>
         </div>
         <div class="modal-body pt-2">
-          <input type="text" class="form-control mb-2" placeholder="Search assortments…"
-                 [ngModel]="scopeModalSearch()" (ngModelChange)="scopeModalSearch.set($event)" />
-          <div style="max-height:320px; overflow-y:auto;">
-            @for (p of filteredScopeModalPrograms(); track p.programId) {
-              <div class="form-check py-1">
-                <input class="form-check-input" type="checkbox" [id]="'scope-p-' + p.programId"
-                       [checked]="scopeModalSelected().has(p.programId)"
-                       (change)="toggleScopeModalProgram(p.programId, $any($event.target).checked)" />
-                <label class="form-check-label" [for]="'scope-p-' + p.programId">{{ p.programName }}</label>
-              </div>
+          <label class="form-label small fw-semibold text-uppercase text-muted">Assortment</label>
+          <select class="form-select mb-2" [ngModel]="scopeModalProgramId()"
+                  (ngModelChange)="scopeModalProgramId.set($event); onScopeModalProgramChange()">
+            @for (p of allPrograms(); track p.programId) {
+              <option [ngValue]="p.programId">{{ p.programName }}</option>
             }
-            @if (filteredScopeModalPrograms().length === 0) {
-              <p class="text-muted small mb-0">No assortments match your search.</p>
-            }
+          </select>
+
+          <label class="form-label small fw-semibold text-uppercase text-muted">Category</label>
+          <div class="d-flex gap-2">
+            <select class="form-select" [ngModel]="scopeModalCategoryId()" (ngModelChange)="scopeModalCategoryId.set($event)">
+              <option [ngValue]="null">— Select a category —</option>
+              @for (c of availableScopeModalCategories(); track c.progCatId) {
+                <option [ngValue]="c.progCatId">{{ c.label }}</option>
+              }
+            </select>
+            <button type="button" class="btn btn-dark text-nowrap" [disabled]="scopeModalCategoryId() == null" (click)="addScopeCategory()">
+              <i class="bi bi-plus-lg me-1"></i>Add
+            </button>
           </div>
+          @if (scopeModalCategories().length > 0 && availableScopeModalCategories().length === 0) {
+            <p class="text-muted small mt-2 mb-0">All categories in this assortment are already in scope.</p>
+          }
+
+          @if (scopedCategories.length > 0) {
+            <hr />
+            <div class="text-uppercase text-muted small mb-1" style="font-size:.65rem; letter-spacing:.04em;">Categories in scope</div>
+            <div class="d-flex flex-wrap gap-1">
+              @for (c of scopedCategories; track c.progCatId) {
+                <span class="badge rounded-pill bg-light text-dark border d-inline-flex align-items-center gap-1 px-3 py-2">
+                  <span class="text-muted">{{ c.programName }}:</span>{{ c.categoryName }}
+                  <button type="button" class="btn-close btn-close-sm" style="font-size:0.6rem;" (click)="removeFromScope(c.progCatId)"></button>
+                </span>
+              }
+            </div>
+          }
         </div>
         <div class="modal-footer border-0 pt-0">
-          <button type="button" class="btn btn-outline-secondary" (click)="closeScopeModal()">Cancel</button>
-          <button type="button" class="btn btn-dark" (click)="confirmScopeModal()"><i class="bi bi-check-lg me-1"></i>Apply</button>
+          <button type="button" class="btn btn-dark" (click)="closeScopeModal()">Done</button>
         </div>
       </div>
     </div>

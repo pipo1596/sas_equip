@@ -343,9 +343,9 @@ export class CustomerRoleDetailComponent implements OnInit {
 
   scopeNamesLabel(ruleId: number): string {
     const scope = this.ruleScopes()[ruleId] ?? [];
-    if (scope.length === 0) return 'No assortments';
-    if (scope.length === 1) return scope[0].programName;
-    return `${scope[0].programName} +${scope.length - 1} more`;
+    if (scope.length === 0) return 'No categories';
+    if (scope.length === 1) return scope[0].categoryName;
+    return `${scope[0].categoryName} +${scope.length - 1} more`;
   }
 
   ruleSubtitle(rule: CustomerAllotmentRule): string {

@@ -53,12 +53,17 @@ export class CustomerAllotmentRuleEditorComponent implements OnInit {
 
   form: CustomerAllotmentRuleForm = { ...BLANK_FORM };
 
-  // ── Scope (assortments covered) ─────────────────────────────────────────
-  readonly scopeProgramIds = signal<Set<number>>(new Set());
-  readonly unitQtyByProgram = signal<Record<number, number>>({});
+  // ── Scope (categories covered) ──────────────────────────────────────────
+  // Scope is category-level, not whole-assortment — a rule covers specific
+  // categories (e.g. "Outerwear") within an assortment, not the entire
+  // assortment.
+  readonly scopeCategoryIds = signal<Set<number>>(new Set());
+  readonly unitQtyByCategory = signal<Record<number, number>>({});
+  readonly categoryLookup = signal<Record<number, { progCatId: number; categoryName: string; programId: number; programName: string }>>({});
   readonly showScopeModal = signal(false);
-  readonly scopeModalSearch = signal('');
-  readonly scopeModalSelected = signal<Set<number>>(new Set());
+  readonly scopeModalProgramId = signal<number | null>(null);
+  readonly scopeModalCategories = signal<{ progCatId: number; label: string; rawName: string }[]>([]);
+  readonly scopeModalCategoryId = signal<number | null>(null);
 
   // ── Quota limits ─────────────────────────────────────────────────────────
   readonly quotas = signal<RuleQuotaLimit[]>([]);
@@ -111,9 +116,11 @@ export class CustomerAllotmentRuleEditorComponent implements OnInit {
     return this.form.dollarAmount * this.form.carryoverPct / 100;
   }
 
-  get scopedPrograms(): CustomerProgram[] {
-    const ids = this.scopeProgramIds();
-    return this.allPrograms().filter(p => ids.has(p.programId));
+  get scopedCategories(): { progCatId: number; categoryName: string; programId: number; programName: string }[] {
+    const lookup = this.categoryLookup();
+    return Array.from(this.scopeCategoryIds())
+      .map(id => lookup[id])
+      .filter((c): c is NonNullable<typeof c> => !!c);
   }
 
   async ngOnInit(): Promise<void> {
@@ -222,10 +229,18 @@ export class CustomerAllotmentRuleEditorComponent implements OnInit {
     if (!tpId || !custId || roleId == null) return;
     try {
       const scope = await this.service.getScope(tpId, custId, roleId, ruleId);
-      this.scopeProgramIds.set(new Set(scope.map(s => s.programId)));
+      this.scopeCategoryIds.set(new Set(scope.map(s => s.progCatId)));
       const qtyMap: Record<number, number> = {};
-      scope.forEach(s => { if (s.unitQty != null) qtyMap[s.programId] = s.unitQty; });
-      this.unitQtyByProgram.set(qtyMap);
+      const lookup = { ...this.categoryLookup() };
+      scope.forEach(s => {
+        if (s.unitQty != null) qtyMap[s.progCatId] = s.unitQty;
+        lookup[s.progCatId] = {
+          progCatId: s.progCatId, categoryName: s.categoryName,
+          programId: s.programId, programName: s.programName,
+        };
+      });
+      this.unitQtyByCategory.set(qtyMap);
+      this.categoryLookup.set(lookup);
     } catch {
       // Leave scope empty — editable from scratch.
     }
@@ -258,30 +273,31 @@ export class CustomerAllotmentRuleEditorComponent implements OnInit {
 
   // ── Scope chip picker ────────────────────────────────────────────────────
 
-  removeFromScope(programId: number): void {
-    this.scopeProgramIds.update(set => {
+  removeFromScope(progCatId: number): void {
+    this.scopeCategoryIds.update(set => {
       const next = new Set(set);
-      next.delete(programId);
+      next.delete(progCatId);
       return next;
     });
-    this.unitQtyByProgram.update(map => {
-      const { [programId]: _removed, ...rest } = map;
+    this.unitQtyByCategory.update(map => {
+      const { [progCatId]: _removed, ...rest } = map;
       return rest;
     });
   }
 
-  unitQtyFor(programId: number): number {
-    return this.unitQtyByProgram()[programId] ?? 0;
+  unitQtyFor(progCatId: number): number {
+    return this.unitQtyByCategory()[progCatId] ?? 0;
   }
 
-  onUnitQtyChange(programId: number, value: string): void {
+  onUnitQtyChange(progCatId: number, value: string): void {
     const qty = Math.max(0, parseInt(value, 10) || 0);
-    this.unitQtyByProgram.update(map => ({ ...map, [programId]: qty }));
+    this.unitQtyByCategory.update(map => ({ ...map, [progCatId]: qty }));
   }
 
   openScopeModal(): void {
-    this.scopeModalSearch.set('');
-    this.scopeModalSelected.set(new Set(this.scopeProgramIds()));
+    this.scopeModalCategoryId.set(null);
+    this.scopeModalProgramId.set(this.allPrograms()[0]?.programId ?? null);
+    this.loadScopeModalCategories();
     this.showScopeModal.set(true);
   }
 
@@ -289,30 +305,53 @@ export class CustomerAllotmentRuleEditorComponent implements OnInit {
     this.showScopeModal.set(false);
   }
 
-  toggleScopeModalProgram(programId: number, checked: boolean): void {
-    this.scopeModalSelected.update(set => {
-      const next = new Set(set);
-      if (checked) next.add(programId); else next.delete(programId);
-      return next;
-    });
+  async onScopeModalProgramChange(): Promise<void> {
+    this.scopeModalCategoryId.set(null);
+    await this.loadScopeModalCategories();
   }
 
-  filteredScopeModalPrograms(): CustomerProgram[] {
-    const q = this.scopeModalSearch().trim().toLowerCase();
-    const programs = this.allPrograms();
-    if (!q) return programs;
-    return programs.filter(p => p.programName.toLowerCase().includes(q));
+  private async loadScopeModalCategories(): Promise<void> {
+    const tpId = this.tpId;
+    const custId = this.customerId;
+    const programId = this.scopeModalProgramId();
+    if (!tpId || !custId || !programId) {
+      this.scopeModalCategories.set([]);
+      return;
+    }
+    try {
+      const tree = await this.programsService.getTree(tpId, custId, programId);
+      const flat = this.flattenCategories(tree.categories);
+      this.scopeModalCategories.set(flat);
+      // Merge into the lookup so chips can resolve names for categories
+      // that were only just browsed, not yet part of the saved scope.
+      const program = this.allPrograms().find(p => p.programId === programId);
+      const lookup = { ...this.categoryLookup() };
+      flat.forEach(c => {
+        lookup[c.progCatId] = {
+          progCatId: c.progCatId, categoryName: c.rawName,
+          programId, programName: program?.programName ?? '',
+        };
+      });
+      this.categoryLookup.set(lookup);
+    } catch {
+      this.scopeModalCategories.set([]);
+    }
   }
 
-  confirmScopeModal(): void {
-    const selected = this.scopeModalSelected();
-    this.scopeProgramIds.set(new Set(selected));
-    this.unitQtyByProgram.update(map => {
-      const next: Record<number, number> = {};
-      selected.forEach(id => { next[id] = map[id] ?? 0; });
-      return next;
-    });
-    this.showScopeModal.set(false);
+  // Categories in the currently-browsed assortment that aren't already in scope.
+  availableScopeModalCategories(): { progCatId: number; label: string; rawName: string }[] {
+    const inScope = this.scopeCategoryIds();
+    return this.scopeModalCategories().filter(c => !inScope.has(c.progCatId));
+  }
+
+  // Adds the single selected category to scope immediately, then clears the
+  // picker so the next one can be picked without reopening the modal.
+  addScopeCategory(): void {
+    const progCatId = this.scopeModalCategoryId();
+    if (progCatId == null) return;
+    this.scopeCategoryIds.update(set => new Set(set).add(progCatId));
+    this.unitQtyByCategory.update(map => ({ ...map, [progCatId]: map[progCatId] ?? 0 }));
+    this.scopeModalCategoryId.set(null);
   }
 
   // ── Quota limits ─────────────────────────────────────────────────────────
@@ -329,11 +368,14 @@ export class CustomerAllotmentRuleEditorComponent implements OnInit {
     }
   }
 
-  private flattenCategories(nodes: CustomerProgramCategoryNode[], depth = 0): { progCatId: number; label: string }[] {
-    const out: { progCatId: number; label: string }[] = [];
+  // Breadcrumb-style labels ("Outerwear > Jackets") instead of indentation,
+  // so the parent chain stays legible in a flat <select> list.
+  private flattenCategories(nodes: CustomerProgramCategoryNode[], parentPath = ''): { progCatId: number; label: string; rawName: string }[] {
+    const out: { progCatId: number; label: string; rawName: string }[] = [];
     for (const n of nodes) {
-      out.push({ progCatId: n.progCatId, label: '—'.repeat(depth) + (depth ? ' ' : '') + n.categoryName });
-      out.push(...this.flattenCategories(n.children, depth + 1));
+      const label = parentPath ? `${parentPath} > ${n.categoryName}` : n.categoryName;
+      out.push({ progCatId: n.progCatId, label, rawName: n.categoryName });
+      out.push(...this.flattenCategories(n.children, label));
     }
     return out;
   }
@@ -474,9 +516,9 @@ export class CustomerAllotmentRuleEditorComponent implements OnInit {
     this.saving.set(true);
     this.saveError.set(null);
     try {
-      const scopeItems = Array.from(this.scopeProgramIds()).map(programId => ({
-        programId,
-        unitQty: this.needsUnitScope ? (this.unitQtyByProgram()[programId] ?? 0) : null,
+      const scopeItems = Array.from(this.scopeCategoryIds()).map(progCatId => ({
+        progCatId,
+        unitQty: this.needsUnitScope ? (this.unitQtyByCategory()[progCatId] ?? 0) : null,
       }));
       const ledgerSlots = this.slots()
         .map((ledgerId, i) => ({ precedence: (i + 1) as 1 | 2 | 3, ledgerId }))

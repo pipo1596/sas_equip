@@ -47,8 +47,8 @@ export class CustomerAllotmentRulesService {
     return parseArrayResponse<RuleAssortmentScope>(data, 'CustomerAllotmentRulesService *SCOPE_GET');
   }
 
-  // Bulk-replaces the rule's assortment scope in one call.
-  async setScope(tpId: number, custId: number, roleId: number, ruleId: number, items: { programId: number; unitQty: number | null }[]): Promise<void> {
+  // Bulk-replaces the rule's category scope in one call.
+  async setScope(tpId: number, custId: number, roleId: number, ruleId: number, items: { progCatId: number; unitQty: number | null }[]): Promise<void> {
     await this.post({ action: '*SCOPE_SET', tpId, custId, roleId, ruleId, items });
   }
 

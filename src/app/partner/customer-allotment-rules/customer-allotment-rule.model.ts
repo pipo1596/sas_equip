@@ -61,10 +61,14 @@ export interface CustomerAllotmentRulesPage {
   pagination: { totalRows: number; page: number; pageSize: number };
 }
 
-// One row per program currently in a rule's scope (only meaningful when
-// scopeAllAssortments === 'N'). unitQty is populated only when allotType
-// is UNITS or DOLLAR_UNITS.
+// One row per category currently in a rule's scope (only meaningful when
+// scopeAllAssortments === 'N'). Scope is category-level, not whole-program
+// — a rule covers specific categories (e.g. "Outerwear") within an
+// assortment, not the entire assortment. unitQty is populated only when
+// allotType is UNITS or DOLLAR_UNITS.
 export interface RuleAssortmentScope {
+  progCatId: number;
+  categoryName: string;
   programId: number;
   programName: string;
   unitQty: number | null;
